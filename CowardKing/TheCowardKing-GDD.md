@@ -996,7 +996,7 @@ Characteristics:
 
 ### **Characters and cards on board:** {#characters-and-cards-on-board:}
 
-King (idle)  
+King (idle, damaged)  
  Skeleton (idle, attack)  
  Ogre (idle, attack)  
  Elite Warrior (idle, attack)  
