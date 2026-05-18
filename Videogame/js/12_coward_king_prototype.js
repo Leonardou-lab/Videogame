@@ -313,6 +313,48 @@ class Game {
         this.addLog(`${card.name} played.`);
         this.renderUI();
     }
+
+    endPlayerTurn() {
+        if (this.status != "playing" || this.phase != "player") return;
+        this.selectedCard = undefined;
+        this.moveMode = false;
+        this.phase = "enemy";
+        this.resolveTurn();
+    }
+
+    resolveTurn() {
+        this.applyZoneEffects();
+        this.alliesAttack();
+        this.enemiesAttackAndMove();
+        this.cleanupObjects();
+        this.tickEffects();
+        this.checkDefeat();
+
+        if (this.status == "playing") {
+            if (this.turn >= maxTurns) {
+                this.status = "won";
+                this.message = "Horde survived. Prototype victory!";
+                this.gold += 10;
+                this.addLog("Victory: the king survived 30 turns.");
+            } else {
+                this.turn++;
+                const kingMovedLastTurn = this.kingMovedThisTurn;
+                if (!kingMovedLastTurn) {
+                    this.ap += 1;
+                }
+                this.spawnEnemies();
+                this.phase = "player";
+                this.kingMovedThisTurn = false;
+                if (kingMovedLastTurn) {
+                    this.addLog(`Turn ${this.turn}. The King moved: no AP gained.`);
+                } else {
+                    this.addLog(`Turn ${this.turn}. The King held position: AP +1.`);
+                }
+            }
+        }
+
+        this.renderUI();
+    }
 }
 
 function main() {
