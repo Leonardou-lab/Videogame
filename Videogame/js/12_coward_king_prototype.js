@@ -357,6 +357,18 @@ class Game {
     }
 }
 
+
+    cleanupObjects() {
+        const defeated = this.enemies.filter(enemy => enemy.hp <= 0).length;
+        if (defeated > 0) {
+            this.addLog(`${defeated} skeleton defeated.`);
+        }
+        this.enemies = this.enemies.filter(enemy => enemy.hp > 0);
+        this.allies = this.allies.filter(ally => ally.hp > 0);
+        this.effects = this.effects.filter(effect => effect.duration > 0);
+    }
+
+
 function main() {
     const canvas = document.getElementById("canvas");
     canvas.width = canvasWidth;
