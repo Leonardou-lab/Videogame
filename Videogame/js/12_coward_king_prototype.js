@@ -162,6 +162,37 @@ class BoardEffect extends BoardObject {
     }
 }
 
+class Game {
+    constructor() {
+        this.hudElement = document.getElementById("hud");
+        this.handElement = document.getElementById("hand");
+        this.logElement = document.getElementById("log");
+        this.createEventListeners();
+        this.restart();
+    }
+
+    restart() {
+        this.turn = 1;
+        this.ap = startingAP;
+        this.gold = 0;
+        this.phase = "player";
+        this.selectedCard = undefined;
+        this.moveMode = false;
+        this.kingMovedThisTurn = false;
+        this.status = "playing";
+        this.message = "Protect the king for 30 turns.";
+        this.king = new King(4, 4);
+        this.allies = [];
+        this.enemies = [];
+        this.effects = [];
+        this.hand = this.drawCards(3);
+        this.spawnEnemies();
+        this.logLines = [];
+        this.addLog("Horde started. Choose a card or move the king.");
+        this.renderUI();
+    }
+}
+
 function main() {
     const canvas = document.getElementById("canvas");
     canvas.width = canvasWidth;
