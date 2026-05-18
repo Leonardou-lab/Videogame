@@ -238,6 +238,35 @@ class Game {
             }
         });
     }
+
+    handleCanvasClick(event) {
+        if (this.status != "playing" || this.phase != "player") return;
+
+        const rect = event.target.getBoundingClientRect();
+        const scaleX = canvasWidth / rect.width;
+        const scaleY = canvasHeight / rect.height;
+        const x = (event.clientX - rect.left) * scaleX;
+        const y = (event.clientY - rect.top) * scaleY;
+        const tile = positionToTile(x, y);
+
+        if (!tile) return;
+
+        if (this.moveMode) {
+            this.tryMoveKing(tile.row - this.king.row, tile.col - this.king.col);
+            return;
+        }
+
+        if (this.selectedCard) {
+            this.playCard(tile.row, tile.col);
+            return;
+        }
+
+        if (tile.row == this.king.row && tile.col == this.king.col) {
+            this.moveMode = true;
+            this.addLog("King selected. Choose a neighboring tile.");
+            this.renderUI();
+        }
+    }
 }
 
 function main() {
