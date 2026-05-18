@@ -423,6 +423,63 @@ class Game {
         }
         return nearest;
     }
+
+    enemiesAttackAndMove() {
+        for (const enemy of this.enemies) {
+            if (enemy.hp <= 0) continue;
+            if (enemy.stunTurns > 0) {
+                enemy.stunTurns--;
+                continue;
+            }
+            if (enemy.slowedThisTurn) continue;
+
+            const adjacentAlly = this.findAdjacentAlly(enemy);
+            if (adjacentAlly) {
+                adjacentAlly.takeDamage(enemy.damage);
+                this.addLog("A skeleton attacks a defender.");
+                continue;
+            }
+
+            this.moveEnemyTowardKing(enemy);
+            this.triggerTrap(enemy);
+        }
+    }
+
+    moveEnemyTowardKing(enemy) {
+        const rowStep = Math.sign(this.king.row - enemy.row);
+        const colStep = Math.sign(this.king.col - enemy.col);
+        const options = [
+            { row: enemy.row + rowStep, col: enemy.col + colStep },
+            { row: enemy.row + rowStep, col: enemy.col },
+            { row: enemy.row, col: enemy.col + colStep },
+        ];
+
+        for (const option of options) {
+            if (!this.isInsideBoard(option.row, option.col)) continue;
+            if (option.row == this.king.row && option.col == this.king.col) continue;
+            const blocker = this.getBlockingObject(option.row, option.col);
+            if (!blocker || blocker.type == "skeleton") {
+                enemy.setTile(option.row, option.col);
+                return;
+            }
+        }
+    }
+
+    findAdjacentAlly(enemy) {
+        for (const ally of this.allies) {
+            if (tileDistance(enemy, ally) <= 1) return ally;
+        }
+        return undefined;
+    }
+
+    triggerTrap(enemy) {
+        const effect = this.getEffect(enemy.row, enemy.col);
+        if (effect && effect.name == "Exile") {
+            enemy.stunTurns = effect.duration;
+            effect.duration = 0;
+            this.addLog("Exile triggers: skeleton stunned.");
+        }
+    }
 }
 
 function main() {
