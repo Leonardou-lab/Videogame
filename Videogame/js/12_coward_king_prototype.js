@@ -191,6 +191,16 @@ class Game {
         this.addLog("Horde started. Choose a card or move the king.");
         this.renderUI();
     }
+
+    drawCards(amount) {
+        const cards = [];
+        const pool = [...cardPool];
+        for (let i = 0; i < amount && pool.length > 0; i++) {
+            const index = randomRange(pool.length);
+            cards.push(pool.splice(index, 1)[0]);
+        }
+        return cards;
+    }
 }
 
 function main() {
