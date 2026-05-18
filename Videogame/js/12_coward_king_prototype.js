@@ -129,6 +129,39 @@ class Unit extends BoardObject {
     }
 }
 
+class King extends Unit {
+    constructor(row, col) {
+        super(row, col, "#d8bc57", "king", 0, 0, 0, 1);
+    }
+}
+
+class Ally extends Unit {
+    constructor(row, col, card) {
+        super(row, col, card.color, card.name.toLowerCase(), card.hp, card.damage, card.range, 0);
+        this.cardName = card.name;
+    }
+}
+
+class Enemy extends Unit {
+    constructor(row, col) {
+        super(row, col, "#9b2f35", "skeleton", 50, 15, 1, 1);
+    }
+}
+
+class BoardEffect extends BoardObject {
+    constructor(row, col, card) {
+        super(row, col, tileSize - 18, tileSize - 18, card.color, card.type);
+        this.name = card.name;
+        this.effectType = card.type;
+        this.duration = card.duration;
+        this.radius = card.type == "zone" ? 1 : 0;
+    }
+
+    draw(ctx) {
+        drawEffectToken(ctx, this);
+    }
+}
+
 function main() {
     const canvas = document.getElementById("canvas");
     canvas.width = canvasWidth;
