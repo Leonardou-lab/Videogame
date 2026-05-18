@@ -93,6 +93,42 @@ const cardPool = [
     },
 ];
 
+class BoardObject extends GameObject {
+    constructor(row, col, width, height, color, type) {
+        super(tileToPosition(row, col), width, height, color, type);
+        this.row = row;
+        this.col = col;
+    }
+
+    setTile(row, col) {
+        this.row = clamp(row, 0, boardSize - 1);
+        this.col = clamp(col, 0, boardSize - 1);
+        this.position = tileToPosition(this.row, this.col);
+        this.updateCollider();
+    }
+}
+
+class Unit extends BoardObject {
+    constructor(row, col, color, type, hp, damage, range, speed) {
+        super(row, col, tileSize - 12, tileSize - 12, color, type);
+        this.maxHp = hp;
+        this.hp = hp;
+        this.damage = damage;
+        this.range = range;
+        this.speed = speed;
+        this.stunTurns = 0;
+        this.slowedThisTurn = false;
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
+    }
+
+    draw(ctx) {
+        drawToken(ctx, this);
+    }
+}
+
 function main() {
     const canvas = document.getElementById("canvas");
     canvas.width = canvasWidth;
