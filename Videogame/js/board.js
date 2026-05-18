@@ -1,165 +1,126 @@
 "use strict";
 
-const LIGHT_COLOR  = "#f0d9b5";
-const DARK_COLOR   = "#b58863";
-const SAFE_ALPHA   = "rgba(144, 238, 144, 0.35)";
-const SELECT_COLOR = "rgba(255, 220, 50, 0.55)";
-const HINT_COLOR   = "rgba(80, 130, 230, 0.40)";
+Object.assign(Game.prototype, {
 
-const CANVAS_W = BOARD_X + BOARD_SIZE * TILE_SIZE + BOARD_X;
-const CANVAS_H = BOARD_Y + BOARD_SIZE * TILE_SIZE + BOARD_Y;
+    isInSafeZone(row, col) {
+        return Math.abs(row - this.king.row) <= 1 && Math.abs(col - this.king.col) <= 1;
+    },
 
-// Game objects
+    isInsideBoard(row, col) {
+        return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
+    },
 
-const king    = new King(3, 3);
-const allies  = [];
-const enemies = [new Enemy(0, 2), new Enemy(0, 5)];
-const effects = [];
+    getBlockingObject(row, col) {
+        return [this.king, ...this.allies, ...this.enemies]
+            .find(obj => obj.row === row && obj.col === col);
+    },
 
-let selected = null;
+    getEffect(row, col) {
+        return this.effects.find(e => e.row === row && e.col === col);
+    },
 
-// Helpers
-
-function isSafeZone(row, col) {
-    return Math.abs(row - king.row) <= 1 && Math.abs(col - king.col) <= 1;
-}
-
-function validMoves(unit) {
-    const moves = [];
-    for (let dr = -unit.speed; dr <= unit.speed; dr++) {
-        for (let dc = -unit.speed; dc <= unit.speed; dc++) {
-            if (dr === 0 && dc === 0) continue;
-            const r = unit.row + dr, c = unit.col + dc;
-            if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE)
-                moves.push({ row: r, col: c });
-        }
-    }
-    return moves;
-}
-
-function tileOccupied(row, col) {
-    return enemies.some(e => e.row === row && e.col === col) ||
-           allies.some(a  => a.row === row && a.col === col);
-}
-
-// Drawing
-
-function drawHighlight(ctx, row, col, color) {
-    ctx.fillStyle = color;
-    ctx.fillRect(BOARD_X + col * TILE_SIZE, BOARD_Y + row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-}
-
-function drawGrid(ctx) {
-    for (let row = 0; row < BOARD_SIZE; row++) {
-        for (let col = 0; col < BOARD_SIZE; col++) {
-            const x = BOARD_X + col * TILE_SIZE;
-            const y = BOARD_Y + row * TILE_SIZE;
-            ctx.fillStyle = (row + col) % 2 === 0 ? LIGHT_COLOR : DARK_COLOR;
-            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-            if (isSafeZone(row, col)) {
-                ctx.fillStyle = SAFE_ALPHA;
-                ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+    spawnEnemies() {
+        const occupiedCols = [];
+        for (let i = 0; i < enemiesPerTurn; i++) {
+            let col      = randomRange(boardSize);
+            let attempts = 0;
+            while ((occupiedCols.includes(col) || this.getBlockingObject(0, col)) && attempts < 20) {
+                col = randomRange(boardSize);
+                attempts++;
+            }
+            if (!this.getBlockingObject(0, col)) {
+                occupiedCols.push(col);
+                this.enemies.push(new Enemy(0, col));
             }
         }
-    }
-}
+    },
 
-// Game loop
+    cleanupObjects() {
+        const defeated = this.enemies.filter(e => e.hp <= 0).length;
+        if (defeated > 0) this.addLog(`${defeated} skeleton defeated.`);
+        this.enemies = this.enemies.filter(e => e.hp > 0);
+        this.allies  = this.allies.filter(a => a.hp > 0);
+        this.effects = this.effects.filter(e => e.duration > 0);
+    },
 
-function gameLoop(ctx) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    drawGrid(ctx);
-
-    if (selected) {
-        drawHighlight(ctx, selected.row, selected.col, SELECT_COLOR);
-        validMoves(selected).forEach(({ row, col }) => {
-            if (!tileOccupied(row, col)) drawHighlight(ctx, row, col, HINT_COLOR);
-        });
-    }
-
-    king.draw(ctx);
-    allies.forEach(a  => a.draw(ctx));
-    enemies.forEach(e => e.draw(ctx));
-    effects.forEach(e => e.draw(ctx));
-
-    requestAnimationFrame(() => gameLoop(ctx));
-}
-
-// Input
-
-function onCanvasClick(e, canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const tile = positionToTile(e.clientX - rect.left, e.clientY - rect.top);
-    if (!tile) { selected = null; return; }
-
-    if (selected) {
-        const free = validMoves(selected).filter(m => !tileOccupied(m.row, m.col));
-        if (free.some(m => m.row === tile.row && m.col === tile.col)) {
-            selected.setTile(tile.row, tile.col);
-            selected = null;
-        } else if (tile.row === king.row && tile.col === king.col) {
-            selected = king;
-        } else {
-            selected = null;
+    tickEffects() {
+        for (const effect of this.effects) {
+            if (effect.effectType === "zone") effect.duration--;
         }
-    } else {
-        if (tile.row === king.row && tile.col === king.col) selected = king;
-    }
-}
+    },
 
-// Hand
+    checkDefeat() {
+        if (this.status !== "playing") return;
+        const count = this.enemies.filter(e => this.isInSafeZone(e.row, e.col)).length;
+        if (count >= 2) {
+            this.status  = "lost";
+            this.message = "Defeat: 2 enemies entered the safe zone.";
+            this.addLog(this.message);
+        }
+    },
 
-function buildHand() {
-    const cards = [
-        { name: 'Knight', apCost: 3, desc: 'Melee. Attacks nearest enemy.' },
-        { name: 'Archer', apCost: 2, desc: 'Ranged 3 tiles. Auto-attacks.' },
-        { name: 'Exile',  apCost: 2, desc: 'Trap. Paralyzes enemy 2 turns.' },
-        { name: 'Wall',   apCost: 3, desc: 'Blocks tile. 150 HP.' },
-    ];
+    drawBoard(ctx) {
+        const boardWidth  = boardSize * tileSize;
+        const boardHeight = boardSize * tileSize;
 
-    const hand = document.getElementById('hand');
-    hand.innerHTML = '';
-    cards.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.dataset.apCost = c.apCost;
-        card.innerHTML = `
-            <div class="card-name">${c.name}</div>
-            <div class="card-cost">${c.apCost}AP</div>
-            <div class="card-desc">${c.desc}</div>
-        `;
-        card.addEventListener('click', () => runState.spendAP(c.apCost));
-        hand.appendChild(card);
-    });
-}
+        ctx.save();
+        ctx.fillStyle   = "#130f0d";
+        ctx.fillRect(boardX - 12, boardY - 12, boardWidth + 24, boardHeight + 24);
+        ctx.strokeStyle = "#8b6a2e";
+        ctx.lineWidth   = 5;
+        ctx.strokeRect(boardX - 10, boardY - 10, boardWidth + 20, boardHeight + 20);
+        ctx.strokeStyle = "#2a1a0f";
+        ctx.lineWidth   = 3;
+        ctx.strokeRect(boardX - 3, boardY - 3, boardWidth + 6, boardHeight + 6);
+        ctx.restore();
 
-function highlightAffordableCards() {
-    if (!runState) return;
-    document.querySelectorAll('#hand .card').forEach(card => {
-        card.classList.toggle('card--unavailable',
-            parseInt(card.dataset.apCost, 10) > runState.ap);
-    });
-}
+        for (let row = 0; row < boardSize; row++) {
+            for (let col = 0; col < boardSize; col++) {
+                const x = boardX + col * tileSize;
+                const y = boardY + row * tileSize;
 
-// Init
+                ctx.fillStyle = (row + col) % 2 === 0 ? "#3f4652" : "#252c35";
+                ctx.fillRect(x, y, tileSize, tileSize);
 
-let runState;
+                if (this.isInSafeZone(row, col)) {
+                    ctx.fillStyle   = "rgba(230, 193, 106, 0.34)";
+                    ctx.fillRect(x, y, tileSize, tileSize);
+                    ctx.strokeStyle = "rgba(230, 193, 106, 0.42)";
+                    ctx.lineWidth   = 2;
+                    ctx.strokeRect(x + 3, y + 3, tileSize - 6, tileSize - 6);
+                }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('board-canvas');
-    canvas.width  = CANVAS_W;
-    canvas.height = CANVAS_H;
-    const ctx = canvas.getContext('2d');
+                ctx.strokeStyle = "#11161d";
+                ctx.lineWidth   = 2;
+                ctx.strokeRect(x, y, tileSize, tileSize);
 
-    canvas.addEventListener('click', e => onCanvasClick(e, canvas));
+                ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+                ctx.fillRect(x + 4, y + 4, tileSize - 8, 4);
+            }
+        }
+    },
 
-    runState = new RunState();
-    buildHand();
+    drawHighlights(ctx) {
+        if (this.moveMode) {
+            for (let row = this.king.row - 1; row <= this.king.row + 1; row++) {
+                for (let col = this.king.col - 1; col <= this.king.col + 1; col++) {
+                    if (!this.isInsideBoard(row, col)) continue;
+                    if (row === this.king.row && col === this.king.col) continue;
+                    if (this.getBlockingObject(row, col)) continue;
+                    drawTileOverlay(ctx, row, col, "rgba(102, 196, 255, 0.42)");
+                }
+            }
+        }
 
-    const _origSyncHud = runState._syncHud.bind(runState);
-    runState._syncHud = () => { _origSyncHud(); highlightAffordableCards(); };
-    highlightAffordableCards();
+        if (this.selectedCard) {
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    if (!this.getBlockingObject(row, col) && !this.getEffect(row, col)) {
+                        drawTileOverlay(ctx, row, col, "rgba(112, 219, 143, 0.25)");
+                    }
+                }
+            }
+        }
+    },
 
-    gameLoop(ctx);
 });
