@@ -355,9 +355,8 @@ class Game {
 
         this.renderUI();
     }
-}
 
-    cleanupObjects() 
+    cleanupObjects() {
         const defeated = this.enemies.filter(enemy => enemy.hp <= 0).length;
         if (defeated > 0) {
             this.addLog(`${defeated} skeleton defeated.`);
@@ -366,7 +365,6 @@ class Game {
         this.allies = this.allies.filter(ally => ally.hp > 0);
         this.effects = this.effects.filter(effect => effect.duration > 0);
     }
-}
 
     applyZoneEffects() {
         for (const enemy of this.enemies) {
@@ -400,6 +398,30 @@ class Game {
                 effect.duration--;
             }
         }
+    }
+
+    alliesAttack() {
+        for (const ally of this.allies) {
+            if (ally.damage <= 0) continue;
+            const target = this.findNearestEnemy(ally, ally.range);
+            if (target) {
+                target.takeDamage(ally.damage);
+                this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`);
+            }
+        }
+    }
+
+    findNearestEnemy(origin, range) {
+        let nearest = undefined;
+        let nearestDistance = Infinity;
+        for (const enemy of this.enemies) {
+            const distance = tileDistance(origin, enemy);
+            if (distance <= range && distance < nearestDistance) {
+                nearest = enemy;
+                nearestDistance = distance;
+            }
+        }
+        return nearest;
     }
 }
 
