@@ -480,6 +480,22 @@ class Game {
             this.addLog("Exile triggers: skeleton stunned.");
         }
     }
+
+    spawnEnemies() {
+        const occupiedCols = [];
+        for (let i = 0; i < enemiesPerTurn; i++) {
+            let col = randomRange(boardSize);
+            let attempts = 0;
+            while ((occupiedCols.includes(col) || this.getBlockingObject(0, col)) && attempts < 20) {
+                col = randomRange(boardSize);
+                attempts++;
+            }
+            if (!this.getBlockingObject(0, col)) {
+                occupiedCols.push(col);
+                this.enemies.push(new Enemy(0, col));
+            }
+        }
+    }
 }
 
 function main() {
