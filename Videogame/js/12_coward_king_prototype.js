@@ -601,6 +601,48 @@ class Game {
             }
         }
     }
+
+    renderUI() {
+        this.hudElement.innerHTML = `
+            <div>Turn: ${this.turn}/${maxTurns}</div>
+            <div>Phase: ${this.phase}</div>
+            <div>AP: ${this.ap}</div>
+            <div>Gold: ${this.gold}</div>
+            <div>Enemies: ${this.enemies.length}</div>
+            <div>Status: ${this.status}</div>
+        `;
+
+        this.handElement.innerHTML = "";
+        for (const card of this.hand) {
+            const button = document.createElement("button");
+            button.className = "cardButton";
+            if (this.selectedCard == card) {
+                button.classList.add("selected");
+            }
+            button.disabled = this.status != "playing" || this.phase != "player" || this.ap < card.cost;
+            button.innerHTML = `
+                <div class="cardTop">
+                    <strong>${card.name}</strong>
+                    <em>${card.cost} AP</em>
+                </div>
+                <span>${card.text}</span>
+            `;
+            button.addEventListener("click", () => {
+                this.selectedCard = card;
+                this.moveMode = false;
+                this.renderUI();
+            });
+            this.handElement.appendChild(button);
+        }
+
+        this.logElement.innerHTML = this.logLines.map(line => `<div class="logLine">${line}</div>`).join("");
+    }
+
+    addLog(text) {
+        if (!this.logLines) this.logLines = [];
+        this.logLines.unshift(text);
+        this.logLines = this.logLines.slice(0, 8);
+    }
 }
 
 function main() {
@@ -618,4 +660,121 @@ function drawScene(newTime) {
     game.draw(ctx, deltaTime);
     oldTime = newTime;
     requestAnimationFrame(drawScene);
+}
+
+function tileToPosition(row, col) {
+    return new Vector(
+        boardX + col * tileSize + tileSize / 2,
+        boardY + row * tileSize + tileSize / 2
+    );
+}
+
+function positionToTile(x, y) {
+    if (x < boardX || y < boardY) return undefined;
+    const col = Math.floor((x - boardX) / tileSize);
+    const row = Math.floor((y - boardY) / tileSize);
+    if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) return undefined;
+    return { row, col };
+}
+
+function tileDistance(a, b) {
+    return Math.max(Math.abs(a.row - b.row), Math.abs(a.col - b.col));
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function labelForType(type) {
+    const labels = {
+        king: "♔",
+        skeleton: "☠",
+        knight: "⚔",
+        archer: "➶",
+        wall: "▪",
+        trap: "✦",
+        zone: "◇",
+    };
+    return labels[type] || "?";
+}
+
+function tokenStyle(type) {
+    const styles = {
+        king: { fill: "#d9aa3b", border: "#f5d77c", shadow: "#5a320e", text: "#231407" },
+        skeleton: { fill: "#4b1515", border: "#c05b4c", shadow: "#160808", text: "#f5dfba" },
+        knight: { fill: "#253f6b", border: "#8fb1df", shadow: "#0a1729", text: "#f4ecd8" },
+        archer: { fill: "#275238", border: "#9ad091", shadow: "#0b1b10", text: "#f4ecd8" },
+        wall: { fill: "#4e4b47", border: "#b5a888", shadow: "#151311", text: "#f4ecd8" },
+    };
+    return styles[type] || { fill: "#4b1d63", border: "#c995d8", shadow: "#18091f", text: "#f4ecd8" };
+}
+
+function drawToken(ctx, unit) {
+    const style = tokenStyle(unit.type);
+    const x = unit.position.x;
+    const y = unit.position.y;
+    const radius = 22;
+
+    ctx.save();
+    ctx.fillStyle = style.shadow;
+    ctx.fillRect(x - radius + 4, y - radius + 6, radius * 2, radius * 2);
+    ctx.fillStyle = style.fill;
+    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    ctx.strokeStyle = style.border;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - radius + 5, y - radius + 5, radius * 2 - 10, radius * 2 - 10);
+    drawCenteredText(ctx, labelForType(unit.type), x, y - 3, "28px Georgia", style.text);
+    if (unit.type != "king") {
+        drawCenteredText(ctx, unit.hp, x, y + 17, "11px Courier New", style.text);
+    }
+    ctx.restore();
+}
+
+function drawEffectToken(ctx, effect) {
+    const x = effect.position.x;
+    const y = effect.position.y;
+    const radius = 20;
+
+    ctx.save();
+    ctx.globalAlpha = 0.86;
+    ctx.fillStyle = effect.effectType == "zone" ? "#4b1d63" : "#2b2036";
+    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    ctx.strokeStyle = effect.effectType == "zone" ? "#c995d8" : "#e6c16a";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+    drawCenteredText(ctx, labelForType(effect.effectType), x, y + 1, "24px Georgia", "#f4ecd8");
+    ctx.restore();
+}
+
+function drawBackground(ctx) {
+    ctx.fillStyle = "rgba(13, 11, 10, 0.72)";
+    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+}
+
+function drawTileOverlay(ctx, row, col, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(boardX + col * tileSize, boardY + row * tileSize, tileSize, tileSize);
+}
+
+function drawCenteredText(ctx, text, x, y, font, color) {
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x, y);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+}
+
+function drawEndBanner(ctx, text, won) {
+    ctx.fillStyle = "rgba(10, 10, 12, 0.78)";
+    ctx.fillRect(70, 220, 660, 132);
+    ctx.strokeStyle = won ? "#77d879" : "#d85c5c";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(70, 220, 660, 132);
+    drawCenteredText(ctx, won ? "VICTORY" : "DEFEAT", canvasWidth / 2, 262, "42px Arial", won ? "#77d879" : "#d85c5c");
+    drawCenteredText(ctx, text, canvasWidth / 2, 312, "20px Arial", "#fff");
 }
