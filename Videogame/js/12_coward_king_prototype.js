@@ -201,6 +201,43 @@ class Game {
         }
         return cards;
     }
+
+    createEventListeners() {
+        document.getElementById("moveKingButton").addEventListener("click", () => {
+            if (this.status != "playing" || this.phase != "player") return;
+            this.selectedCard = undefined;
+            this.moveMode = true;
+            this.addLog("Move mode: click a highlighted tile or use keyboard directions.");
+            this.renderUI();
+        });
+
+        document.getElementById("endTurnButton").addEventListener("click", () => {
+            this.endPlayerTurn();
+        });
+
+        document.getElementById("restartButton").addEventListener("click", () => {
+            this.restart();
+        });
+
+        document.getElementById("canvas").addEventListener("click", event => {
+            this.handleCanvasClick(event);
+        });
+
+        window.addEventListener("keydown", event => {
+            if (this.status != "playing" || this.phase != "player") return;
+            if (event.key in keyDirections) {
+                this.tryMoveKing(keyDirections[event.key].row, keyDirections[event.key].col);
+            }
+            if (event.key == " ") {
+                this.endPlayerTurn();
+            }
+            if (event.key == "Escape") {
+                this.selectedCard = undefined;
+                this.moveMode = false;
+                this.renderUI();
+            }
+        });
+    }
 }
 
 function main() {
