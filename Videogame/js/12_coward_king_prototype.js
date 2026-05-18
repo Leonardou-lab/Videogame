@@ -356,16 +356,6 @@ class Game {
         this.renderUI();
     }
 
-    cleanupObjects() {
-        const defeated = this.enemies.filter(enemy => enemy.hp <= 0).length;
-        if (defeated > 0) {
-            this.addLog(`${defeated} skeleton defeated.`);
-        }
-        this.enemies = this.enemies.filter(enemy => enemy.hp > 0);
-        this.allies = this.allies.filter(ally => ally.hp > 0);
-        this.effects = this.effects.filter(effect => effect.duration > 0);
-    }
-
     applyZoneEffects() {
         for (const enemy of this.enemies) {
             enemy.slowedThisTurn = false;
@@ -381,25 +371,6 @@ class Game {
         }
     }
 
-    pushEnemyAway(enemy) {
-        const rowStep = Math.sign(enemy.row - this.king.row);
-        const colStep = Math.sign(enemy.col - this.king.col);
-        const row = enemy.row + rowStep;
-        const col = enemy.col + colStep;
-
-        if (this.isInsideBoard(row, col) && !this.getBlockingObject(row, col)) {
-            enemy.setTile(row, col);
-        }
-    }
-
-    tickEffects() {
-        for (const effect of this.effects) {
-            if (effect.effectType == "zone") {
-                effect.duration--;
-            }
-        }
-    }
-
     alliesAttack() {
         for (const ally of this.allies) {
             if (ally.damage <= 0) continue;
@@ -409,19 +380,6 @@ class Game {
                 this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`);
             }
         }
-    }
-
-    findNearestEnemy(origin, range) {
-        let nearest = undefined;
-        let nearestDistance = Infinity;
-        for (const enemy of this.enemies) {
-            const distance = tileDistance(origin, enemy);
-            if (distance <= range && distance < nearestDistance) {
-                nearest = enemy;
-                nearestDistance = distance;
-            }
-        }
-        return nearest;
     }
 
     enemiesAttackAndMove() {
@@ -465,11 +423,15 @@ class Game {
         }
     }
 
-    findAdjacentAlly(enemy) {
-        for (const ally of this.allies) {
-            if (tileDistance(enemy, ally) <= 1) return ally;
+    pushEnemyAway(enemy) {
+        const rowStep = Math.sign(enemy.row - this.king.row);
+        const colStep = Math.sign(enemy.col - this.king.col);
+        const row = enemy.row + rowStep;
+        const col = enemy.col + colStep;
+
+        if (this.isInsideBoard(row, col) && !this.getBlockingObject(row, col)) {
+            enemy.setTile(row, col);
         }
-        return undefined;
     }
 
     triggerTrap(enemy) {
@@ -497,6 +459,24 @@ class Game {
         }
     }
 
+    tickEffects() {
+        for (const effect of this.effects) {
+            if (effect.effectType == "zone") {
+                effect.duration--;
+            }
+        }
+    }
+
+    cleanupObjects() {
+        const defeated = this.enemies.filter(enemy => enemy.hp <= 0).length;
+        if (defeated > 0) {
+            this.addLog(`${defeated} skeleton defeated.`);
+        }
+        this.enemies = this.enemies.filter(enemy => enemy.hp > 0);
+        this.allies = this.allies.filter(ally => ally.hp > 0);
+        this.effects = this.effects.filter(effect => effect.duration > 0);
+    }
+
     checkDefeat() {
         if (this.status != "playing") return;
         const enemiesInSafeZone = this.enemies.filter(enemy => this.isInSafeZone(enemy.row, enemy.col)).length;
@@ -505,23 +485,6 @@ class Game {
             this.message = "Defeat: 2 enemies entered the safe zone.";
             this.addLog(this.message);
         }
-    }
-
-    isInSafeZone(row, col) {
-        return Math.abs(row - this.king.row) <= 1 && Math.abs(col - this.king.col) <= 1;
-    }
-
-    isInsideBoard(row, col) {
-        return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
-    }
-
-    getBlockingObject(row, col) {
-        const objects = [this.king, ...this.allies, ...this.enemies];
-        return objects.find(object => object.row == row && object.col == col);
-    }
-
-    getEffect(row, col) {
-        return this.effects.find(effect => effect.row == row && effect.col == col);
     }
 
     draw(ctx) {
@@ -643,6 +606,43 @@ class Game {
         this.logLines.unshift(text);
         this.logLines = this.logLines.slice(0, 8);
     }
+
+    findNearestEnemy(origin, range) {
+        let nearest = undefined;
+        let nearestDistance = Infinity;
+        for (const enemy of this.enemies) {
+            const distance = tileDistance(origin, enemy);
+            if (distance <= range && distance < nearestDistance) {
+                nearest = enemy;
+                nearestDistance = distance;
+            }
+        }
+        return nearest;
+    }
+
+    findAdjacentAlly(enemy) {
+        for (const ally of this.allies) {
+            if (tileDistance(enemy, ally) <= 1) return ally;
+        }
+        return undefined;
+    }
+
+    getBlockingObject(row, col) {
+        const objects = [this.king, ...this.allies, ...this.enemies];
+        return objects.find(object => object.row == row && object.col == col);
+    }
+
+    getEffect(row, col) {
+        return this.effects.find(effect => effect.row == row && effect.col == col);
+    }
+
+    isInSafeZone(row, col) {
+        return Math.abs(row - this.king.row) <= 1 && Math.abs(col - this.king.col) <= 1;
+    }
+
+    isInsideBoard(row, col) {
+        return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
+    }
 }
 
 function main() {
@@ -700,13 +700,44 @@ function labelForType(type) {
 
 function tokenStyle(type) {
     const styles = {
-        king: { fill: "#d9aa3b", border: "#f5d77c", shadow: "#5a320e", text: "#231407" },
-        skeleton: { fill: "#4b1515", border: "#c05b4c", shadow: "#160808", text: "#f5dfba" },
-        knight: { fill: "#253f6b", border: "#8fb1df", shadow: "#0a1729", text: "#f4ecd8" },
-        archer: { fill: "#275238", border: "#9ad091", shadow: "#0b1b10", text: "#f4ecd8" },
-        wall: { fill: "#4e4b47", border: "#b5a888", shadow: "#151311", text: "#f4ecd8" },
+        king: {
+            fill: "#d9aa3b",
+            border: "#f5d77c",
+            shadow: "#5a320e",
+            text: "#231407",
+        },
+        skeleton: {
+            fill: "#4b1515",
+            border: "#c05b4c",
+            shadow: "#160808",
+            text: "#f5dfba",
+        },
+        knight: {
+            fill: "#253f6b",
+            border: "#8fb1df",
+            shadow: "#0a1729",
+            text: "#f4ecd8",
+        },
+        archer: {
+            fill: "#275238",
+            border: "#9ad091",
+            shadow: "#0b1b10",
+            text: "#f4ecd8",
+        },
+        wall: {
+            fill: "#4e4b47",
+            border: "#b5a888",
+            shadow: "#151311",
+            text: "#f4ecd8",
+        },
     };
-    return styles[type] || { fill: "#4b1d63", border: "#c995d8", shadow: "#18091f", text: "#f4ecd8" };
+
+    return styles[type] || {
+        fill: "#4b1d63",
+        border: "#c995d8",
+        shadow: "#18091f",
+        text: "#f4ecd8",
+    };
 }
 
 function drawToken(ctx, unit) {
@@ -718,14 +749,17 @@ function drawToken(ctx, unit) {
     ctx.save();
     ctx.fillStyle = style.shadow;
     ctx.fillRect(x - radius + 4, y - radius + 6, radius * 2, radius * 2);
+
     ctx.fillStyle = style.fill;
     ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
     ctx.strokeStyle = style.border;
     ctx.lineWidth = 4;
     ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+
     ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
     ctx.lineWidth = 2;
     ctx.strokeRect(x - radius + 5, y - radius + 5, radius * 2 - 10, radius * 2 - 10);
+
     drawCenteredText(ctx, labelForType(unit.type), x, y - 3, "28px Georgia", style.text);
     if (unit.type != "king") {
         drawCenteredText(ctx, unit.hp, x, y + 17, "11px Courier New", style.text);

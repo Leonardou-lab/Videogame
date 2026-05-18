@@ -1,33 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Coward King — Game Board</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <div id="app">
+<html>
+    <head>
+        <title>The Coward King - Prototype</title>
+        <link rel="stylesheet" href="css/the_coward_king.css">
 
-        <!-- HUD bar -->
-        <div id="hud">
-            <span class="hud-item">LEVEL <span>1</span></span>
-            <span class="hud-item">HORDE <span>1/3</span></span>
-            <span class="hud-item">TURN <span>5/30</span></span>
-            <span class="hud-item">AP: <span>5</span></span>
-            <span class="hud-item">GOLD: <span>10</span></span>
+        <script src="js/libs/game_functions.js"></script>
+        <script src="js/libs/Rect.js"></script>
+        <script src="js/libs/Vector.js"></script>
+        <script src="js/libs/GameObject.js"></script>
+        <script src="js/libs/TextLabel.js"></script>
+        <script src="js/12_coward_king_prototype.js"></script>
+    </head>
+
+    <body>
+        <div id="app">
+            <div id="hud"></div>
+
+            <main id="board-area">
+                <canvas id="canvas"></canvas>
+            </main>
+
+            <footer id="bottomPanel">
+                <section id="handPanel">
+                    <h2>Hand</h2>
+                    <div id="hand"></div>
+                </section>
+
+                <section id="controls" aria-label="Game controls">
+                    <button id="moveKingButton">Move King</button>
+                    <button id="endTurnButton">End Turn</button>
+                    <button id="restartButton">Restart</button>
+                </section>
+
+                <section id="logPanel">
+                    <h2>Log</h2>
+                    <div id="log"></div>
+                </section>
+            </footer>
         </div>
 
-        <!-- Board -->
-        <div id="board-area">
-            <div id="board"></div>
-        </div>
-
-        <!-- Hand zone -->
-        <div id="hand"></div>
-
-    </div>
-
-    <script src="js/board.js"></script>
-</body>
+        <script>
+            main();
+        </script>
+    </body>
 </html>
