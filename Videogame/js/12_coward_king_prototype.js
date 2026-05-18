@@ -21,6 +21,21 @@ let ctx;
 let game;
 let oldTime = 0;
  
+const keyDirections = {
+    ArrowUp: { row: -1, col: 0 },
+    ArrowDown: { row: 1, col: 0 },
+    ArrowLeft: { row: 0, col: -1 },
+    ArrowRight: { row: 0, col: 1 },
+    w: { row: -1, col: 0 },
+    s: { row: 1, col: 0 },
+    a: { row: 0, col: -1 },
+    d: { row: 0, col: 1 },
+    q: { row: -1, col: -1 },
+    e: { row: -1, col: 1 },
+    z: { row: 1, col: -1 },
+    c: { row: 1, col: 1 },
+};
+ 
 function main() {
     const canvas = document.getElementById("canvas");
     canvas.width = canvasWidth;
@@ -37,4 +52,3 @@ function drawScene(newTime) {
     oldTime = newTime;
     requestAnimationFrame(drawScene);
 }
- 
