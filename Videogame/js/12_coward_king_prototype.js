@@ -267,6 +267,26 @@ class Game {
             this.renderUI();
         }
     }
+
+    tryMoveKing(rowDelta, colDelta) {
+        if (!this.moveMode) return;
+        if (Math.abs(rowDelta) > 1 || Math.abs(colDelta) > 1 || (rowDelta == 0 && colDelta == 0)) return;
+
+        const row = this.king.row + rowDelta;
+        const col = this.king.col + colDelta;
+
+        if (!this.isInsideBoard(row, col)) return;
+        if (this.getBlockingObject(row, col)) {
+            this.addLog("The king cannot move to an occupied tile.");
+            return;
+        }
+
+        this.king.setTile(row, col);
+        this.kingMovedThisTurn = true;
+        this.moveMode = false;
+        this.addLog("The king runs with dignity.");
+        this.endPlayerTurn();
+    }
 }
 
 function main() {
