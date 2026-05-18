@@ -287,6 +287,32 @@ class Game {
         this.addLog("The king runs with dignity.");
         this.endPlayerTurn();
     }
+
+    playCard(row, col) {
+        const card = this.selectedCard;
+        if (!card) return;
+        if (!this.isInsideBoard(row, col)) return;
+        if (this.ap < card.cost) {
+            this.addLog("Not enough AP.");
+            return;
+        }
+        if (this.getBlockingObject(row, col) || this.getEffect(row, col)) {
+            this.addLog("That tile is occupied.");
+            return;
+        }
+
+        this.ap -= card.cost;
+
+        if (card.type == "ally") {
+            this.allies.push(new Ally(row, col, card));
+        } else {
+            this.effects.push(new BoardEffect(row, col, card));
+        }
+
+        this.selectedCard = undefined;
+        this.addLog(`${card.name} played.`);
+        this.renderUI();
+    }
 }
 
 function main() {
