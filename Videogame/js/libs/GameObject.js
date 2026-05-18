@@ -58,8 +58,8 @@ class GameObject {
         // The top left corner of the collider is offset by half of its size
         // TODO: Provide the correct values for the collider rectangle
         // Use the scale as well
-        this.xOffset = width / 2;
-        this.yOffset = height / 2;
+        this.xOffset = width/2;
+        this.yOffset = height/2;
         this.colliderWidth = width;
         this.colliderHeight = height;
         this.updateCollider();
@@ -86,7 +86,7 @@ class GameObject {
                               this.spriteRect.height,
                               // The position to draw the image
                               (this.position.x - this.halfSize.x * this.scale),
-                              (this.position.y - this.halfSize.y * this.scale),
+                              (this.position.y - this.halfSize.y * this.scale), 
                               this.size.x * this.scale,
                               this.size.y * this.scale);
             } else {
