@@ -496,6 +496,33 @@ class Game {
             }
         }
     }
+
+    checkDefeat() {
+        if (this.status != "playing") return;
+        const enemiesInSafeZone = this.enemies.filter(enemy => this.isInSafeZone(enemy.row, enemy.col)).length;
+        if (enemiesInSafeZone >= 2) {
+            this.status = "lost";
+            this.message = "Defeat: 2 enemies entered the safe zone.";
+            this.addLog(this.message);
+        }
+    }
+
+    isInSafeZone(row, col) {
+        return Math.abs(row - this.king.row) <= 1 && Math.abs(col - this.king.col) <= 1;
+    }
+
+    isInsideBoard(row, col) {
+        return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
+    }
+
+    getBlockingObject(row, col) {
+        const objects = [this.king, ...this.allies, ...this.enemies];
+        return objects.find(object => object.row == row && object.col == col);
+    }
+
+    getEffect(row, col) {
+        return this.effects.find(effect => effect.row == row && effect.col == col);
+    }
 }
 
 function main() {
