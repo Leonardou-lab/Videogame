@@ -357,8 +357,7 @@ class Game {
     }
 }
 
-
-    cleanupObjects() {
+    cleanupObjects() 
         const defeated = this.enemies.filter(enemy => enemy.hp <= 0).length;
         if (defeated > 0) {
             this.addLog(`${defeated} skeleton defeated.`);
@@ -367,7 +366,42 @@ class Game {
         this.allies = this.allies.filter(ally => ally.hp > 0);
         this.effects = this.effects.filter(effect => effect.duration > 0);
     }
+}
 
+    applyZoneEffects() {
+        for (const enemy of this.enemies) {
+            enemy.slowedThisTurn = false;
+            for (const effect of this.effects) {
+                const distance = tileDistance(enemy, effect);
+                if (effect.name == "Royal Decree" && distance <= effect.radius) {
+                    this.pushEnemyAway(enemy);
+                }
+                if (effect.name == "Peace Treaty" && distance <= effect.radius && this.turn % 2 == 0) {
+                    enemy.slowedThisTurn = true;
+                }
+            }
+        }
+    }
+
+    pushEnemyAway(enemy) {
+        const rowStep = Math.sign(enemy.row - this.king.row);
+        const colStep = Math.sign(enemy.col - this.king.col);
+        const row = enemy.row + rowStep;
+        const col = enemy.col + colStep;
+
+        if (this.isInsideBoard(row, col) && !this.getBlockingObject(row, col)) {
+            enemy.setTile(row, col);
+        }
+    }
+
+    tickEffects() {
+        for (const effect of this.effects) {
+            if (effect.effectType == "zone") {
+                effect.duration--;
+            }
+        }
+    }
+}
 
 function main() {
     const canvas = document.getElementById("canvas");
