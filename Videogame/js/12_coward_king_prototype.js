@@ -523,6 +523,84 @@ class Game {
     getEffect(row, col) {
         return this.effects.find(effect => effect.row == row && effect.col == col);
     }
+
+    draw(ctx) {
+        drawBackground(ctx);
+        this.drawBoard(ctx);
+        this.drawHighlights(ctx);
+
+        for (const effect of this.effects) effect.draw(ctx);
+        for (const ally of this.allies) ally.draw(ctx);
+        for (const enemy of this.enemies) enemy.draw(ctx);
+        this.king.draw(ctx);
+
+        if (this.status != "playing") {
+            drawEndBanner(ctx, this.message, this.status == "won");
+        }
+    }
+
+    drawBoard(ctx) {
+        const boardWidth = boardSize * tileSize;
+        const boardHeight = boardSize * tileSize;
+
+        ctx.save();
+        ctx.fillStyle = "#130f0d";
+        ctx.fillRect(boardX - 12, boardY - 12, boardWidth + 24, boardHeight + 24);
+        ctx.strokeStyle = "#8b6a2e";
+        ctx.lineWidth = 5;
+        ctx.strokeRect(boardX - 10, boardY - 10, boardWidth + 20, boardHeight + 20);
+        ctx.strokeStyle = "#2a1a0f";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(boardX - 3, boardY - 3, boardWidth + 6, boardHeight + 6);
+        ctx.restore();
+
+        for (let row = 0; row < boardSize; row++) {
+            for (let col = 0; col < boardSize; col++) {
+                const x = boardX + col * tileSize;
+                const y = boardY + row * tileSize;
+                ctx.fillStyle = (row + col) % 2 == 0 ? "#3f4652" : "#252c35";
+                ctx.fillRect(x, y, tileSize, tileSize);
+
+                if (this.isInSafeZone(row, col)) {
+                    ctx.fillStyle = "rgba(230, 193, 106, 0.34)";
+                    ctx.fillRect(x, y, tileSize, tileSize);
+                    ctx.strokeStyle = "rgba(230, 193, 106, 0.42)";
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x + 3, y + 3, tileSize - 6, tileSize - 6);
+                }
+
+                ctx.strokeStyle = "#11161d";
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, tileSize, tileSize);
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.04)";
+                ctx.fillRect(x + 4, y + 4, tileSize - 8, 4);
+            }
+        }
+    }
+
+    drawHighlights(ctx) {
+        if (this.moveMode) {
+            for (let row = this.king.row - 1; row <= this.king.row + 1; row++) {
+                for (let col = this.king.col - 1; col <= this.king.col + 1; col++) {
+                    if (!this.isInsideBoard(row, col)) continue;
+                    if (row == this.king.row && col == this.king.col) continue;
+                    if (this.getBlockingObject(row, col)) continue;
+                    drawTileOverlay(ctx, row, col, "rgba(102, 196, 255, 0.42)");
+                }
+            }
+        }
+
+        if (this.selectedCard) {
+            for (let row = 0; row < boardSize; row++) {
+                for (let col = 0; col < boardSize; col++) {
+                    if (!this.getBlockingObject(row, col) && !this.getEffect(row, col)) {
+                        drawTileOverlay(ctx, row, col, "rgba(112, 219, 143, 0.25)");
+                    }
+                }
+            }
+        }
+    }
 }
 
 function main() {
