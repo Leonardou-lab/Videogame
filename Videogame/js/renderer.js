@@ -88,11 +88,16 @@ function drawCenteredText(ctx, text, x, y, font, color) {
 }
 
 function drawEndBanner(ctx, text, won) {
+    const boxW = 520;
+    const boxH = 132;
+    const boxX = (canvasWidth  - boxW) / 2;
+    const boxY = (canvasHeight - boxH) / 2;
+
     ctx.fillStyle = "rgba(10, 10, 12, 0.78)";
-    ctx.fillRect(70, 220, 660, 132);
+    ctx.fillRect(boxX, boxY, boxW, boxH);
     ctx.strokeStyle = won ? "#77d879" : "#d85c5c";
     ctx.lineWidth   = 4;
-    ctx.strokeRect(70, 220, 660, 132);
-    drawCenteredText(ctx, won ? "VICTORY" : "DEFEAT", canvasWidth / 2, 262, "42px Arial", won ? "#77d879" : "#d85c5c");
-    drawCenteredText(ctx, text, canvasWidth / 2, 312, "20px Arial", "#fff");
+    ctx.strokeRect(boxX, boxY, boxW, boxH);
+    drawCenteredText(ctx, won ? "VICTORY" : "GAME OVER", canvasWidth / 2, boxY + 42, "42px Arial", won ? "#77d879" : "#d85c5c");
+    drawCenteredText(ctx, text, canvasWidth / 2, boxY + 90, "20px Arial", "#fff");
 }

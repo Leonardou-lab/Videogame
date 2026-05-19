@@ -4,6 +4,7 @@ Object.assign(Game.prototype, {
 
     alliesAttack() {
         for (const ally of this.allies) {
+            if (ally.hp <= 0) continue;
             if (ally.damage <= 0) continue;
             const target = this.findNearestEnemy(ally, ally.range);
             if (target) {
@@ -47,6 +48,7 @@ Object.assign(Game.prototype, {
         let nearest         = undefined;
         let nearestDistance = Infinity;
         for (const enemy of this.enemies) {
+            if (enemy.hp <= 0) continue;
             const distance = tileDistance(origin, enemy);
             if (distance <= range && distance < nearestDistance) {
                 nearest         = enemy;
@@ -57,7 +59,7 @@ Object.assign(Game.prototype, {
     },
 
     findAdjacentAlly(enemy) {
-        return this.allies.find(ally => tileDistance(enemy, ally) <= 1);
+        return this.allies.find(ally => ally.hp > 0 && tileDistance(enemy, ally) <= 1);
     },
 
 });

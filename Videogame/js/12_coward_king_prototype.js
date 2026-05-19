@@ -3,18 +3,15 @@
 /*
  * The Coward King — Game entry point.
  *
- * This file defines the Game class shell and the render loop.
- * Game logic is split across the following modules (loaded in order): 
- *
- *   constants.js  → game constants, card pool, key mapping
- *   tileMath.js      → tile math (tileToPosition, positionToTile, tileDistance, clamp)
- *   renderer.js   → pure drawing primitives (drawToken, drawBackground, etc.)
- *   entities.js   → class hierarchy (BoardObject, Unit, King, Ally, Enemy, BoardEffect)
- *   board.js      → board queries + board/highlight rendering (Game.prototype)
- *   movement.js   → king & enemy movement, zone push/slow (Game.prototype)
- *   combat.js     → ally/enemy attacks, traps, targeting (Game.prototype)
- *   turn.js       → turn phases, AP, gold, card draw/play (Game.prototype)
- *   ui.js         → HUD rendering, input events (Game.prototype)
+ *   constants.js  - game constants, card pool, key mapping
+ *   tileMath.js   - tile math (tileToPosition, positionToTile, tileDistance, clamp)
+ *   renderer.js   -pure drawing primitives (drawToken, drawBackground, etc.)
+ *   entities.js   - class hierarchy (BoardObject, Unit, King, Ally, Enemy, BoardEffect)
+ *   board.js      - board queries + board/highlight rendering (Game.prototype)
+ *   movement.js   - king & enemy movement, zone push/slow (Game.prototype)
+ *   combat.js     - ally/enemy attacks, traps, targeting (Game.prototype)
+ *   turn.js       - turn phases, AP, gold, card draw/play (Game.prototype)
+ *   ui.js         - HUD rendering, input events (Game.prototype)
  */
 
 let ctx;
@@ -36,9 +33,9 @@ class Game {
         this.drawBoard(ctx);
         this.drawHighlights(ctx);
 
-        for (const effect of this.effects) effect.draw(ctx);
         for (const ally   of this.allies)  ally.draw(ctx);
         for (const enemy  of this.enemies) enemy.draw(ctx);
+        for (const effect of this.effects) effect.draw(ctx);
         this.king.draw(ctx);
 
         if (this.status !== "playing") {
