@@ -8,7 +8,7 @@ const boardX         = 30;
 const boardY         = 30;
 const maxTurns       = 30;
 const startingAP     = 7;
-const enemiesPerTurn = 3;
+const enemiesPerTurn = 1;
 
 const keyDirections = {
     ArrowUp:    { row: -1, col:  0 },
@@ -33,7 +33,7 @@ const cardPool = [
         hp:     80,
         damage: 30,
         range:  1,
-        color:  "#4677c8",
+        color:  "#4677c8", 
         text:   "Melee ally. Attacks adjacent enemies.",
     },
     {

@@ -34,8 +34,7 @@ Object.assign(Game.prototype, {
         for (const option of options) {
             if (!this.isInsideBoard(option.row, option.col)) continue;
             if (option.row === this.king.row && option.col === this.king.col) continue;
-            const blocker = this.getBlockingObject(option.row, option.col);
-            if (!blocker || blocker.type === "skeleton") {
+            if (!this.getBlockingObject(option.row, option.col)) {
                 enemy.setTile(option.row, option.col);
                 return;
             }

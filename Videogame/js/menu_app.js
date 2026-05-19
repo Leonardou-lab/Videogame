@@ -1,14 +1,9 @@
-/*
- * The Coward King - standalone initial menu.
- *
- * This file intentionally avoids ES modules so index.html can be opened
- * directly from Finder/Chrome using file://.
- */
+
 
 "use strict";
 
 const APP_CONFIG = {
-    prototypeUrl: "./html/the_coward_king.html",
+    prototypeUrl: "../Videogame/index.html",
 };
 
 const appState = {
