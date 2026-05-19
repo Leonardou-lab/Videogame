@@ -15,7 +15,7 @@ const boardX = 30;
 const boardY = 30;
 const maxTurns = 30;
 const startingAP = 7;
-const enemiesPerTurn = 3;
+const enemiesPerTurn = 0;
 
 let ctx;
 let game;
