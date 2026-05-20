@@ -10,7 +10,7 @@ body {
         radial-gradient(ellipse at 20% 30%, rgba(200, 120, 40, 0.08) 0%, transparent 55%),
         radial-gradient(ellipse at 80% 70%, rgba(200, 120, 40, 0.06) 0%, transparent 55%),
         linear-gradient(rgba(13, 11, 10, 0.18), rgba(13, 11, 10, 0.42)),
-        url("../Assets/images/level1-board.png") center / cover no-repeat,
+        url("../Assets/level1.png") center / cover no-repeat,
         #1a1208;
     color: #f4ecd8;
     overflow: hidden;
