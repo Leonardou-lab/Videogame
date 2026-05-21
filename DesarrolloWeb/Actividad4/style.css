@@ -1,0 +1,287 @@
+/* ── FUENTES ──────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;600;700&display=swap');
+
+/* ── VARIABLES ────────────────────────────────────────────── */
+:root {
+    --caramel:  #c8873a;
+    --mocha:    #5c3317;
+    --cream:    #fdf6ec;
+    --blush:    #f2cba6;
+    --dark:     #2b1a0e;
+    --soft:     #f7f0e8;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--cream);
+    color: var(--dark);
+}
+
+/* ── NAVBAR ───────────────────────────────────────────────── */
+.navbar {
+    background-color: var(--mocha);
+    border-bottom: 3px solid var(--caramel);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.navbar-brand {
+    font-family: 'Playfair Display', serif;
+    color: var(--blush) !important;
+    font-size: 1.6rem;
+    text-shadow: 1px 1px #000;
+}
+
+/* Select del día en la navbar */
+.selector-dia {
+    background-color: var(--dark);
+    color: var(--blush);
+    border: 1px solid var(--caramel);
+    border-radius: 20px;
+    min-width: 130px;
+}
+.selector-dia:focus {
+    box-shadow: 0 0 0 3px rgba(200,135,58,0.35);
+    border-color: var(--caramel);
+}
+
+/* ── HERO ─────────────────────────────────────────────────── */
+.hero-section {
+    background-image:
+        linear-gradient(rgba(92, 51, 23, 0.50), rgba(44, 26, 10, 0.60)),
+        url('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=1400&q=80');
+    background-size: cover;
+    background-position: center;
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-content {
+    padding: 60px 20px;
+    animation: fadeUp 0.9s ease both;
+}
+
+.hero-sub {
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--blush);
+    font-size: 0.85rem;
+    opacity: 0.85;
+}
+
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 16px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+.hero-desc {
+    color: rgba(253,246,236,0.75);
+    font-size: 1.1rem;
+    margin-bottom: 32px;
+}
+
+.btn-hero {
+    background-color: var(--caramel);
+    color: #fff;
+    border-radius: 50px;
+    padding: 14px 36px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 20px rgba(200,135,58,0.45);
+}
+.btn-hero:hover {
+    transform: translateY(-3px);
+    background-color: #d9923e;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(200,135,58,0.55);
+}
+
+/* ── TÍTULOS DE SECCIÓN ───────────────────────────────────── */
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--mocha);
+}
+.dia-label {
+    color: var(--caramel);
+    font-size: 1rem;
+}
+.text-blush { color: var(--blush); }
+
+/* ── MENÚ: lista estilo restaurante ──────────────────────── */
+.menu-lista {
+    max-width: 680px;
+}
+
+/* Título de categoría */
+.menu-categoria {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--caramel);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--blush);
+    padding-bottom: 6px;
+    margin: 32px 0 10px;
+}
+.menu-categoria:first-child { margin-top: 0; }
+
+/* Cada fila del menú */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 10px;
+    border-bottom: 1px dashed #d5bba0;
+    cursor: pointer;
+    transition: background 0.25s ease;
+    border-radius: 6px;
+    position: relative;
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item:hover {
+    background-color: var(--soft);
+}
+
+.menu-emoji { font-size: 1.6rem; width: 34px; text-align: center; }
+
+.menu-info { flex: 1; }
+.menu-nombre {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1rem;
+    color: var(--mocha);
+    margin-bottom: 2px;
+}
+.menu-desc {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 0.8rem;
+    color: #9a7a60;
+    line-height: 1.4;
+}
+
+.menu-precio {
+    font-family: 'Libre Baskerville', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--caramel);
+    white-space: nowrap;
+}
+
+/* Imagen flotante al hacer hover */
+#hoverImagePreview {
+    display: none;
+    position: absolute;
+    width: 180px;
+    height: 130px;
+    background-size: cover;
+    background-position: center;
+    border: 3px solid var(--caramel);
+    border-radius: 10px;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+
+/* ── SECCIÓN GATOS ────────────────────────────────────────── */
+.gatos-section {
+    background-image:
+        linear-gradient(rgba(245, 235, 220, 0.80), rgba(240, 225, 200, 0.85)),
+        url('https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=1400&q=80');
+    background-size: cover;
+    background-position: center;
+}
+
+#nekoCafousel {
+    max-width: 860px;
+    margin: 0 auto;
+    border: 4px solid var(--caramel);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.carousel-caption {
+    background: rgba(0,0,0,0.6);
+    border-radius: 10px;
+    border: 1px solid var(--caramel);
+    padding: 12px 20px;
+}
+.carousel-caption h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--blush);
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+}
+.carousel-caption p { color: rgba(253,246,236,0.85); font-size: 0.9rem; }
+
+/* Flechas del carrusel en color caramelo */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1) sepia(1) saturate(3) hue-rotate(5deg);
+}
+.carousel-indicators [data-bs-target] {
+    background-color: var(--caramel);
+}
+
+/* ── MODAL ────────────────────────────────────────────────── */
+.modal-neko {
+    background-color: #1e1008;
+    border: 2px solid var(--caramel);
+    color: var(--cream);
+}
+.modal-neko .modal-header {
+    border-bottom: 1px solid #4a2e14;
+}
+.modal-neko .modal-title {
+    font-family: 'Playfair Display', serif;
+    color: var(--blush);
+    font-size: 1.2rem;
+}
+.modal-img {
+    border: 2px solid var(--caramel);
+    max-height: 250px;
+    object-fit: cover;
+    width: 100%;
+}
+.modal-desc {
+    color: rgba(253,246,236,0.8);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+.modal-precio {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--caramel);
+}
+
+/* ── FOOTER ───────────────────────────────────────────────── */
+.footer {
+    background-color: var(--dark);
+    color: rgba(253,246,236,0.65);
+    font-size: 1.2rem;
+    line-height: 2;
+}
+.footer-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--blush);
+}
+.footer-copy { font-size: 0.75rem; opacity: 0.4; }
+
+/* ── ANIMACIONES ──────────────────────────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.menu-item {
+    animation: fadeUp 0.35s ease both;
+}

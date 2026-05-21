@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>The Coward King - Prototype</title>
+        <link rel="stylesheet" href="css/the_coward_king.css">
+
+        <!-- Engine libs -->
+        <script src="js/libs/game_functions.js"></script>
+        <script src="js/libs/Rect.js"></script>
+        <script src="js/libs/Vector.js"></script>
+        <script src="js/libs/GameObject.js"></script>
+        <script src="js/libs/TextLabel.js"></script>
+
+        <!-- Game modules (load order matters) -->
+        <script src="js/constants.js"></script>
+        <script src="js/tileMath.js"></script>
+        <script src="js/renderer.js"></script>
+        <script src="js/entities.js"></script>
+        <script src="js/12_coward_king_prototype.js"></script>
+        <script src="js/board.js"></script>
+        <script src="js/movement.js"></script>
+        <script src="js/combat.js"></script>
+        <script src="js/turn.js"></script>
+        <script src="js/ui.js"></script>
+    </head>
+
+    <body>
+        <div id="app">
+            <div id="hud"></div>
+
+            <main id="board-area">
+                <canvas id="canvas"></canvas>
+            </main>
+
+            <footer id="bottomPanel">
+                <section id="handPanel">
+                    <h2>Hand</h2>
+                    <div id="hand"></div>
+                </section>
+
+                <section id="controls" aria-label="Game controls">
+                    <button id="moveKingButton">Move King</button>
+                    <button id="endTurnButton">End Turn</button>
+                    <button id="restartButton">Restart</button>
+                </section>
+
+                <section id="logPanel">
+                    <h2>Log</h2>
+                    <div id="log"></div>
+                </section>
+            </footer>
+        </div>
+
+        <script>
+            main();
+        </script>
+    </body>
+</html>

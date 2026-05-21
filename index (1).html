@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Neko Café</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="hero">
+    <nav class="navbar">
+      <div class="logo">Neko Café</div>
+
+      <ul class="nav-links">
+        <li><a href="#menu">Menú</a></li>
+        <li><a href="#gatos">Gatos</a></li>
+        <li><a href="#contacto">Contacto</a></li>
+      </ul>
+    </nav>
+
+    <div class="hero-content">
+      <h1>Neko Café</h1>
+      <p>Un café tranquilo para convivir con gatos, tomar algo rico y pasar un buen rato.</p>
+      <a href="#menu" class="btn-primary">Ver menú</a>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="about-section">
+      <div class="container">
+        <h2>Sobre nosotros</h2>
+        <p>
+          Neko Café es un espacio inspirado en los cat cafés, donde los visitantes pueden
+          disfrutar bebidas y comida mientras conocen a nuestros gatos. Cada gato tiene
+          una personalidad diferente, por eso cada visita puede sentirse distinta.
+        </p>
+      </div>
+    </section>
+
+    <section id="menu" class="menu-section">
+      <div class="container">
+        <h2>Menú de la semana</h2>
+        <p class="section-sub">Selecciona un día para ver el menú disponible.</p>
+
+        <div class="day-selector">
+          <button class="day-btn" data-day="0">Domingo</button>
+          <button class="day-btn" data-day="1">Lunes</button>
+          <button class="day-btn" data-day="2">Martes</button>
+          <button class="day-btn" data-day="3">Miércoles</button>
+          <button class="day-btn" data-day="4">Jueves</button>
+          <button class="day-btn" data-day="5">Viernes</button>
+          <button class="day-btn" data-day="6">Sábado</button>
+        </div>
+
+        <p class="menu-day-label" id="menuDayLabel"></p>
+
+        <div class="menu-grid" id="menuGrid"></div>
+      </div>
+    </section>
+
+    <section id="gatos" class="cats-section">
+      <div class="container">
+        <h2>Conoce a nuestros gatos</h2>
+        <p class="section-sub">Estos son algunos de los gatos que viven en el café.</p>
+
+        <div class="cats-grid"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="contacto" class="footer">
+    <div class="footer-inner">
+      <h2>Neko Café</h2>
+      <p>Dirección: Calle Sakura 42, Col. Jacarandas, CDMX</p>
+      <p>Teléfono: 55 1234 5678</p>
+      <p>Correo: hola@nekocafe.mx</p>
+      <p>Horario: Lunes a viernes de 9:00 a 21:00 | Sábado y domingo de 10:00 a 22:00</p>
+      <p class="footer-copy">© 2026 Neko Café</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

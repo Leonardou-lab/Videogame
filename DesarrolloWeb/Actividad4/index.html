@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neko Café ☕🐾</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap" rel="stylesheet">
+    <!-- CSS propio -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">🐾 Neko Café</a>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <label class="text-white mb-0 fw-semibold" for="daySelector">Día:</label>
+                <select id="daySelector" class="form-select form-select-sm selector-dia">
+                    <option value="Lunes">Lunes</option>
+                    <option value="Martes">Martes</option>
+                    <option value="Miercoles">Miércoles</option>
+                    <option value="Jueves">Jueves</option>
+                    <option value="Viernes">Viernes</option>
+                    <option value="Sabado">Sábado</option>
+                    <option value="Domingo">Domingo</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <header class="hero-section text-center">
+        <div class="hero-content">
+            <p class="hero-sub">Café &amp; Gatos · CDMX</p>
+            <h1 class="hero-title">Neko Café</h1>
+            <p class="hero-desc">Donde cada sorbo sabe mejor con un ronroneo de fondo.</p>
+            <a href="#menu-section" class="btn btn-hero">Ver el Menú 🍵</a>
+        </div>
+    </header>
+
+    <!-- SECCIÓN MENÚ -->
+    <section class="container my-5" id="menu-section">
+        <h2 class="section-title text-center mb-1">Menú del Día</h2>
+        <p class="text-center dia-label mb-4">
+            Mostrando: <span id="currentDayText" class="fw-bold"></span>
+        </p>
+        <div class="menu-lista mx-auto" id="menuContainer">
+            
+        </div>
+    </section>
+
+    <!-- SECCIÓN GATOS -->
+    <section class="gatos-section py-5" id="cats-section">
+        <div class="container">
+            <h2 class="section-title text-center mb-1">Nuestros Gatos</h2>
+            <p class="text-center mb-4" style="color: var(--caramel);">Cada visita es única con ellos</p>
+
+            <div id="nekoCafousel" class="carousel slide shadow-lg" data-bs-ride="carousel">
+                <div class="carousel-indicators" id="carouselIndicators"></div>
+                <div class="carousel-inner" id="carouselInner"></div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#nekoCafousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#nekoCafousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer text-center py-4">
+        <p class="footer-logo mb-1">🐾 Neko Café</p>
+        <p class="mb-0">Equipo : The Coward King</p>
+        <p class="mb-0">Nicolás Casillas | Leonardo Flores | José Abel Dominguez</p>
+        <p class="mt-2 footer-copy">© 2026 Neko Café · Todos los derechos reservados 🐈</p>
+    </footer>
+
+    <!-- MODAL: detalle de platillo -->
+    <div class="modal fade" id="menuModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-neko">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitulo"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImagen" src="" class="img-fluid rounded mb-3 modal-img" alt="">
+                    <p id="modalDescripcion" class="modal-desc"></p>
+                    <span id="modalPrecio" class="modal-precio"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Imagen flotante al hacer hover -->
+    <div id="hoverImagePreview"></div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- JS propio -->
+    <script src="script.js"></script>
+</body>
+</html>
