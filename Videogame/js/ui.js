@@ -67,14 +67,30 @@ Object.assign(Game.prototype, {
     },
 
     renderUI() {
+        const level = this.getCurrentLevelConfig();
+        const encounter = this.isBossFight ? "Boss" : `Horde ${this.currentHorde}`;
+        const turnLimit = this.isBossFight ? "Boss" : this.getCurrentTurnLimit();
+        const enemyLimit = this.isBossFight ? "Boss" : this.getCurrentHordeConfig().maxEnemiesOnBoard;
+
         this.hudElement.innerHTML = `
-            <div>Turn: ${this.turn}/${maxTurns}</div>
+            <div>Level: ${level.levelNumber} - ${level.name}</div>
+            <div>Encounter: ${encounter}</div>
+            <div>Turn: ${this.turn}/${turnLimit}</div>
             <div>Phase: ${this.phase}</div>
-            <div>AP: ${this.ap}</div>
+            <div>AP: ${this.ap}/${maxActionPoints}</div>
             <div>Gold: ${this.gold}</div>
-            <div>Enemies: ${this.enemies.length}</div>
+            <div>Enemies: ${this.enemies.length}/${enemyLimit}</div>
             <div>Status: ${this.status}</div>
         `;
+
+        const restartButton = document.getElementById("restartButton");
+        if (restartButton) {
+            restartButton.textContent = this.status === "won"
+                ? "Continue"
+                : this.status === "lost"
+                    ? "Retry Level"
+                    : "Restart";
+        }
 
         this.handElement.innerHTML = "";
         for (const card of this.hand) {

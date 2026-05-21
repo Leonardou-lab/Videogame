@@ -50,15 +50,42 @@ class Ally extends Unit {
 }
 
 class Enemy extends Unit {
-    constructor(row, col, data = {}) {
-        const hp     = data.hp     ?? 50;
-        const damage = data.damage ?? 15;
-        const speed  = data.speed  ?? 1;
-        // primer token del nombre como identificador visual (skeleton, ogre, elite, brave…)
-        const visual = (data.name ?? 'Skeleton').toLowerCase().split(' ')[0];
-        super(row, col, "#9b2f35", visual, hp, damage, 1, speed);
-        this.enemyName = data.name  ?? 'Skeleton';
-        this.isBoss    = data.is_boss ?? false;
+    constructor(row, col, stats) {
+        const enemyStats = stats || levelConfigs[0].normalEnemy;
+        super(
+            row,
+            col,
+            enemyStats.color,
+            enemyStats.type,
+            enemyStats.hp,
+            enemyStats.damage,
+            enemyStats.range,
+            enemyStats.speed
+        );
+        this.name = enemyStats.name;
+        this.isBoss = Boolean(enemyStats.isBoss);
+        this.safeZoneWeight = enemyStats.safeZoneWeight || 1;
+        this.tileSpan = enemyStats.tileSpan || 1;
+        this.summonEveryTurns = enemyStats.summonEveryTurns || 0;
+    }
+}
+
+class Boss extends Enemy {
+    constructor(row, col, stats) {
+        super(row, col, { ...stats, isBoss: true });
+        this.isBoss = true;
+        this.tileSpan = stats.tileSpan || 2;
+    }
+}
+
+class Obstacle extends BoardObject {
+    constructor(row, col) {
+        super(row, col, tileSize - 10, tileSize - 10, "#2d2926", "obstacle");
+        this.name = "Irremovable rubble";
+    }
+
+    draw(ctx) {
+        drawObstacleToken(ctx, this);
     }
 }
 

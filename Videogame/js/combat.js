@@ -17,6 +17,9 @@ Object.assign(Game.prototype, {
     enemiesAttackAndMove() {
         for (const enemy of this.enemies) {
             if (enemy.hp <= 0) continue;
+            if (enemy.isBoss && enemy.summonEveryTurns > 0 && this.turn % enemy.summonEveryTurns === 0) {
+                this.summonBossMinion();
+            }
             if (enemy.stunTurns > 0) {
                 enemy.stunTurns--;
                 continue;
@@ -49,7 +52,7 @@ Object.assign(Game.prototype, {
         let nearestDistance = Infinity;
         for (const enemy of this.enemies) {
             if (enemy.hp <= 0) continue;
-            const distance = tileDistance(origin, enemy);
+            const distance = this.getObjectDistance(origin, enemy);
             if (distance <= range && distance < nearestDistance) {
                 nearest         = enemy;
                 nearestDistance = distance;
@@ -59,7 +62,28 @@ Object.assign(Game.prototype, {
     },
 
     findAdjacentAlly(enemy) {
-        return this.allies.find(ally => ally.hp > 0 && tileDistance(enemy, ally) <= 1);
+        return this.allies.find(ally => ally.hp > 0 && this.areObjectsAdjacent(enemy, ally));
+    },
+
+    getObjectDistance(first, second) {
+        const firstSpan = first.tileSpan || 1;
+        const secondSpan = second.tileSpan || 1;
+        const firstMinRow = first.row;
+        const firstMaxRow = first.row + firstSpan - 1;
+        const firstMinCol = first.col;
+        const firstMaxCol = first.col + firstSpan - 1;
+        const secondMinRow = second.row;
+        const secondMaxRow = second.row + secondSpan - 1;
+        const secondMinCol = second.col;
+        const secondMaxCol = second.col + secondSpan - 1;
+
+        const rowDistance = Math.max(0, secondMinRow - firstMaxRow, firstMinRow - secondMaxRow);
+        const colDistance = Math.max(0, secondMinCol - firstMaxCol, firstMinCol - secondMaxCol);
+        return Math.max(rowDistance, colDistance);
+    },
+
+    areObjectsAdjacent(first, second) {
+        return this.getObjectDistance(first, second) <= 1;
     },
 
 });
