@@ -5,7 +5,7 @@
  *
  *   constants.js  - game constants, card pool, key mapping
  *   tileMath.js   - tile math (tileToPosition, positionToTile, tileDistance, clamp)
- *   renderer.js   -pure drawing primitives (drawToken, drawBackground, etc.)
+ *   renderer.js   - pure drawing primitives (drawToken, drawBackground, etc.)
  *   entities.js   - class hierarchy (BoardObject, Unit, King, Ally, Enemy, BoardEffect)
  *   board.js      - board queries + board/highlight rendering (Game.prototype)
  *   movement.js   - king & enemy movement, zone push/slow (Game.prototype)
@@ -44,7 +44,8 @@ class Game {
     }
 }
 
-function main() {
+async function main() {
+    await loadGameData();
     const canvas  = document.getElementById("canvas");
     canvas.width  = canvasWidth;
     canvas.height = canvasHeight;

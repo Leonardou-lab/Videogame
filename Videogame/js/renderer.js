@@ -4,6 +4,9 @@ function labelForType(type) {
     const labels = {
         king:     "K",
         skeleton: "S",
+        ogre:     "O",
+        elite:    "E",
+        brave:    "B",
         knight:   "k",
         archer:   "->",
         wall:     "W",
@@ -17,6 +20,9 @@ function tokenStyle(type) {
     const styles = {
         king:     { fill: "#d9aa3b", border: "#f5d77c", shadow: "#5a320e", text: "#231407" },
         skeleton: { fill: "#4b1515", border: "#c05b4c", shadow: "#160808", text: "#f5dfba" },
+        ogre:     { fill: "#2e4a1a", border: "#7ec24a", shadow: "#0d1a07", text: "#f4ecd8" },
+        elite:    { fill: "#1a2e4a", border: "#4a7ec2", shadow: "#07100d", text: "#f4ecd8" },
+        brave:    { fill: "#4a3a1a", border: "#c2a44a", shadow: "#1a1007", text: "#f4ecd8" },
         knight:   { fill: "#253f6b", border: "#8fb1df", shadow: "#0a1729", text: "#f4ecd8" },
         archer:   { fill: "#275238", border: "#9ad091", shadow: "#0b1b10", text: "#f4ecd8" },
         wall:     { fill: "#4e4b47", border: "#b5a888", shadow: "#151311", text: "#f4ecd8" },
