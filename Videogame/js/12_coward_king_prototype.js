@@ -17,7 +17,7 @@
 let ctx;
 let game;
 let oldTime = 0;
-
+// Main game class, containing all game state and the main draw() method.
 class Game {
     constructor() {
         this.hudElement  = document.getElementById("hud");
