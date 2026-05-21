@@ -30,7 +30,10 @@ Object.assign(Game.prototype, {
             }
             if (!this.getBlockingObject(0, col)) {
                 occupiedCols.push(col);
-                this.enemies.push(new Enemy(0, col));
+                const data = enemyPool.length > 0
+                    ? enemyPool[Math.floor(Math.random() * enemyPool.length)]
+                    : {};
+                this.enemies.push(new Enemy(0, col, data));
             }
         }
     },

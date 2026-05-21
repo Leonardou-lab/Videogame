@@ -50,8 +50,15 @@ class Ally extends Unit {
 }
 
 class Enemy extends Unit {
-    constructor(row, col) {
-        super(row, col, "#9b2f35", "skeleton", 50, 15, 1, 1);
+    constructor(row, col, data = {}) {
+        const hp     = data.hp     ?? 50;
+        const damage = data.damage ?? 15;
+        const speed  = data.speed  ?? 1;
+        // primer token del nombre como identificador visual (skeleton, ogre, elite, brave…)
+        const visual = (data.name ?? 'Skeleton').toLowerCase().split(' ')[0];
+        super(row, col, "#9b2f35", visual, hp, damage, 1, speed);
+        this.enemyName = data.name  ?? 'Skeleton';
+        this.isBoss    = data.is_boss ?? false;
     }
 }
 
