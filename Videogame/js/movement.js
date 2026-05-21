@@ -23,6 +23,8 @@ Object.assign(Game.prototype, {
     },
 
     moveEnemyTowardKing(enemy) {
+        if (enemy.isBoss && this.turn % enemy.summonEveryTurns !== 0) return;
+
         const rowStep = Math.sign(this.king.row - enemy.row);
         const colStep = Math.sign(this.king.col - enemy.col);
         const options = [
@@ -32,13 +34,23 @@ Object.assign(Game.prototype, {
         ];
 
         for (const option of options) {
-            if (!this.isInsideBoard(option.row, option.col)) continue;
-            if (option.row === this.king.row && option.col === this.king.col) continue;
-            if (!this.getBlockingObject(option.row, option.col)) {
+            if (!this.canUnitOccupyTiles(enemy, option.row, option.col)) continue;
+            if (this.objectOccupiesTile(enemy, this.king.row, this.king.col)) continue;
+            if (this.unitWouldCoverKing(enemy, option.row, option.col)) continue;
+            {
                 enemy.setTile(option.row, option.col);
+                if (enemy.isBoss) this.addLog(`${enemy.name} lurches closer to the King.`);
                 return;
             }
         }
+    },
+
+    unitWouldCoverKing(unit, row, col) {
+        const span = unit.tileSpan || 1;
+        return this.king.row >= row &&
+            this.king.row < row + span &&
+            this.king.col >= col &&
+            this.king.col < col + span;
     },
 
     pushEnemyAway(enemy) {
@@ -47,7 +59,7 @@ Object.assign(Game.prototype, {
         const row     = enemy.row + rowStep;
         const col     = enemy.col + colStep;
 
-        if (this.isInsideBoard(row, col) && !this.getBlockingObject(row, col)) {
+        if (this.canUnitOccupyTiles(enemy, row, col)) {
             enemy.setTile(row, col);
         }
     },

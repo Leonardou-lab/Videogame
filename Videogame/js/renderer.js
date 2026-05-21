@@ -4,9 +4,7 @@ function labelForType(type) {
     const labels = {
         king:     "K",
         skeleton: "S",
-        ogre:     "O",
-        elite:    "E",
-        brave:    "B",
+        boss:     "B",
         knight:   "k",
         archer:   "->",
         wall:     "W",
@@ -20,9 +18,7 @@ function tokenStyle(type) {
     const styles = {
         king:     { fill: "#d9aa3b", border: "#f5d77c", shadow: "#5a320e", text: "#231407" },
         skeleton: { fill: "#4b1515", border: "#c05b4c", shadow: "#160808", text: "#f5dfba" },
-        ogre:     { fill: "#2e4a1a", border: "#7ec24a", shadow: "#0d1a07", text: "#f4ecd8" },
-        elite:    { fill: "#1a2e4a", border: "#4a7ec2", shadow: "#07100d", text: "#f4ecd8" },
-        brave:    { fill: "#4a3a1a", border: "#c2a44a", shadow: "#1a1007", text: "#f4ecd8" },
+        boss:     { fill: "#6f1d2b", border: "#f0c15b", shadow: "#22070d", text: "#fbe7a1" },
         knight:   { fill: "#253f6b", border: "#8fb1df", shadow: "#0a1729", text: "#f4ecd8" },
         archer:   { fill: "#275238", border: "#9ad091", shadow: "#0b1b10", text: "#f4ecd8" },
         wall:     { fill: "#4e4b47", border: "#b5a888", shadow: "#151311", text: "#f4ecd8" },
@@ -32,9 +28,11 @@ function tokenStyle(type) {
 
 function drawToken(ctx, unit) {
     const style  = tokenStyle(unit.type);
-    const x      = unit.position.x;
-    const y      = unit.position.y;
-    const radius = 22;
+    const span   = unit.tileSpan || 1;
+    const x      = boardX + unit.col * tileSize + (tileSize * span) / 2;
+    const y      = boardY + unit.row * tileSize + (tileSize * span) / 2;
+    const radius = unit.isBoss ? 52 : 22;
+    const labelFont = unit.isBoss ? "42px Georgia" : "28px Georgia";
 
     ctx.save();
     ctx.fillStyle = style.shadow;
@@ -50,9 +48,9 @@ function drawToken(ctx, unit) {
     ctx.lineWidth = 2;
     ctx.strokeRect(x - radius + 5, y - radius + 5, radius * 2 - 10, radius * 2 - 10);
 
-    drawCenteredText(ctx, labelForType(unit.type), x, y - 3, "28px Georgia", style.text);
+    drawCenteredText(ctx, labelForType(unit.type), x, y - 3, labelFont, style.text);
     if (unit.type !== "king") {
-        drawCenteredText(ctx, unit.hp, x, y + 17, "11px Courier New", style.text);
+        drawCenteredText(ctx, unit.hp, x, y + (unit.isBoss ? 34 : 17), "11px Courier New", style.text);
     }
     ctx.restore();
 }
@@ -70,6 +68,31 @@ function drawEffectToken(ctx, effect) {
     ctx.lineWidth    = 3;
     ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
     drawCenteredText(ctx, labelForType(effect.effectType), x, y + 1, "24px Georgia", "#f4ecd8");
+    ctx.restore();
+}
+
+function drawObstacleToken(ctx, obstacle) {
+    const x = obstacle.position.x;
+    const y = obstacle.position.y;
+    const radius = 24;
+
+    ctx.save();
+    ctx.fillStyle = "#171412";
+    ctx.fillRect(x - radius + 4, y - radius + 5, radius * 2, radius * 2);
+
+    ctx.fillStyle = "#2d2926";
+    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    ctx.strokeStyle = "#6d6253";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+
+    ctx.fillStyle = "#463d35";
+    ctx.fillRect(x - 16, y - 12, 15, 13);
+    ctx.fillRect(x + 1, y - 18, 17, 15);
+    ctx.fillRect(x - 10, y + 3, 24, 16);
+    ctx.strokeStyle = "rgba(230, 193, 106, 0.22)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - radius + 6, y - radius + 6, radius * 2 - 12, radius * 2 - 12);
     ctx.restore();
 }
 

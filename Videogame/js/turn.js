@@ -2,10 +2,62 @@
 
 Object.assign(Game.prototype, {
 
+    getCurrentLevelConfig() {
+        return levelConfigs[this.currentLevelIndex] || levelConfigs[0];
+    },
+
+    getCurrentHordeConfig() {
+        const level = this.getCurrentLevelConfig();
+        return level.hordes.find(horde => horde.hordeNumber === this.currentHorde) || level.hordes[0];
+    },
+
+    getCurrentTurnLimit() {
+        return this.isBossFight ? 99 : this.getCurrentHordeConfig().maxTurns;
+    },
+
+    gainAP(amount) {
+        this.ap = Math.min(maxActionPoints, this.ap + amount);
+    },
+
+    advanceProgressionAfterVictory() {
+        const level = this.getCurrentLevelConfig();
+
+        if (this.isBossFight) {
+            this.currentHorde = 1;
+            this.isBossFight = false;
+            this.pendingApBonus = 0;
+            this.nextEncounterMessage = `${level.name} cleared. Level 1 prototype complete. Restarting Level 1.`;
+            return;
+        }
+
+        if (this.currentHorde < level.hordes.length) {
+            this.currentHorde++;
+            this.nextEncounterMessage = `The King escaped. Remaining enemies vanish. Prepare for Level ${level.levelNumber} - Horde ${this.currentHorde}.`;
+            return;
+        }
+
+        this.isBossFight = true;
+        this.nextEncounterMessage = `The King escaped the final horde. Boss fight unlocked: ${level.boss.name}.`;
+    },
+
+    resetProgressionAfterDefeat() {
+        const level = this.getCurrentLevelConfig();
+        this.currentHorde = 1;
+        this.isBossFight = false;
+        this.pendingApBonus = 0;
+        this.nextEncounterMessage = `Defeat resets ${level.name} to Horde 1.`;
+    },
+
     restart() {
-        const bonus            = this.pendingApBonus || 0;
+        if (this.status === "won") {
+            this.advanceProgressionAfterVictory();
+        } else if (this.status === "lost") {
+            this.resetProgressionAfterDefeat();
+        }
+
+        const level            = this.getCurrentLevelConfig();
         this.turn              = 1;
-        this.ap                = startingAP + bonus;
+        this.ap                = Math.min(startingAP, maxActionPoints);
         this.pendingApBonus    = 0;
         this.gold              = 0;
         this.phase             = "player";
@@ -18,13 +70,24 @@ Object.assign(Game.prototype, {
         this.allies            = [];
         this.enemies           = [];
         this.effects           = [];
-        this.hand              = this.drawCards(3);
+        this.obstacles         = [];
+        this.hand              = this.drawCards(maxHandSize);
         this.logLines          = [];
-        this.spawnEnemies();
-        if (bonus > 0) {
-            this.addLog(`Horde started with victory bonus: AP +${bonus}!`);
+        this.generateObstacles();
+        if (this.isBossFight) {
+            this.spawnBoss();
         } else {
-            this.addLog("Horde started. Choose a card or move the king.");
+            this.spawnEnemies();
+        }
+
+        if (this.nextEncounterMessage) {
+            this.addLog(this.nextEncounterMessage);
+            this.nextEncounterMessage = "";
+        }
+        if (this.isBossFight) {
+            this.addLog(`${level.boss.name} must be defeated to clear Level ${level.levelNumber}.`);
+        } else {
+            this.addLog(`Level ${level.levelNumber} - Horde ${this.currentHorde} started.`);
         }
         this.renderUI();
     },
@@ -82,23 +145,32 @@ Object.assign(Game.prototype, {
         this.checkDefeat();
 
         if (this.status === "playing") {
-            if (this.turn >= maxTurns) {
+            const bossDefeated = this.isBossFight && !this.enemies.some(enemy => enemy.isBoss);
+            if (bossDefeated) {
                 this.status         = "won";
-                this.message        = "Horde survived. Prototype victory!";
+                this.message        = "Boss defeated. Level cleared!";
+                this.gold          += 25;
+                this.pendingApBonus = 0;
+                this.addLog("Victory: the Skeleton King has fallen.");
+            } else if (!this.isBossFight && this.turn >= this.getCurrentTurnLimit()) {
+                this.status         = "won";
+                this.message        = `Horde ${this.currentHorde} survived.`;
                 this.gold          += 10;
-                this.pendingApBonus = 5;
-                this.addLog("Victory: the king survived 30 turns. Next horde starts with +5 AP.");
+                this.pendingApBonus = 0;
+                this.addLog(`Victory: Level ${this.getCurrentLevelConfig().levelNumber} Horde ${this.currentHorde} cleared. The King escaped.`);
             } else {
                 this.turn++;
                 const kingMovedLastTurn = this.kingMovedThisTurn;
-                if (!kingMovedLastTurn) this.ap += 1;
-                this.spawnEnemies();
+                if (!kingMovedLastTurn) this.gainAP(1);
+                if (!this.isBossFight) {
+                    this.spawnEnemies();
+                }
                 this.phase             = "player";
                 this.kingMovedThisTurn = false;
                 if (kingMovedLastTurn) {
                     this.addLog(`Turn ${this.turn}. The King moved: no AP gained.`);
                 } else {
-                    this.addLog(`Turn ${this.turn}. The King held position: AP +1.`);
+                    this.addLog(`Turn ${this.turn}. The King held position: AP +1, capped at ${maxActionPoints}.`);
                 }
             }
         }

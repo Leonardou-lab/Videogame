@@ -5,7 +5,7 @@
  *
  *   constants.js  - game constants, card pool, key mapping
  *   tileMath.js   - tile math (tileToPosition, positionToTile, tileDistance, clamp)
- *   renderer.js   - pure drawing primitives (drawToken, drawBackground, etc.)
+ *   renderer.js   -pure drawing primitives (drawToken, drawBackground, etc.)
  *   entities.js   - class hierarchy (BoardObject, Unit, King, Ally, Enemy, BoardEffect)
  *   board.js      - board queries + board/highlight rendering (Game.prototype)
  *   movement.js   - king & enemy movement, zone push/slow (Game.prototype)
@@ -24,6 +24,9 @@ class Game {
         this.handElement = document.getElementById("hand");
         this.logElement  = document.getElementById("log");
         this.createEventListeners();
+        this.currentLevelIndex = 0;
+        this.currentHorde      = 1;
+        this.isBossFight       = false;
         this.pendingApBonus = 0;
         this.restart();
     }
@@ -33,6 +36,7 @@ class Game {
         this.drawBoard(ctx);
         this.drawHighlights(ctx);
 
+        for (const obstacle of this.obstacles) obstacle.draw(ctx);
         for (const ally   of this.allies)  ally.draw(ctx);
         for (const enemy  of this.enemies) enemy.draw(ctx);
         for (const effect of this.effects) effect.draw(ctx);
@@ -45,7 +49,10 @@ class Game {
 }
 
 async function main() {
-    await loadGameData();
+    if (typeof loadGameData === "function") {
+        await loadGameData(1);
+    }
+
     const canvas  = document.getElementById("canvas");
     canvas.width  = canvasWidth;
     canvas.height = canvasHeight;
