@@ -1,5 +1,5 @@
 "use strict";
-
+// King and enemy movement, zone push/slow (Game.prototype).
 Object.assign(Game.prototype, {
 
     tryMoveKing(rowDelta, colDelta) {
@@ -21,7 +21,7 @@ Object.assign(Game.prototype, {
         this.addLog("The king runs with dignity.");
         this.endPlayerTurn();
     },
-
+// Enemy movement toward the king, with simple pathfinding that tries to move diagonally when possible. Enemies will never move into the safe zone around the king, but they can move around it.
     moveEnemyTowardKing(enemy) {
         if (enemy.isBoss && this.turn % enemy.summonEveryTurns !== 0) return;
 
@@ -44,7 +44,7 @@ Object.assign(Game.prototype, {
             }
         }
     },
-
+// Checks if moving a unit to a given tile would partially or fully cover the king, which is not allowed.
     unitWouldCoverKing(unit, row, col) {
         const span = unit.tileSpan || 1;
         return this.king.row >= row &&
@@ -52,7 +52,7 @@ Object.assign(Game.prototype, {
             this.king.col >= col &&
             this.king.col < col + span;
     },
-
+// Pushes an enemy one tile away from the king if it's within a zone effect that has a push component (e.g. Royal Decree).
     pushEnemyAway(enemy) {
         const rowStep = Math.sign(enemy.row - this.king.row);
         const colStep = Math.sign(enemy.col - this.king.col);
@@ -63,7 +63,7 @@ Object.assign(Game.prototype, {
             enemy.setTile(row, col);
         }
     },
-
+// Checks if a tile is within the safe zone around the king.
     applyZoneEffects() {
         for (const enemy of this.enemies) {
             enemy.slowedThisTurn = false;
