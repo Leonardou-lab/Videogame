@@ -1,6 +1,6 @@
 "use strict";
 
-// UI-related logic: event listeners, rendering the HUD and hand of cards, and logging messages (Game.prototype).
+// UI-related logic: event listeners, rendering the HUD and hand of cards, and logging messages
 Object.assign(Game.prototype, {
 
     createEventListeners() {

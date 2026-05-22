@@ -14,51 +14,10 @@ function labelForType(type) {
     return labels[type] || "?";
 }
 
-function tokenStyle(type) {
-    const styles = {
-        king:     { fill: "#d9aa3b", border: "#f5d77c", shadow: "#5a320e", text: "#231407" },
-        skeleton: { fill: "#4b1515", border: "#c05b4c", shadow: "#160808", text: "#f5dfba" },
-        boss:     { fill: "#6f1d2b", border: "#f0c15b", shadow: "#22070d", text: "#fbe7a1" },
-        knight:   { fill: "#253f6b", border: "#8fb1df", shadow: "#0a1729", text: "#f4ecd8" },
-        archer:   { fill: "#275238", border: "#9ad091", shadow: "#0b1b10", text: "#f4ecd8" },
-        wall:     { fill: "#4e4b47", border: "#b5a888", shadow: "#151311", text: "#f4ecd8" },
-    };
-    return styles[type] || { fill: "#4b1d63", border: "#c995d8", shadow: "#18091f", text: "#f4ecd8" };
-}
-
 function drawToken(ctx, unit) {
     if (drawSprite(ctx, unit)) {
         drawHpBar(ctx, unit);
-        return;
     }
-
-    // Fallback: coloured rectangle token used while sprites are loading.
-    const style  = tokenStyle(unit.type);
-    const span   = unit.tileSpan || 1;
-    const x      = boardX + unit.col * tileSize + (tileSize * span) / 2;
-    const y      = boardY + unit.row * tileSize + (tileSize * span) / 2;
-    const radius = unit.isBoss ? 52 : 22;
-    const labelFont = unit.isBoss ? "42px Georgia" : "28px Georgia";
-
-    ctx.save();
-    ctx.fillStyle = style.shadow;
-    ctx.fillRect(x - radius + 4, y - radius + 6, radius * 2, radius * 2);
-
-    ctx.fillStyle = style.fill;
-    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-    ctx.strokeStyle = style.border;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
-
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - radius + 5, y - radius + 5, radius * 2 - 10, radius * 2 - 10);
-
-    drawCenteredText(ctx, labelForType(unit.type), x, y - 3, labelFont, style.text);
-    if (unit.type !== "king") {
-        drawCenteredText(ctx, unit.hp, x, y + (unit.isBoss ? 34 : 17), "11px Courier New", style.text);
-    }
-    ctx.restore();
 }
 
 function drawEffectToken(ctx, effect) {
