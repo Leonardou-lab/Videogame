@@ -647,7 +647,12 @@ Each turn is divided in two phases:
 **Card Upgrade System**
 
 * Accessible via the upgrade menu during the player's turn with no turn cost or even between hordes via the shop screen.  
-* Each upgrade costs from 20 to 50 gold and permanently improves a card's stats.  
+* Each upgrade costs from 20 to 50 gold and permanently improves a card's stats.
+* 3 Types of upgrades are available, costing 20(level 1 upgrade), 40(level 2 upgrade) and 50(level 3 upgrade). 
+* Card upgrades must be progressively, this means you cant upgrade a level 1 card into a level 3, it must first be level 2.
+* Upgrade Level 1: Costs 20 Gold. Adds +10 Damage and +15 Health to the unit card's base values.
+* Upgrade Level 2: Costs 40 Gold. Adds +25 Damage, +25 Health an reduces its AP cost by 1 to the unit card's base values.
+* Upgrade Level 3: Costs 50 Gold. Adds +35 Damage, +40 Health and reduces its AP cost by 1 to the unit card's base values.
 * Upgrades persist across deaths.  
 * If gold is not spent, then is lost on death, purchased upgrades are always retained.
 
