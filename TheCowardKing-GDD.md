@@ -337,6 +337,16 @@ The king starts in the center of the board, and its 3x3 safe zone is dynamic and
 | **Trench** | Defense Unit | 1 | 40 HP / 0 DMG | 1x1. The enemies next to this card can move 1 tile every 2 turns only.  |
 
 ### 
+### **Card Upgrades Using Gold**
+
+**Attack and Defense Unit ONLY**
+
+| Upgrade Level | Gold Cost | Stat Bonus | Example: Knight |
+| :---- | :---- | :---- | :---- |
+| **Base(Lvl 0)** | - | - | 80 HP / 30 DMG / 3 AP Cost
+| **Level 1** | 20 | +15 HP / +10 DMG | 95 HP / 40 DMG / 3 AP Cost
+| **Level 2** | 40 | +25 HP / +20 DMG / -1 AP Cost | 105 HP / 50 DMG / 2 AP Cost
+| **Level 3** | 50 | +40 / +35 DMG / -1 AP Cost | 120 HP / 65 DMG / 2 AP Cost
 
 ### 
 
