@@ -11,26 +11,27 @@ CREATE TABLE Card (
     base_hp INT DEFAULT 0,
     base_damage INT DEFAULT 0,
     range INT DEFAULT 1,
+    duration INT DEFAULT 0,
     effect_description TEXT
 );
 
 -- Insertar las 15 cartas del GDD
-INSERT INTO Card (name, type, base_ap_cost, base_hp, base_damage, range, effect_description) VALUES
-('Knight',       'attack',   3, 80,  30, 1, 'Melee. Moves toward nearest enemy, attacks when adjacent.'),
-('Archer',       'attack',   2, 50,  20, 3, 'Ranged 3 tiles. Stationary. Auto-attacks nearest in range.'),
-('Mage',         'attack',   4, 40,  25, 2, 'AoE cross pattern, range 2. Fragile but powerful.'),
-('Pikeman',      'attack',   2, 60,  15, 1, 'Fast 2 tiles/turn. Intercepts quick enemies.'),
-('Wall',         'defense',  3, 150, 0,  0, 'Blocks tile. Enemies must destroy or go around.'),
-('Squire',       'defense',  2, 70,  10, 1, 'Reduces 50% damage to adjacent allies. Moves 1 tile/turn.'),
-('Tower',        'defense',  4, 100, 35, 4, 'Ranged 4 tiles. Stationary. Auto-attacks in range.'),
-('Guardian',     'defense',  3, 120, 25, 1, 'Tanky mobile unit. Moves 1 tile/turn. Absorbs high damage.'),
-('Royal Guard',  'defense',  2, 90,  0,  1, 'Follows King automatically. Absorbs first hit to the King.'),
-('Trench',       'defense',  1, 40,  0,  0, 'Enemies next to this card move 1 tile every 2 turns.'),
-('Exile',        'political',2, 0,   0,  0, 'Trap: enemy stepping on tile is paralyzed for 2 turns.'),
-('Royal Decree', 'political',3, 0,   0,  0, '3x3 push zone: enemies pushed 1 tile back each turn.'),
-('Peace Treaty', 'political',2, 0,   0,  0, '3x3 slow zone: enemies move at 50% speed.'),
-('Royal Curse',  'political',4, 0,   0,  0, '3x3 debuff zone: enemies deal 50% less damage for 5 turns.'),
-('Decoy',        'political',1, 30,  0,  0, 'Enemies prioritize attacking this over the King.');
+INSERT INTO Card (name, type, base_ap_cost, base_hp, base_damage, range, duration, effect_description) VALUES
+('Knight',       'attack',   3, 80,  30, 1, 0, 'Melee. Moves toward nearest enemy, attacks when adjacent.'),
+('Archer',       'attack',   2, 50,  20, 3, 0, 'Ranged 3 tiles. Stationary. Auto-attacks nearest in range.'),
+('Mage',         'attack',   4, 40,  25, 2, 0, 'AoE cross pattern, range 2. Fragile but powerful.'),
+('Pikeman',      'attack',   2, 60,  15, 1, 0, 'Fast 2 tiles/turn. Intercepts quick enemies.'),
+('Wall',         'defense',  3, 150, 0,  0, 0, 'Blocks tile. Enemies must destroy or go around.'),
+('Squire',       'defense',  2, 70,  10, 1, 0, 'Reduces 50% damage to adjacent allies. Moves 1 tile/turn.'),
+('Tower',        'defense',  4, 100, 35, 4, 0, 'Ranged 4 tiles. Stationary. Auto-attacks in range.'),
+('Guardian',     'defense',  3, 120, 25, 1, 0, 'Tanky mobile unit. Moves 1 tile/turn. Absorbs high damage.'),
+('Royal Guard',  'defense',  2, 90,  0,  1, 0, 'Follows King automatically. Absorbs first hit to the King.'),
+('Trench',       'defense',  1, 40,  0,  0, 0, 'Enemies next to this card move 1 tile every 2 turns.'),
+('Exile',        'political',2, 0,   0,  0, 2, 'Trap: enemy stepping on tile is paralyzed for 2 turns.'),
+('Royal Decree', 'political',3, 0,   0,  0, 3, '3x3 push zone: enemies pushed 1 tile back each turn.'),
+('Peace Treaty', 'political',2, 0,   0,  0, 4, '3x3 slow zone: enemies move at 50% speed.'),
+('Royal Curse',  'political',4, 0,   0,  0, 5, '3x3 debuff zone: enemies deal 50% less damage for 5 turns.'),
+('Decoy',        'political',1, 30,  0,  0, 0, 'Enemies prioritize attacking this over the King.');
 
 -- Tabla de niveles primero (Enemy depende de ella)
 CREATE TABLE Level (
