@@ -1,6 +1,6 @@
 "use strict";
 
-// Sprite sheet definitions: entity type → image file and grid layout (cols × rows).
+// maps each entity type to its sprite sheet and how many frames the animation has
 const SPRITE_DEFS = {
     king:          { src: "Assets/sprites/King.png",          cols: 3, rows: 2 },
     skeleton:      { src: "Assets/sprites/Skeleton.png",      cols: 3, rows: 1 },
@@ -32,40 +32,35 @@ function loadSprites() {
     }
 }
 
-// ── Per-unit animation state ──────────────────────────────────────────────────
-// WeakMap allows units to be GC'd freely once removed from the board.
+// WeakMap so units get garbage collected normally when they leave the board
 const unitAnims = new WeakMap();
 const ANIM_MS = 200; // ms per frame
 
-// Trigger a one-shot animation on a unit.
-// keepLastFrame: if true the sprite freezes on the final frame instead of returning to idle.
+// starts a one-shot animation for a unit, optionally freezing on the last frame
 function triggerUnitAnim(unit, keepLastFrame = false) {
     unitAnims.set(unit, { startMs: performance.now(), keepLastFrame });
 }
 
-// Returns the frame index that should currently be displayed for this unit.
+// figures out which animation frame to show right now based on how much time has passed
 function getUnitFrame(unit, totalFrames) {
     const state = unitAnims.get(unit);
-    if (!state) return 0; // idle — always frame 0
+    if (!state) return 0; // no animation running, stay on frame 0
 
     const frameIndex = Math.floor((performance.now() - state.startMs) / ANIM_MS);
     if (frameIndex >= totalFrames) {
         if (state.keepLastFrame) return totalFrames - 1;
-        unitAnims.delete(unit); // animation finished, back to idle
+        unitAnims.delete(unit); // done, back to idle
         return 0;
     }
     return frameIndex;
 }
 
-// ── Drawing ───────────────────────────────────────────────────────────────────
-
-// Normalise a unit type string to a SPRITE_DEFS key (lowercase, no spaces).
+// converts a unit type string into a valid SPRITE_DEFS key
 function spriteKey(type) {
     return type ? type.replace(/\s+/g, "").toLowerCase() : "";
 }
 
-// Draw the current animation frame of a unit's sprite.
-// Returns true when drawn; false means no sprite was ready → use token fallback.
+// draws the correct animation frame for a unit, returns false if the sprite isn't loaded yet
 function drawSprite(ctx, unit) {
     const key = spriteKey(unit.type);
     const def = SPRITE_DEFS[key];
@@ -95,7 +90,7 @@ function drawSprite(ctx, unit) {
     return true;
 }
 
-// Draw a small HP bar just below a unit's sprite. Skipped for the king.
+// draws a small HP bar under the unit sprite, color shifts from green to red as HP drops
 function drawHpBar(ctx, unit) {
     if (unit.type === "king" || unit.maxHp == null) return;
 
