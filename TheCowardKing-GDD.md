@@ -982,7 +982,7 @@ Handles meta-progression.
 
 ## 6.1 Style Attributes {#6.1-style-attributes}
 
-The visual Style will be set in a kind of medieval and royal castle with candle type of lighting and also using warm colors:
+The visual Style will be set depending on the level, every level will be visually attched to the type of boss and have unique qualities to add immersion to the game
 
 Characteristics:  
  Use of shadows to show depth and a castle type of lighting  
@@ -991,12 +991,13 @@ Characteristics:
  A 2d type of graphics but including depth  
  Warm colors for walls, columns or pillars, floor, doors and surroundings  
  Bright color to highlight the 3x3 safe area of the king
+ Bright colors to highlight special card abilities
 
 ## 6.2 Graphics Needed {#6.2-graphics-needed}
 
 ### **Characters and cards on board:** {#characters-and-cards-on-board:}
 
-King (idle, damaged)  
+King (idle, dead)  
  Skeleton (idle, attack)  
  Ogre (idle, attack)  
  Elite Warrior (idle, attack)  
@@ -1031,12 +1032,20 @@ Health indicators
  Horde indicator
 
 ### **Surroundings:** {#surroundings:}
+**Skeleton Boss level**
+* Dark ambience
+* Destroyed floors
+* Bones and skulls
 
-Castle room (walls, doors and floor)  
- Pillars  
- Candles and candle holders  
- Gold on floor  
- Flags or banners
+**Ogre Boss Level** 
+* Dungeonlike ambience
+* Bloody and dirty floor
+* Not so dark
+
+**Brave King Boss Level**
+* Castle walls and ambience
+* Royalty items on floors and walls
+* Lighted place
 
 # 
 
