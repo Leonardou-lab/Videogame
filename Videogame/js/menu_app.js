@@ -16,28 +16,11 @@ const appState = {
         masterVolume: 80,
         musicVolume: 65,
         sfxVolume: 75,
-        fullscreen: false,
-        highContrast: false,
     },
 };
 
 const mockStats = {
-    runsAttempted: 12,
-    levelsCompleted: 7,
-    enemiesDefeated: 432,
-    bossesDefeated: 3,
-    cardsUpgraded: 18,
-    goldEarned: 8450,
-    currentCheckpoint: "Level 2 - Horde 1",
-    currentLevel: 2,
-    currentHorde: 1,
-    purchasedUpgrades: [
-        "Knight damage +5",
-        "Archer range +1",
-        "Wall HP +25",
-        "Exile duration +1",
-    ],
-    savedProgress: "Autosaved after Level 1 Boss",
+    warning: "no stats are able",
 };
 
 const mockCredits = {
@@ -67,7 +50,6 @@ function renderMenu(activeModal) {
     content.className = "menu-content";
     content.appendChild(createBrand());
     content.appendChild(createMenuActions());
-    content.appendChild(createStatPanel(mockStats));
     screen.appendChild(content);
 
     if (activeModal) {
@@ -159,22 +141,6 @@ function menuButton(label, icon, primary, onClick) {
     return button;
 }
 
-function createStatPanel(stats) {
-    const panel = document.createElement("aside");
-    panel.className = "overview-panel";
-    panel.innerHTML = `
-        <h2 class="panel-title">Overview</h2>
-        <div class="stat-list">
-            ${statRow("♜", "Runs Attempted", stats.runsAttempted)}
-            ${statRow("♛", "Levels Completed", stats.levelsCompleted)}
-            ${statRow("☠", "Enemies Defeated", stats.enemiesDefeated)}
-            ${statRow("♕", "Bosses Defeated", stats.bossesDefeated)}
-            ${statRow("▣", "Cards Upgraded", stats.cardsUpgraded)}
-            ${statRow("◎", "Gold Earned", stats.goldEarned.toLocaleString())}
-        </div>
-    `;
-    return panel;
-}
 
 function statRow(icon, label, value) {
     return `
@@ -226,18 +192,7 @@ function createOverviewModal() {
     const content = document.createElement("div");
     content.innerHTML = `
         <div class="detail-list">
-            ${statRow("♜", "Runs Attempted", mockStats.runsAttempted)}
-            ${statRow("♛", "Levels Completed", mockStats.levelsCompleted)}
-            ${statRow("☠", "Enemies Defeated", mockStats.enemiesDefeated)}
-            ${statRow("♕", "Bosses Defeated", mockStats.bossesDefeated)}
-            ${statRow("▣", "Cards Upgraded", mockStats.cardsUpgraded)}
-            ${statRow("◎", "Gold Earned", mockStats.goldEarned.toLocaleString())}
-            ${detailRow("Current checkpoint", mockStats.currentCheckpoint)}
-            ${detailRow("Current level", mockStats.currentLevel)}
-            ${detailRow("Current horde", mockStats.currentHorde)}
-            ${detailRow("Saved progress", mockStats.savedProgress)}
-        </div>
-        <div class="progress-pill">Purchased upgrades: ${mockStats.purchasedUpgrades.join(", ")}</div>
+            ${statRow("-", "Warning", mockStats.warning)}
     `;
     return createModal("Stats / Overview", content);
 }
@@ -250,27 +205,6 @@ function createSettingsModal() {
     content.appendChild(sliderRow("Music volume", "musicVolume"));
     content.appendChild(sliderRow("Sound effects", "sfxVolume"));
 
-    const fullscreen = document.createElement("label");
-    fullscreen.className = "toggle-row";
-    fullscreen.innerHTML = `
-        <input type="checkbox" ${appState.settings.fullscreen ? "checked" : ""}>
-        Fullscreen mode
-    `;
-    fullscreen.querySelector("input").addEventListener("change", event => {
-        appState.settings.fullscreen = event.target.checked;
-    });
-
-    const display = document.createElement("label");
-    display.className = "toggle-row";
-    display.innerHTML = `
-        <input type="checkbox" ${appState.settings.highContrast ? "checked" : ""}>
-        High contrast display
-    `;
-    display.querySelector("input").addEventListener("change", event => {
-        appState.settings.highContrast = event.target.checked;
-    });
-
-    content.append(fullscreen, display);
     return createModal("Settings", content);
 }
 

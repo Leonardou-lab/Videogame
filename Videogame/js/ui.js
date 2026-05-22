@@ -20,6 +20,14 @@ Object.assign(Game.prototype, {
             this.restart();
         });
 
+        document.getElementById("upgradesButton").addEventListener("click", () => {
+            this.openUpgradeOverlay();
+        });
+
+        document.getElementById("closeUpgradesButton").addEventListener("click", () => {
+            this.closeUpgradeOverlay();
+        });
+
         document.getElementById("canvas").addEventListener("click", event => {
             this.handleCanvasClick(event);
         });
@@ -95,16 +103,25 @@ Object.assign(Game.prototype, {
 
         this.handElement.innerHTML = "";
         for (const card of this.hand) {
+            const lvl = card.upgradeLevel || 0;
             const button = document.createElement("button");
-            button.className = "cardButton";
+            button.className = "cardButton" + (lvl > 0 ? ` lvl${lvl}` : "");
             if (this.selectedCard === card) button.classList.add("selected");
             button.disabled = this.status !== "playing" || this.phase !== "player" || this.ap < card.cost;
+            const statsLine = card.type === "ally"
+                ? `<span class="card-stats">HP:${card.hp} DMG:${card.damage}</span>`
+                : "";
+            const lvlTag = lvl > 0
+                ? `<span class="card-lvl-tag lvl${lvl}">◆ LVL ${lvl}</span>`
+                : "";
             button.innerHTML = `
                 <div class="cardTop">
                     <strong>${card.name}</strong>
                     <em>${card.cost} AP</em>
                 </div>
+                ${statsLine}
                 <span>${card.text}</span>
+                ${lvlTag}
             `;
             button.addEventListener("click", () => {
                 this.selectedCard = card;
@@ -123,6 +140,100 @@ Object.assign(Game.prototype, {
         if (!this.logLines) this.logLines = [];
         this.logLines.unshift(text);
         this.logLines = this.logLines.slice(0, 8);
+    },
+
+    openUpgradeOverlay() {
+        this.renderUpgradeOverlay();
+        document.getElementById("upgradeOverlay").classList.add("open");
+    },
+
+    closeUpgradeOverlay() {
+        document.getElementById("upgradeOverlay").classList.remove("open");
+    },
+
+    renderUpgradeOverlay() {
+        const LEVEL_LABELS = ["Base", "Lvl 1", "Lvl 2", "Lvl 3"];
+
+        document.getElementById("upgradeGoldDisplay").textContent = `Gold: ${this.gold}`;
+
+        const list = document.getElementById("upgradeCardList");
+        list.innerHTML = "";
+
+        const upgradeable = cardPool.filter(c => c.type === "ally");
+
+        for (const base of upgradeable) {
+            const level   = this.upgradeRegistry[base.name] || 0;
+            const tier    = level > 0 ? UPGRADE_TIERS[level] : null;
+            const curHp   = base.hp     + (tier ? tier.hp  : 0);
+            const curDmg  = base.damage + (tier ? tier.dmg : 0);
+            const curAp   = Math.max(1, base.cost - (tier ? tier.ap : 0));
+
+            const nextLevel = level + 1;
+            const nextTier  = nextLevel <= 3 ? UPGRADE_TIERS[nextLevel] : null;
+            const canAfford = nextTier !== null && this.gold >= nextTier.cost;
+
+            const lvlClass = level > 0 ? ` lvl${level}` : "";
+            const row = document.createElement("div");
+            row.className = `upgrade-card-row${lvlClass}`;
+
+            let nextStatsHtml = "";
+            if (nextTier) {
+                const nxHp  = base.hp     + nextTier.hp;
+                const nxDmg = base.damage + nextTier.dmg;
+                const nxAp  = Math.max(1, base.cost - nextTier.ap);
+                nextStatsHtml = `<div class="upgrade-next-stats">Next: HP ${nxHp} / DMG ${nxDmg} / ${nxAp} AP</div>`;
+            }
+
+            const actionsHtml = level >= 3
+                ? `<span class="upgrade-max">&#9733; MAX</span>`
+                : `<div class="upgrade-cost">${nextTier.cost} Gold</div>
+                   <button class="upgrade-btn" ${canAfford ? "" : "disabled"} data-card="${base.name}">Upgrade</button>`;
+
+            row.innerHTML = `
+                <div class="upgrade-card-info">
+                    <span class="upgrade-card-name">${base.name}
+                        <span class="upgrade-level-tag tag-${level}">${LEVEL_LABELS[level]}</span>
+                    </span>
+                    <div class="upgrade-card-stats">HP: ${curHp} &nbsp;|&nbsp; DMG: ${curDmg} &nbsp;|&nbsp; ${curAp} AP</div>
+                    ${nextStatsHtml}
+                </div>
+                <div class="upgrade-actions">${actionsHtml}</div>
+            `;
+
+            list.appendChild(row);
+        }
+
+        list.querySelectorAll(".upgrade-btn").forEach(btn => {
+            btn.addEventListener("click", () => this.purchaseUpgrade(btn.dataset.card));
+        });
+    },
+
+    purchaseUpgrade(cardName) {
+        const level = this.upgradeRegistry[cardName] || 0;
+        if (level >= 3) return;
+        const nextTier = UPGRADE_TIERS[level + 1];
+        if (this.gold < nextTier.cost) return;
+
+        this.gold -= nextTier.cost;
+        this.upgradeRegistry[cardName] = level + 1;
+
+        const baseCard = cardPool.find(c => c.name === cardName);
+        if (baseCard) {
+            const newLevel = level + 1;
+            const tier = UPGRADE_TIERS[newLevel];
+            for (const card of this.hand) {
+                if (card.name === cardName && card.type === "ally") {
+                    card.hp           = baseCard.hp     + tier.hp;
+                    card.damage       = baseCard.damage + tier.dmg;
+                    card.cost         = Math.max(1, baseCard.cost - tier.ap);
+                    card.upgradeLevel = newLevel;
+                }
+            }
+        }
+
+        this.addLog(`${cardName} upgraded to Level ${level + 1}.`);
+        this.renderUpgradeOverlay();
+        this.renderUI();
     },
 
 });
