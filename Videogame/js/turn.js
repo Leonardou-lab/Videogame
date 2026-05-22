@@ -61,7 +61,7 @@ Object.assign(Game.prototype, {
         this.turn              = 1;
         this.ap                = Math.min(startingAP, maxActionPoints);
         this.pendingApBonus    = 0;
-        this.gold              = 0;
+        this.gold              = this.status === "won" ? this.gold : 0;
         this.phase             = "player";
         this.selectedCard      = undefined;
         this.moveMode          = false;
@@ -94,15 +94,28 @@ Object.assign(Game.prototype, {
         this.renderUI();
     },
 
-    // Moves the king to a new tile if it's a valid move, which is called when the player clicks on a tile while in move mode. Moving the king costs the player their movement for the turn, so they cannot move again or play cards after moving. This encourages players to carefully consider when and where to move the king, as it can be a powerful defensive maneuver but also limits their options for that turn.
     drawCards(amount) {
         const cards = [];
         const pool  = [...cardPool];
         for (let i = 0; i < amount && pool.length > 0; i++) {
             const index = randomRange(pool.length);
-            cards.push(pool.splice(index, 1)[0]);
+            cards.push(this.applyUpgradeToCard(pool.splice(index, 1)[0]));
         }
         return cards;
+    },
+
+    applyUpgradeToCard(card) {
+        if (card.type !== "ally") return { ...card, upgradeLevel: 0 };
+        const level = this.upgradeRegistry[card.name] || 0;
+        if (level === 0) return { ...card, upgradeLevel: 0 };
+        const tier = UPGRADE_TIERS[level];
+        return {
+            ...card,
+            hp:           card.hp     + tier.hp,
+            damage:       card.damage + tier.dmg,
+            cost:         Math.max(1, card.cost - tier.ap),
+            upgradeLevel: level,
+        };
     },
 
     // Spawns enemies for the current horde based on the level configuration, which is called at the start of each turn during enemy phase. Enemies spawn on the edge of the board and will try to move toward the king, so players must be prepared to defend against new threats each turn while also managing existing enemies.

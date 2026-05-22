@@ -27,6 +27,12 @@ function tokenStyle(type) {
 }
 
 function drawToken(ctx, unit) {
+    if (drawSprite(ctx, unit)) {
+        drawHpBar(ctx, unit);
+        return;
+    }
+
+    // Fallback: coloured rectangle token used while sprites are loading.
     const style  = tokenStyle(unit.type);
     const span   = unit.tileSpan || 1;
     const x      = boardX + unit.col * tileSize + (tileSize * span) / 2;

@@ -1,6 +1,6 @@
 "use strict";
 
-// Combat-related logic: ally and enemy attacks, traps, and targeting (Game.prototype).
+// Combat logic: ally and enemy attacks traps
 Object.assign(Game.prototype, {
 
     alliesAttack() {
@@ -10,11 +10,12 @@ Object.assign(Game.prototype, {
             const target = this.findNearestEnemy(ally, ally.range);
             if (target) {
                 target.takeDamage(ally.damage);
+                if (ally.type === "archer") triggerUnitAnim(ally);
                 this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`);
             }
         }
     },
-// Boss-specific logic for summoning minions.
+// Boss-specific logic for summoning minions
     enemiesAttackAndMove() {
         for (const enemy of this.enemies) {
             if (enemy.hp <= 0) continue;
@@ -30,6 +31,7 @@ Object.assign(Game.prototype, {
             const adjacentAlly = this.findAdjacentAlly(enemy);
             if (adjacentAlly) {
                 adjacentAlly.takeDamage(enemy.damage);
+                if (enemy.type === "skeleton") triggerUnitAnim(enemy);
                 this.addLog("A skeleton attacks a defender.");
                 continue;
             }
@@ -39,7 +41,7 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // Boss-specific logic for summoning minions.
+    // Boss-specific logic for summoning minions
     triggerTrap(enemy) {
         const effect = this.getEffect(enemy.row, enemy.col);
         if (effect && effect.name === "Exile") {
@@ -49,7 +51,7 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // Finds the nearest enemy within a given range.
+    // Finds the nearest enemy within a given range
     findNearestEnemy(origin, range) {
         let nearest         = undefined;
         let nearestDistance = Infinity;
@@ -64,12 +66,12 @@ Object.assign(Game.prototype, {
         return nearest;
     },
 
-    // Finds an adjacent ally to the given enemy.
+    // Finds an adjacent ally to the given enemy
     findAdjacentAlly(enemy) {
         return this.allies.find(ally => ally.hp > 0 && this.areObjectsAdjacent(enemy, ally));
     },
 
-    // Calculates the distance between two objects on the board.
+    // Calculates the distance between two objects on the board
     getObjectDistance(first, second) {
         const firstSpan = first.tileSpan || 1;
         const secondSpan = second.tileSpan || 1;
