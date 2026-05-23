@@ -1,26 +1,29 @@
 "use strict";
 
-// Turn and progression management: advancing turns, tracking hordes and boss fights, handling victory and defeat conditions, and managing the player's hand of cards (Game.prototype).
 Object.assign(Game.prototype, {
 
-    // Retrieves the current level configuration based on the player's progression.
+    // returns the config object for the level the player is currently on
     getCurrentLevelConfig() {
         return levelConfigs[this.currentLevelIndex] || levelConfigs[0];
     },
-// Retrieves the current horde configuration based on the player's progression within the current level.
+
+    // returns the config for the current horde within the current level
     getCurrentHordeConfig() {
         const level = this.getCurrentLevelConfig();
         return level.hordes.find(horde => horde.hordeNumber === this.currentHorde) || level.hordes[0];
     },
-// Retrieves the turn limit for the current encounter, which is used to determine victory conditions for surviving hordes (boss fights have no turn limit).
+
+    // returns how many turns the player needs to survive (boss fights skip the limit)
     getCurrentTurnLimit() {
         return this.isBossFight ? 99 : this.getCurrentHordeConfig().maxTurns;
     },
-// Increases the player's AP by a given amount, up to the maximum allowed. The player gains 1 AP at the start of each turn if they did not move the king on the previous turn, which encourages strategic movement decisions.
+
+    // adds AP up to the max, called each turn the king didn't move
     gainAP(amount) {
         this.ap = Math.min(maxActionPoints, this.ap + amount);
     },
-// Advances the game to the next turn, handling all end-of-turn logic including applying zone effects, resolving combat, checking victory/defeat conditions, and preparing for the next turn. If the player wins by surviving a horde or defeating a boss, progression is advanced for the next encounter. If the player loses, progression is reset.
+
+    // moves the game forward after a win, either to the next horde, the boss fight, or back to horde 1 if the level is fully cleared
     advanceProgressionAfterVictory() {
         const level = this.getCurrentLevelConfig();
 
@@ -41,7 +44,8 @@ Object.assign(Game.prototype, {
         this.isBossFight = true;
         this.nextEncounterMessage = `The King escaped the final horde. Boss fight unlocked: ${level.boss.name}.`;
     },
-// Resets progression to the first horde of the current level after a defeat, which encourages players to learn from their mistakes and try different strategies to survive longer in the earlier hordes before facing the boss.
+
+    // resets back to horde 1 of the current level after losing
     resetProgressionAfterDefeat() {
         const level = this.getCurrentLevelConfig();
         this.currentHorde = 1;
@@ -49,7 +53,8 @@ Object.assign(Game.prototype, {
         this.pendingApBonus = 0;
         this.nextEncounterMessage = `Defeat resets ${level.name} to Horde 1.`;
     },
-// Restarts the current encounter, which is called after a victory or defeat to set up the next encounter based on the player's progression. This method initializes all game state for the new encounter, including the king's position, allies, enemies, effects, obstacles, player's hand of cards, and logs an appropriate message about the new encounter.
+
+    // sets up the next encounter after a win or loss, resetting all game state
     restart() {
         if (this.status === "won") {
             this.advanceProgressionAfterVictory();
@@ -61,7 +66,7 @@ Object.assign(Game.prototype, {
         this.turn              = 1;
         this.ap                = Math.min(startingAP, maxActionPoints);
         this.pendingApBonus    = 0;
-        this.gold              = 0;
+        this.gold              = this.status === "won" ? this.gold : 0;
         this.phase             = "player";
         this.selectedCard      = undefined;
         this.moveMode          = false;
@@ -94,18 +99,33 @@ Object.assign(Game.prototype, {
         this.renderUI();
     },
 
-    // Moves the king to a new tile if it's a valid move, which is called when the player clicks on a tile while in move mode. Moving the king costs the player their movement for the turn, so they cannot move again or play cards after moving. This encourages players to carefully consider when and where to move the king, as it can be a powerful defensive maneuver but also limits their options for that turn.
+    // picks random cards from the pool and applies any upgrades the player has bought
     drawCards(amount) {
         const cards = [];
         const pool  = [...cardPool];
         for (let i = 0; i < amount && pool.length > 0; i++) {
             const index = randomRange(pool.length);
-            cards.push(pool.splice(index, 1)[0]);
+            cards.push(this.applyUpgradeToCard(pool.splice(index, 1)[0]));
         }
         return cards;
     },
 
-    // Spawns enemies for the current horde based on the level configuration, which is called at the start of each turn during enemy phase. Enemies spawn on the edge of the board and will try to move toward the king, so players must be prepared to defend against new threats each turn while also managing existing enemies.
+    // checks if the player has upgraded this card and applies the matching stat bonuses
+    applyUpgradeToCard(card) {
+        if (card.type !== "ally") return { ...card, upgradeLevel: 0 };
+        const level = this.upgradeRegistry[card.name] || 0;
+        if (level === 0) return { ...card, upgradeLevel: 0 };
+        const tier = UPGRADE_TIERS[level];
+        return {
+            ...card,
+            hp:           card.hp     + tier.hp,
+            damage:       card.damage + tier.dmg,
+            cost:         Math.max(1, card.cost - tier.ap),
+            upgradeLevel: level,
+        };
+    },
+
+    // places the selected card on the board if the player has enough AP and the tile is free
     playCard(row, col) {
         const card = this.selectedCard;
         if (!card) return;
@@ -116,7 +136,7 @@ Object.assign(Game.prototype, {
         }
         if (this.getBlockingObject(row, col) || this.getEffect(row, col)) {
             this.addLog("That tile is occupied.");
-            return; 
+            return;
         }
 
         this.ap -= card.cost;
@@ -132,7 +152,7 @@ Object.assign(Game.prototype, {
         this.renderUI();
     },
 
-    // Ends the player's turn and advances to the enemy phase, which is called when the player clicks the "End Turn" button or moves the king. This method checks if the player has already ended their turn or if it's not currently the player's phase, and if not, it transitions to the enemy phase and calls resolveTurn() to handle all enemy actions and end-of-turn logic.
+    // ends the player phase and triggers all enemy actions
     endPlayerTurn() {
         if (this.status !== "playing" || this.phase !== "player") return;
         this.selectedCard = undefined;
@@ -141,7 +161,7 @@ Object.assign(Game.prototype, {
         this.resolveTurn();
     },
 
-    // Resolves all enemy actions and end-of-turn logic, which is called at the end of the player's turn. This method applies zone effects, resolves combat for allies and enemies, checks victory and defeat conditions, and prepares for the next turn by incrementing the turn counter, granting AP if the king did not move, and spawning new enemies if it's not a boss fight. This method is central to the game's turn-based mechanics and ensures that all game state is updated correctly at the end of each turn.
+    // handles everything at end of turn: zone effects, combat, win/loss checks, spawning enemies, and AP gain
     resolveTurn() {
         this.applyZoneEffects();
         this.alliesAttack();

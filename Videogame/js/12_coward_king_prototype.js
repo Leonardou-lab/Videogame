@@ -27,7 +27,8 @@ class Game {
         this.currentLevelIndex = 0;
         this.currentHorde      = 1;
         this.isBossFight       = false;
-        this.pendingApBonus = 0;
+        this.pendingApBonus    = 0;
+        this.upgradeRegistry   = {};
         this.restart();
     }
 
@@ -52,6 +53,8 @@ async function main() {
     if (typeof loadGameData === "function") {
         await loadGameData(1);
     }
+
+    loadSprites();
 
     const canvas  = document.getElementById("canvas");
     canvas.width  = canvasWidth;

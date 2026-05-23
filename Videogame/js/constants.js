@@ -93,6 +93,15 @@ const keyDirections = {
     c: { row:  1, col:  1 },
 };
 
+// Upgrade tiers for ally cards — cumulative stat bonuses from base
+const UPGRADE_TIERS = [
+    null,
+    { cost: 20, hp: 15, dmg: 10, ap: 0 },
+    { cost: 40, hp: 25, dmg: 20, ap: 1 },
+    { cost: 50, hp: 40, dmg: 35, ap: 2 },
+];
+
+// Card pool in case the data base is not active
 const cardPool = [
     {
         name:   "Knight",

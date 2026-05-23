@@ -14,7 +14,7 @@ async function loadGameData(levelId = 1) {
         if (cardsRes.ok) {
             const cards = await cardsRes.json();
             cardPool.length = 0;
-            cards.forEach(c => cardPool.push(normalizeCard(c)));
+            cards.forEach(c => cardPool.push(c));
         }
 
         if (enemiesRes.ok) {
@@ -24,18 +24,4 @@ async function loadGameData(levelId = 1) {
     } catch {
         console.warn('API fail');
     }
-}
-
-function normalizeCard(card) {
-    const durations = {
-        Exile: 2,
-        "Royal Decree": 3,
-        "Peace Treaty": 4,
-        "Royal Curse": 5,
-    };
-
-    return {
-        ...card,
-        duration: durations[card.name] || card.duration,
-    };
 }
