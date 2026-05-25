@@ -10,20 +10,20 @@ CREATE TABLE Card (
     base_ap_cost INT NOT NULL,
     base_hp INT DEFAULT 0,
     base_damage INT DEFAULT 0,
-    range INT DEFAULT 1,
+    range_attack INT DEFAULT 1,
     duration INT DEFAULT 0,
     effect_description TEXT
 );
 
 -- Insertar las 15 cartas del GDD
-INSERT INTO Card (name, type, base_ap_cost, base_hp, base_damage, range, duration, effect_description) VALUES
+INSERT INTO Card (name, type, base_ap_cost, base_hp, base_damage, range_attack, duration, effect_description) VALUES
 ('Knight',       'attack',   3, 80,  30, 1, 0, 'Melee. Moves toward nearest enemy, attacks when adjacent.'),
-('Archer',       'attack',   2, 50,  20, 3, 0, 'Ranged 3 tiles. Stationary. Auto-attacks nearest in range.'),
-('Mage',         'attack',   4, 40,  25, 2, 0, 'AoE cross pattern, range 2. Fragile but powerful.'),
+('Archer',       'attack',   2, 50,  20, 3, 0, 'range_attackd 3 tiles. Stationary. Auto-attacks nearest in range_attack.'),
+('Mage',         'attack',   4, 40,  25, 2, 0, 'AoE cross pattern, range_attack 2. Fragile but powerful.'),
 ('Pikeman',      'attack',   2, 60,  15, 1, 0, 'Fast 2 tiles/turn. Intercepts quick enemies.'),
 ('Wall',         'defense',  3, 150, 0,  0, 0, 'Blocks tile. Enemies must destroy or go around.'),
 ('Squire',       'defense',  2, 70,  10, 1, 0, 'Reduces 50% damage to adjacent allies. Moves 1 tile/turn.'),
-('Tower',        'defense',  4, 100, 35, 4, 0, 'Ranged 4 tiles. Stationary. Auto-attacks in range.'),
+('Tower',        'defense',  4, 100, 35, 4, 0, 'range_attackd 4 tiles. Stationary. Auto-attacks in range_attack.'),
 ('Guardian',     'defense',  3, 120, 25, 1, 0, 'Tanky mobile unit. Moves 1 tile/turn. Absorbs high damage.'),
 ('Royal Guard',  'defense',  2, 90,  0,  1, 0, 'Follows King automatically. Absorbs first hit to the King.'),
 ('Trench',       'defense',  1, 40,  0,  0, 0, 'Enemies next to this card move 1 tile every 2 turns.'),
@@ -73,6 +73,7 @@ INSERT INTO Enemy (level_id, name, type, hp, damage, speed, is_boss) VALUES
 CREATE TABLE Player (
     player_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(64) NOT NULL DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -156,5 +157,5 @@ CREATE TABLE Run_Horde (
     FOREIGN KEY (horde_id) REFERENCES Horde(horde_id)
 );
 
-
-
+-- Si la BD ya existe, agrega la columna que falta:
+-- ALTER TABLE Player ADD COLUMN password_hash VARCHAR(64) NOT NULL DEFAULT '' AFTER username;
