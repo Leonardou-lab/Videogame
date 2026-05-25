@@ -17,6 +17,7 @@ Object.assign(Game.prototype, {
 
         this.king.setTile(row, col);
         this.kingMovedThisTurn = true;
+        this.desperation = 0;
         this.moveMode          = false;
         this.addLog("The king runs with dignity.");
         this.endPlayerTurn();

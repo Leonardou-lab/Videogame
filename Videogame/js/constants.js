@@ -6,9 +6,10 @@ const boardSize      = 8;
 const tileSize       = 70;
 const boardX         = 30;
 const boardY         = 30;
-const startingAP     = 7;
-const maxActionPoints = 7;
+const startingAP     = 5;
+const maxActionPoints = 5;
 const maxHandSize     = 3;
+const maxDesperation  = 4;
 
 const levelConfigs = [
     {
@@ -28,13 +29,13 @@ const levelConfigs = [
             name: "Skeleton King",
             type: "boss",
             color: "#6f1d2b",
-            hp: 200,
+            hp: 500,
             damage: 30,
             range: 1,
             speed: 1,
             safeZoneWeight: 2,
             tileSpan: 2,
-            summonEveryTurns: 3,
+            summonEveryTurns: 2,
         },
         bossSummon: {
             name: "Skeleton Vanguard",

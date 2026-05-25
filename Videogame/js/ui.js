@@ -134,6 +134,29 @@ Object.assign(Game.prototype, {
         this.logElement.innerHTML = this.logLines
             .map(line => `<div class="logLine">${line}</div>`)
             .join("");
+
+        this.renderDesperationPanel();
+    },
+
+    renderDesperationPanel() {
+        let panel = document.getElementById("desperationPanel");
+        if (!panel) {
+            panel = document.createElement("aside");
+            panel.id = "desperationPanel";
+            document.getElementById("app").appendChild(panel);
+        }
+
+        const value = Math.min(maxDesperation, this.desperation || 0);
+        panel.innerHTML = `
+            <h2>Desperation</h2>
+            <img src="Assets/images/Cara${value}.png" alt="Desperation level ${value}">
+            <div class="desperation-meter" aria-label="Desperation ${value} of ${maxDesperation}">
+                ${Array.from({ length: maxDesperation }, (_, index) => `
+                    <span class="${index < value ? "filled" : ""}"></span>
+                `).join("")}
+            </div>
+            <strong>${value}/${maxDesperation}</strong>
+        `;
     },
 
     addLog(text) {

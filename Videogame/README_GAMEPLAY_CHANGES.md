@@ -35,21 +35,23 @@ Defeat still uses the safe zone rule:
 - Boss inside the safe zone counts as 2 pressure.
 - If safe zone pressure reaches 2 or more, the player loses.
 
+The player also loses immediately if the Desperation meter reaches 4.
+
 ## Boss
 
 The Level 1 boss is the Skeleton King.
 
 Current boss stats:
 
-- HP: 200
+- HP: 500
 - Damage: 30
 - Speed: 1
 - Size: 2x2 tiles
-- Movement: advances toward the King every 3 turns
-- Summon: creates one Skeleton Vanguard every 3 turns
+- Movement: advances toward the King every 2 turns
+- Summon: creates one Skeleton Vanguard every 2 turns
 - Safe zone pressure: 2
 
-The boss uses the same basic attack logic as enemies, but it is larger and only advances every third turn. If any part of its 2x2 body enters the safe zone, it counts as 2 pressure and immediately overloads the safe zone.
+The boss uses the same basic attack logic as enemies, but it is larger and only advances every second turn. If any part of its 2x2 body enters the safe zone, it counts as 2 pressure and immediately overloads the safe zone.
 
 The boss summon is the Skeleton Vanguard:
 
@@ -61,11 +63,33 @@ The boss summon is the Skeleton Vanguard:
 
 The prototype now uses a strict AP cap.
 
-- Starting AP: 7
-- Max AP: 7
+- Starting AP: 5
+- Max AP: 5
 - If the King does not move, the player gains 1 AP at the next turn.
-- AP cannot go above 7.
+- AP cannot go above 5.
 - If the King moves, no AP is gained that turn.
+
+## Desperation
+
+The Desperation meter forces the player to move the King instead of hiding permanently behind allies.
+
+- Desperation starts at 0.
+- Each player turn where the King does not move increases Desperation by 1.
+- Moving the King resets Desperation to 0.
+- At 4 Desperation, the player loses immediately.
+- The right side of the screen shows the current Desperation face using `Cara0.png` through `Cara4.png`.
+
+## Horde Attack Order
+
+Horde 1 keeps the easier tutorial-like resolution order:
+
+1. Allies attack.
+2. Enemies attack and move.
+
+Starting in Horde 2, and during boss fights, enemies act first:
+
+1. Enemies attack and move.
+2. Allies attack.
 
 ## Hand Management
 
