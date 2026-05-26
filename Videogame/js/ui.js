@@ -115,6 +115,9 @@ Object.assign(Game.prototype, {
                 ? `<span class="card-lvl-tag lvl${lvl}">◆ LVL ${lvl}</span>`
                 : "";
             button.innerHTML = `
+                <img class="card-image" src="Assets/cards/${card.name}.png">
+                `;
+                /*
                 <div class="cardTop">
                     <strong>${card.name}</strong>
                     <em>${card.cost} AP</em>
@@ -122,7 +125,7 @@ Object.assign(Game.prototype, {
                 ${statsLine}
                 <span>${card.text}</span>
                 ${lvlTag}
-            `;
+            `;*/
             button.addEventListener("click", () => {
                 this.selectedCard = card;
                 this.moveMode     = false;
