@@ -28,7 +28,7 @@ INSERT INTO Card (name, type, base_ap_cost, base_hp, base_damage, range_attack, 
 ('Royal Guard',  'defense',  2, 90,  0,  1, 0, 'Follows King automatically. Absorbs first hit to the King.'),
 ('Trench',       'defense',  1, 40,  0,  0, 0, 'Enemies next to this card move 1 tile every 2 turns.'),
 ('Exile',        'political',2, 0,   0,  0, 2, 'Trap: enemy stepping on tile is paralyzed for 2 turns.'),
-('Royal Decree', 'political',3, 0,   0,  0, 3, '3x3 push zone: enemies pushed 1 tile back each turn.'),
+('Bomb',         'political',4, 0,  40,  1, 0, 'Explodes on placement. 40 damage to all enemies in 3x3.'),
 ('Peace Treaty', 'political',2, 0,   0,  0, 4, '3x3 slow zone: enemies move at 50% speed.'),
 ('Royal Curse',  'political',4, 0,   0,  0, 5, '3x3 debuff zone: enemies deal 50% less damage for 5 turns.'),
 ('Decoy',        'political',1, 30,  0,  0, 0, 'Enemies prioritize attacking this over the King.');
