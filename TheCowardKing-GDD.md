@@ -337,6 +337,16 @@ The king starts in the center of the board, and its 3x3 safe zone is dynamic and
 | **Trench** | Defense Unit | 1 | 40 HP / 0 DMG | 1x1. The enemies next to this card can move 1 tile every 2 turns only.  |
 
 ### 
+### **Card Upgrades Using Gold**
+
+**Attack and Defense Unit ONLY**
+
+| Upgrade Level | Gold Cost | Stat Bonus | Example: Knight |
+| :---- | :---- | :---- | :---- |
+| **Base(Lvl 0)** | - | - | 80 HP / 30 DMG / 3 AP Cost
+| **Level 1** | 20 | +15 HP / +10 DMG | 95 HP / 40 DMG / 3 AP Cost
+| **Level 2** | 40 | +25 HP / +20 DMG / -1 AP Cost | 105 HP / 50 DMG / 2 AP Cost
+| **Level 3** | 50 | +40 / +35 DMG / -1 AP Cost | 120 HP / 65 DMG / 2 AP Cost
 
 ### 
 
@@ -637,7 +647,12 @@ Each turn is divided in two phases:
 **Card Upgrade System**
 
 * Accessible via the upgrade menu during the player's turn with no turn cost or even between hordes via the shop screen.  
-* Each upgrade costs from 20 to 50 gold and permanently improves a card's stats.  
+* Each upgrade costs from 20 to 50 gold and permanently improves a card's stats.
+* 3 Types of upgrades are available, costing 20(level 1 upgrade), 40(level 2 upgrade) and 50(level 3 upgrade). 
+* Card upgrades must be progressively, this means you cant upgrade a level 1 card into a level 3, it must first be level 2.
+* Upgrade Level 1: Costs 20 Gold. Adds +10 Damage and +15 Health to the unit card's base values.
+* Upgrade Level 2: Costs 40 Gold. Adds +25 Damage, +25 Health an reduces its AP cost by 1 to the unit card's base values.
+* Upgrade Level 3: Costs 50 Gold. Adds +35 Damage, +40 Health and reduces its AP cost by 1 to the unit card's base values.
 * Upgrades persist across deaths.  
 * If gold is not spent, then is lost on death, purchased upgrades are always retained.
 
@@ -982,7 +997,7 @@ Handles meta-progression.
 
 ## 6.1 Style Attributes {#6.1-style-attributes}
 
-The visual Style will be set in a kind of medieval and royal castle with candle type of lighting and also using warm colors:
+The visual Style will be set depending on the level, every level will be visually attched to the type of boss and have unique qualities to add immersion to the game
 
 Characteristics:  
  Use of shadows to show depth and a castle type of lighting  
@@ -991,12 +1006,13 @@ Characteristics:
  A 2d type of graphics but including depth  
  Warm colors for walls, columns or pillars, floor, doors and surroundings  
  Bright color to highlight the 3x3 safe area of the king
+ Bright colors to highlight special card abilities
 
 ## 6.2 Graphics Needed {#6.2-graphics-needed}
 
 ### **Characters and cards on board:** {#characters-and-cards-on-board:}
 
-King (idle, damaged)  
+King (idle, dead)  
  Skeleton (idle, attack)  
  Ogre (idle, attack)  
  Elite Warrior (idle, attack)  
@@ -1031,12 +1047,20 @@ Health indicators
  Horde indicator
 
 ### **Surroundings:** {#surroundings:}
+**Skeleton Boss level**
+* Dark ambience
+* Destroyed floors
+* Bones and skulls
 
-Castle room (walls, doors and floor)  
- Pillars  
- Candles and candle holders  
- Gold on floor  
- Flags or banners
+**Ogre Boss Level** 
+* Dungeonlike ambience
+* Bloody and dirty floor
+* Not so dark
+
+**Brave King Boss Level**
+* Castle walls and ambience
+* Royalty items on floors and walls
+* Lighted place
 
 # 
 
