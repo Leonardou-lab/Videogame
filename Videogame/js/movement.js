@@ -81,9 +81,6 @@ Object.assign(Game.prototype, {
             enemy.slowedThisTurn = false;
             for (const effect of this.effects) {
                 const distance = tileDistance(enemy, effect);
-                if (effect.name === "Royal Decree" && distance <= effect.radius) {
-                    this.pushEnemyAway(enemy);
-                }
                 if (effect.name === "Peace Treaty" && distance <= effect.radius && this.turn % 2 === 0) {
                     enemy.slowedThisTurn = true;
                 }
