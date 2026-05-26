@@ -6,9 +6,211 @@ const boardSize      = 8;
 const tileSize       = 70;
 const boardX         = 30;
 const boardY         = 30;
-const maxTurns       = 30;
-const startingAP     = 7;
-const enemiesPerTurn = 1;
+const startingAP     = 5;
+const maxActionPoints = 5;
+const maxHandSize     = 3;
+const maxDesperation  = 4;
+
+const levelConfigs = [
+    {
+        levelNumber: 1,
+        name: "Catacombs",
+        backgroundImage: "Assets/Level1.png",
+        normalEnemy: {
+            name: "Skeleton",
+            type: "skeleton",
+            color: "#9b2f35",
+            hp: 50,
+            damage: 15,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 1,
+        },
+        boss: {
+            name: "Skeleton King",
+            type: "boss",
+            color: "#6f1d2b",
+            hp: 300,
+            damage: 30,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 2,
+            tileSpan: 2,
+            summonEveryTurns: 30,
+        },
+        bossSummon: {
+            name: "Skeleton Vanguard",
+            type: "skeleton",
+            color: "#7f2430",
+            hp: 80,
+            damage: 22,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 1,
+        },
+        hordes: [
+            {
+                hordeNumber: 1,
+                maxTurns: 18,
+                enemiesPerTurn: 1,
+                maxEnemiesOnBoard: 8,
+                obstacleCount: 0,
+                spawnEdges: ["top"],
+            },
+            {
+                hordeNumber: 2,
+                maxTurns: 24,
+                enemiesPerTurn: 1,
+                maxEnemiesOnBoard: 10,
+                obstacleCount: 2,
+                spawnEdges: ["top", "left", "right"],
+            },
+            {
+                hordeNumber: 3,
+                maxTurns: 30,
+                enemiesPerTurn: 2,
+                maxEnemiesOnBoard: 12,
+                obstacleCount: 4,
+                spawnEdges: ["top", "left", "right", "bottom"],
+            },
+        ],
+        bossEncounter: {
+            obstacleCount: 0,
+        },
+    },
+    {
+        levelNumber: 2,
+        name: "Ogre Dungeon",
+        backgroundImage: "Assets/Level2.png",
+        normalEnemy: {
+            name: "Ogre",
+            type: "ogre",
+            color: "#4f6b3b",
+            hp: 80,
+            damage: 25,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 1,
+        },
+        boss: {
+            name: "Ogre Boss",
+            type: "ogreboss",
+            color: "#314b28",
+            hp: 350,
+            damage: 40,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 2,
+            tileSpan: 2,
+            summonEveryTurns: 2,
+        },
+        bossSummon: {
+            name: "Ogre Brute",
+            type: "ogre",
+            color: "#3f5e32",
+            hp: 100,
+            damage: 30,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 1,
+        },
+        hordes: [
+            {
+                hordeNumber: 1,
+                maxTurns: 20,
+                enemiesPerTurn: 1,
+                maxEnemiesOnBoard: 7,
+                obstacleCount: 2,
+                spawnEdges: ["top", "left"],
+            },
+            {
+                hordeNumber: 2,
+                maxTurns: 26,
+                enemiesPerTurn: 1,
+                maxEnemiesOnBoard: 9,
+                obstacleCount: 4,
+                spawnEdges: ["top", "left", "right"],
+            },
+            {
+                hordeNumber: 3,
+                maxTurns: 32,
+                enemiesPerTurn: 2,
+                maxEnemiesOnBoard: 10,
+                obstacleCount: 6,
+                spawnEdges: ["top", "left", "right", "bottom"],
+            },
+        ],
+        bossEncounter: {
+            obstacleCount: 0,
+        },
+    },
+    {
+        levelNumber: 3,
+        name: "Brave King's Castle",
+        backgroundImage: "Assets/Level3.png",
+        normalEnemy: {
+            name: "Elite Warrior",
+            type: "elitewarrior",
+            color: "#9b6d2f",
+            hp: 100,
+            damage: 35,
+            range: 1,
+            speed: 2,
+            safeZoneWeight: 1,
+        },
+        boss: {
+            name: "Brave King",
+            type: "braveking",
+            color: "#8e2d25",
+            hp: 500,
+            damage: 50,
+            range: 1,
+            speed: 1,
+            safeZoneWeight: 2,
+            tileSpan: 2,
+            summonEveryTurns: 2,
+        },
+        bossSummon: {
+            name: "Royal Elite",
+            type: "elitewarrior",
+            color: "#b17d33",
+            hp: 120,
+            damage: 40,
+            range: 1,
+            speed: 2,
+            safeZoneWeight: 1,
+        },
+        hordes: [
+            {
+                hordeNumber: 1,
+                maxTurns: 20,
+                enemiesPerTurn: 1,
+                maxEnemiesOnBoard: 8,
+                obstacleCount: 2,
+                spawnEdges: ["top", "left", "right"],
+            },
+            {
+                hordeNumber: 2,
+                maxTurns: 28,
+                enemiesPerTurn: 2,
+                maxEnemiesOnBoard: 10,
+                obstacleCount: 3,
+                spawnEdges: ["top", "left", "right", "bottom"],
+            },
+            {
+                hordeNumber: 3,
+                maxTurns: 34,
+                enemiesPerTurn: 2,
+                maxEnemiesOnBoard: 12,
+                obstacleCount: 4,
+                spawnEdges: ["top", "left", "right", "bottom"],
+            },
+        ],
+        bossEncounter: {
+            obstacleCount: 0,
+        },
+    },
+];
 
 const keyDirections = {
     ArrowUp:    { row: -1, col:  0 },
@@ -25,6 +227,15 @@ const keyDirections = {
     c: { row:  1, col:  1 },
 };
 
+// Upgrade tiers for ally cards — cumulative stat bonuses from base
+const UPGRADE_TIERS = [
+    null,
+    { cost: 20, hp: 15, dmg: 10, ap: 0 },
+    { cost: 40, hp: 25, dmg: 20, ap: 1 },
+    { cost: 50, hp: 40, dmg: 35, ap: 2 },
+];
+
+// Card pool in case the data base is not active
 const cardPool = [
     {
         name:   "Knight",

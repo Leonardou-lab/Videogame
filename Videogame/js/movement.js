@@ -1,5 +1,5 @@
 "use strict";
-
+// King and enemy movement, zone push
 Object.assign(Game.prototype, {
 
     tryMoveKing(rowDelta, colDelta) {
@@ -17,12 +17,16 @@ Object.assign(Game.prototype, {
 
         this.king.setTile(row, col);
         this.kingMovedThisTurn = true;
+        this.desperation = 0;
         this.moveMode          = false;
         this.addLog("The king runs with dignity.");
         this.endPlayerTurn();
     },
-
+// Enemy movement toward the king, with simple pathfinding that tries to move diagonally when possible
+// Enemies will never move into the safe zone around the king, but they can move around it
     moveEnemyTowardKing(enemy) {
+        if (enemy.isBoss && this.turn % enemy.summonEveryTurns !== 0) return;
+
         const rowStep = Math.sign(this.king.row - enemy.row);
         const colStep = Math.sign(this.king.col - enemy.col);
         const options = [
@@ -32,26 +36,36 @@ Object.assign(Game.prototype, {
         ];
 
         for (const option of options) {
-            if (!this.isInsideBoard(option.row, option.col)) continue;
-            if (option.row === this.king.row && option.col === this.king.col) continue;
-            if (!this.getBlockingObject(option.row, option.col)) {
+            if (!this.canUnitOccupyTiles(enemy, option.row, option.col)) continue;
+            if (this.objectOccupiesTile(enemy, this.king.row, this.king.col)) continue;
+            if (this.unitWouldCoverKing(enemy, option.row, option.col)) continue;
+            {
                 enemy.setTile(option.row, option.col);
+                if (enemy.isBoss) this.addLog(`${enemy.name} lurches closer to the King.`);
                 return;
             }
         }
     },
-
+// Checks if moving a unit to a given tile would partially or fully cover the king, which is not allowed
+    unitWouldCoverKing(unit, row, col) {
+        const span = unit.tileSpan || 1;
+        return this.king.row >= row &&
+            this.king.row < row + span &&
+            this.king.col >= col &&
+            this.king.col < col + span;
+    },
+// Pushes an enemy one tile away from the king if it's within a zone effect that has a push component 
     pushEnemyAway(enemy) {
         const rowStep = Math.sign(enemy.row - this.king.row);
         const colStep = Math.sign(enemy.col - this.king.col);
         const row     = enemy.row + rowStep;
         const col     = enemy.col + colStep;
 
-        if (this.isInsideBoard(row, col) && !this.getBlockingObject(row, col)) {
+        if (this.canUnitOccupyTiles(enemy, row, col)) {
             enemy.setTile(row, col);
         }
     },
-
+// Checks if a tile is within the safe zone around the king
     applyZoneEffects() {
         for (const enemy of this.enemies) {
             enemy.slowedThisTurn = false;

@@ -4,6 +4,11 @@ function labelForType(type) {
     const labels = {
         king:     "K",
         skeleton: "S",
+        boss:     "B",
+        ogre:     "O",
+        ogreboss: "OB",
+        elitewarrior: "E",
+        braveking: "BK",
         knight:   "k",
         archer:   "->",
         wall:     "W",
@@ -13,42 +18,10 @@ function labelForType(type) {
     return labels[type] || "?";
 }
 
-function tokenStyle(type) {
-    const styles = {
-        king:     { fill: "#d9aa3b", border: "#f5d77c", shadow: "#5a320e", text: "#231407" },
-        skeleton: { fill: "#4b1515", border: "#c05b4c", shadow: "#160808", text: "#f5dfba" },
-        knight:   { fill: "#253f6b", border: "#8fb1df", shadow: "#0a1729", text: "#f4ecd8" },
-        archer:   { fill: "#275238", border: "#9ad091", shadow: "#0b1b10", text: "#f4ecd8" },
-        wall:     { fill: "#4e4b47", border: "#b5a888", shadow: "#151311", text: "#f4ecd8" },
-    };
-    return styles[type] || { fill: "#4b1d63", border: "#c995d8", shadow: "#18091f", text: "#f4ecd8" };
-}
-
 function drawToken(ctx, unit) {
-    const style  = tokenStyle(unit.type);
-    const x      = unit.position.x;
-    const y      = unit.position.y;
-    const radius = 22;
-
-    ctx.save();
-    ctx.fillStyle = style.shadow;
-    ctx.fillRect(x - radius + 4, y - radius + 6, radius * 2, radius * 2);
-
-    ctx.fillStyle = style.fill;
-    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-    ctx.strokeStyle = style.border;
-    ctx.lineWidth = 4;
-    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
-
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - radius + 5, y - radius + 5, radius * 2 - 10, radius * 2 - 10);
-
-    drawCenteredText(ctx, labelForType(unit.type), x, y - 3, "28px Georgia", style.text);
-    if (unit.type !== "king") {
-        drawCenteredText(ctx, unit.hp, x, y + 17, "11px Courier New", style.text);
+    if (drawSprite(ctx, unit)) {
+        drawHpBar(ctx, unit);
     }
-    ctx.restore();
 }
 
 function drawEffectToken(ctx, effect) {
@@ -64,6 +37,31 @@ function drawEffectToken(ctx, effect) {
     ctx.lineWidth    = 3;
     ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
     drawCenteredText(ctx, labelForType(effect.effectType), x, y + 1, "24px Georgia", "#f4ecd8");
+    ctx.restore();
+}
+
+function drawObstacleToken(ctx, obstacle) {
+    const x = obstacle.position.x;
+    const y = obstacle.position.y;
+    const radius = 24;
+
+    ctx.save();
+    ctx.fillStyle = "#171412";
+    ctx.fillRect(x - radius + 4, y - radius + 5, radius * 2, radius * 2);
+
+    ctx.fillStyle = "#2d2926";
+    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    ctx.strokeStyle = "#6d6253";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(x - radius, y - radius, radius * 2, radius * 2);
+
+    ctx.fillStyle = "#463d35";
+    ctx.fillRect(x - 16, y - 12, 15, 13);
+    ctx.fillRect(x + 1, y - 18, 17, 15);
+    ctx.fillRect(x - 10, y + 3, 24, 16);
+    ctx.strokeStyle = "rgba(230, 193, 106, 0.22)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x - radius + 6, y - radius + 6, radius * 2 - 12, radius * 2 - 12);
     ctx.restore();
 }
 

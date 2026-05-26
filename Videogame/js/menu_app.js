@@ -6,9 +6,11 @@ const APP_CONFIG = {
     prototypeUrl: "../Videogame/index.html",
 };
 
+const API_BASE = "http://localhost:3000";
+
 const appState = {
     currentUser: {
-        id: "guest-player",
+        player_id: null,
         username: "Guest King",
         isGuest: true,
     },
@@ -16,29 +18,9 @@ const appState = {
         masterVolume: 80,
         musicVolume: 65,
         sfxVolume: 75,
-        fullscreen: false,
-        highContrast: false,
     },
 };
 
-const mockStats = {
-    runsAttempted: 12,
-    levelsCompleted: 7,
-    enemiesDefeated: 432,
-    bossesDefeated: 3,
-    cardsUpgraded: 18,
-    goldEarned: 8450,
-    currentCheckpoint: "Level 2 - Horde 1",
-    currentLevel: 2,
-    currentHorde: 1,
-    purchasedUpgrades: [
-        "Knight damage +5",
-        "Archer range +1",
-        "Wall HP +25",
-        "Exile duration +1",
-    ],
-    savedProgress: "Autosaved after Level 1 Boss",
-};
 
 const mockCredits = {
     project: "The Coward King",
@@ -67,7 +49,6 @@ function renderMenu(activeModal) {
     content.className = "menu-content";
     content.appendChild(createBrand());
     content.appendChild(createMenuActions());
-    content.appendChild(createStatPanel(mockStats));
     screen.appendChild(content);
 
     if (activeModal) {
@@ -101,7 +82,7 @@ function createLoginButton() {
 
     const button = document.createElement("button");
     button.className = "small-button";
-    button.innerHTML = appState.currentUser.isGuest ? "♙ LOGIN" : `♙ ${appState.currentUser.username}`;
+    button.innerHTML = appState.currentUser.isGuest ? "♙ LOGIN" : `♙ ${appState.currentUser.username.toUpperCase()}`;
     button.addEventListener("click", () => renderMenu(createLoginModal()));
 
     login.appendChild(button);
@@ -159,22 +140,6 @@ function menuButton(label, icon, primary, onClick) {
     return button;
 }
 
-function createStatPanel(stats) {
-    const panel = document.createElement("aside");
-    panel.className = "overview-panel";
-    panel.innerHTML = `
-        <h2 class="panel-title">Overview</h2>
-        <div class="stat-list">
-            ${statRow("♜", "Runs Attempted", stats.runsAttempted)}
-            ${statRow("♛", "Levels Completed", stats.levelsCompleted)}
-            ${statRow("☠", "Enemies Defeated", stats.enemiesDefeated)}
-            ${statRow("♕", "Bosses Defeated", stats.bossesDefeated)}
-            ${statRow("▣", "Cards Upgraded", stats.cardsUpgraded)}
-            ${statRow("◎", "Gold Earned", stats.goldEarned.toLocaleString())}
-        </div>
-    `;
-    return panel;
-}
 
 function statRow(icon, label, value) {
     return `
@@ -224,21 +189,26 @@ function createModal(title, content) {
 
 function createOverviewModal() {
     const content = document.createElement("div");
-    content.innerHTML = `
-        <div class="detail-list">
-            ${statRow("♜", "Runs Attempted", mockStats.runsAttempted)}
-            ${statRow("♛", "Levels Completed", mockStats.levelsCompleted)}
-            ${statRow("☠", "Enemies Defeated", mockStats.enemiesDefeated)}
-            ${statRow("♕", "Bosses Defeated", mockStats.bossesDefeated)}
-            ${statRow("▣", "Cards Upgraded", mockStats.cardsUpgraded)}
-            ${statRow("◎", "Gold Earned", mockStats.goldEarned.toLocaleString())}
-            ${detailRow("Current checkpoint", mockStats.currentCheckpoint)}
-            ${detailRow("Current level", mockStats.currentLevel)}
-            ${detailRow("Current horde", mockStats.currentHorde)}
-            ${detailRow("Saved progress", mockStats.savedProgress)}
-        </div>
-        <div class="progress-pill">Purchased upgrades: ${mockStats.purchasedUpgrades.join(", ")}</div>
-    `;
+    content.className = "detail-list";
+
+    if (!appState.currentUser.player_id) {
+        content.innerHTML = statRow("♙", "Info", "Login to see your stats");
+        return createModal("Stats / Overview", content);
+    }
+
+    content.innerHTML = statRow("…", "Loading", "fetching stats…");
+    fetch(`${API_BASE}/api/stats/${appState.currentUser.player_id}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(s => {
+            content.innerHTML =
+                statRow("▶", "Runs played",      s.total_runs) +
+                statRow("☠", "Enemies killed",   s.total_enemies_killed) +
+                statRow("★", "Upgrades bought",  s.total_upgrades) +
+                statRow("◆", "Gold earned",      s.total_gold_earned) +
+                statRow("✓", "Levels completed", s.levels_completed);
+        })
+        .catch(() => { content.innerHTML = statRow("⚠", "Error", "could not load stats") });
+
     return createModal("Stats / Overview", content);
 }
 
@@ -250,27 +220,6 @@ function createSettingsModal() {
     content.appendChild(sliderRow("Music volume", "musicVolume"));
     content.appendChild(sliderRow("Sound effects", "sfxVolume"));
 
-    const fullscreen = document.createElement("label");
-    fullscreen.className = "toggle-row";
-    fullscreen.innerHTML = `
-        <input type="checkbox" ${appState.settings.fullscreen ? "checked" : ""}>
-        Fullscreen mode
-    `;
-    fullscreen.querySelector("input").addEventListener("change", event => {
-        appState.settings.fullscreen = event.target.checked;
-    });
-
-    const display = document.createElement("label");
-    display.className = "toggle-row";
-    display.innerHTML = `
-        <input type="checkbox" ${appState.settings.highContrast ? "checked" : ""}>
-        High contrast display
-    `;
-    display.querySelector("input").addEventListener("change", event => {
-        appState.settings.highContrast = event.target.checked;
-    });
-
-    content.append(fullscreen, display);
     return createModal("Settings", content);
 }
 
@@ -320,29 +269,58 @@ function createLoginModal() {
     form.innerHTML = `
         <label>
             Username
-            <input name="username" type="text" placeholder="King Aldric">
+            <input name="username" type="text" placeholder="King Aldric" required>
         </label>
         <label>
             Password
-            <input name="password" type="password" placeholder="Temporary prototype only">
+            <input name="password" type="password" placeholder="••••••••" required>
         </label>
         <div class="form-actions">
             <button class="form-button" type="submit" data-action="login">Login</button>
             <button class="form-button" type="submit" data-action="signup">Sign Up</button>
         </div>
-        <p class="progress-pill">Prototype mode: login is visual only for now.</p>
+        <p class="progress-pill" id="login-msg"></p>
     `;
 
-    form.addEventListener("submit", event => {
+    form.addEventListener("submit", async event => {
         event.preventDefault();
-        const formData = new FormData(form);
-        const username = formData.get("username");
-        appState.currentUser = {
-            id: "mock-user",
-            username: username || "Guest King",
-            isGuest: false,
-        };
-        renderMenu();
+        const action = event.submitter?.dataset.action ?? "login";
+        const username = form.elements["username"].value.trim();
+        const password = form.elements["password"].value;
+        const msg = form.querySelector("#login-msg");
+
+        msg.textContent = "…";
+
+        try {
+            let player;
+            if (action === "signup") {
+                const res = await fetch(`${API_BASE}/api/player`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password }),
+                });
+                if (res.status === 409) { msg.textContent = "Username already taken."; return; }
+                if (!res.ok) { msg.textContent = "Sign up failed."; return; }
+                player = await res.json();
+            } else {
+                const res = await fetch(
+                    `${API_BASE}/api/player/${encodeURIComponent(username)}?password=${encodeURIComponent(password)}`
+                );
+                if (res.status === 404) { msg.textContent = "Player not found."; return; }
+                if (res.status === 401) { msg.textContent = "Wrong password."; return; }
+                if (!res.ok) { msg.textContent = "Login failed."; return; }
+                player = await res.json();
+            }
+
+            appState.currentUser = {
+                player_id: player.player_id,
+                username:  player.username,
+                isGuest:   false,
+            };
+            renderMenu();
+        } catch {
+            msg.textContent = "Could not reach server.";
+        }
     });
 
     return createModal("Login / Sign Up", form);

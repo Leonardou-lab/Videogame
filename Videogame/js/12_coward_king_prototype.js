@@ -17,14 +17,18 @@
 let ctx;
 let game;
 let oldTime = 0;
-
+// Main game class, containing all game state and the main draw() method.
 class Game {
     constructor() {
         this.hudElement  = document.getElementById("hud");
         this.handElement = document.getElementById("hand");
         this.logElement  = document.getElementById("log");
         this.createEventListeners();
-        this.pendingApBonus = 0;
+        this.currentLevelIndex = 0;
+        this.currentHorde      = 1;
+        this.isBossFight       = false;
+        this.pendingApBonus    = 0;
+        this.upgradeRegistry   = {};
         this.restart();
     }
 
@@ -33,6 +37,7 @@ class Game {
         this.drawBoard(ctx);
         this.drawHighlights(ctx);
 
+        for (const obstacle of this.obstacles) obstacle.draw(ctx);
         for (const ally   of this.allies)  ally.draw(ctx);
         for (const enemy  of this.enemies) enemy.draw(ctx);
         for (const effect of this.effects) effect.draw(ctx);
@@ -44,7 +49,13 @@ class Game {
     }
 }
 
-function main() {
+async function main() {
+    if (typeof loadGameData === "function") {
+        await loadGameData(1);
+    }
+
+    loadSprites();
+
     const canvas  = document.getElementById("canvas");
     canvas.width  = canvasWidth;
     canvas.height = canvasHeight;
