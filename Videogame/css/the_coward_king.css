@@ -6,11 +6,12 @@
 body {
     margin: 0;
     min-height: 100vh;
+    --level-background: url("../Assets/Level1.png");
     background:
         radial-gradient(ellipse at 20% 30%, rgba(200, 120, 40, 0.08) 0%, transparent 55%),
         radial-gradient(ellipse at 80% 70%, rgba(200, 120, 40, 0.06) 0%, transparent 55%),
         linear-gradient(rgba(13, 11, 10, 0.18), rgba(13, 11, 10, 0.42)),
-        url("../Assets/level1.png") center / cover no-repeat,
+        var(--level-background) center / cover no-repeat,
         #1a1208;
     color: #f4ecd8;
     overflow: hidden;
@@ -65,6 +66,63 @@ p {
 
 #hud div::first-letter {
     color: #f39c12;
+}
+
+#desperationPanel {
+    position: fixed;
+    right: 18px;
+    top: 50%;
+    z-index: 5;
+    width: 132px;
+    transform: translateY(-50%);
+    border: 3px solid #5d4037;
+    background: rgba(25, 12, 10, 0.9);
+    box-shadow:
+        0 0 0 4px #0e0905,
+        0 0 26px rgba(0, 0, 0, 0.72),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
+    padding: 10px;
+    text-align: center;
+    pointer-events: none;
+}
+
+#desperationPanel h2 {
+    margin-bottom: 8px;
+    color: #e6c16a;
+    font-size: 10px;
+    text-transform: uppercase;
+}
+
+#desperationPanel img {
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.desperation-meter {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.desperation-meter span {
+    height: 12px;
+    border: 1px solid #5d4037;
+    background: rgba(20, 12, 10, 0.85);
+}
+
+.desperation-meter span.filled {
+    background: linear-gradient(#e6c16a, #8e2d25);
+    box-shadow: 0 0 8px rgba(231, 76, 60, 0.58);
+}
+
+#desperationPanel strong {
+    color: #f0e6d3;
+    font-size: 12px;
 }
 
 #board-area {
@@ -427,4 +485,3 @@ section {
         aspect-ratio: 1;
     }
 }
-

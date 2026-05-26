@@ -17,7 +17,7 @@ const target = this.findNearestEnemy(ally, ally.range);
     },
 // Boss-specific logic for summoning minions
     enemiesAttackAndMove() {
-        for (const enemy of this.enemies) {
+        for (const enemy of [...this.enemies]) {
             if (enemy.hp <= 0) continue;
             if (enemy.isBoss && enemy.summonEveryTurns > 0 && this.turn % enemy.summonEveryTurns === 0) {
                 this.summonBossMinion();
@@ -31,13 +31,20 @@ const target = this.findNearestEnemy(ally, ally.range);
             const adjacentAlly = this.findAdjacentAlly(enemy);
             if (adjacentAlly) {
                 adjacentAlly.takeDamage(enemy.damage);
-                if (enemy.type === "skeleton") triggerUnitAnim(enemy);
-                this.addLog("A skeleton attacks a defender.");
+                triggerUnitAnim(enemy);
+                this.addLog(`${enemy.name} attacks a defender.`);
                 continue;
             }
 
-            this.moveEnemyTowardKing(enemy);
-            this.triggerTrap(enemy);
+            const moveSteps = Math.max(1, enemy.speed || 1);
+            for (let step = 0; step < moveSteps; step++) {
+                const previousRow = enemy.row;
+                const previousCol = enemy.col;
+                this.moveEnemyTowardKing(enemy);
+                this.triggerTrap(enemy);
+                if (enemy.stunTurns > 0) break;
+                if (enemy.row === previousRow && enemy.col === previousCol) break;
+            }
         }
     },
 
@@ -47,7 +54,7 @@ const target = this.findNearestEnemy(ally, ally.range);
         if (effect && effect.name === "Exile") {
             enemy.stunTurns  = effect.duration;
             effect.duration  = 0;
-            this.addLog("Exile triggers: skeleton stunned.");
+            this.addLog(`Exile triggers: ${enemy.name} stunned.`);
         }
     },
 

@@ -23,15 +23,43 @@ Object.assign(Game.prototype, {
         this.ap = Math.min(maxActionPoints, this.ap + amount);
     },
 
-    // moves the game forward after a win, either to the next horde, the boss fight, or back to horde 1 if the level is fully cleared
+    applyLevelBackground() {
+        const level = this.getCurrentLevelConfig();
+        if (!level.backgroundImage) return;
+        document.body.style.setProperty("--level-background", `url("../${level.backgroundImage}")`);
+    },
+
+    updateDesperation(kingMovedLastTurn) {
+        if (kingMovedLastTurn) {
+            this.desperation = 0;
+            return;
+        }
+
+        this.desperation = Math.min(maxDesperation, this.desperation + 1);
+        if (this.desperation >= maxDesperation) {
+            this.status = "lost";
+            this.message = "Defeat: the King surrendered to desperation.";
+            this.addLog(this.message);
+        }
+    },
+
+    // moves the game forward after a win, either to the next horde, the boss fight, or the next level
     advanceProgressionAfterVictory() {
         const level = this.getCurrentLevelConfig();
 
         if (this.isBossFight) {
+            const nextLevelIndex = this.currentLevelIndex + 1;
             this.currentHorde = 1;
             this.isBossFight = false;
             this.pendingApBonus = 0;
-            this.nextEncounterMessage = `${level.name} cleared. Level 1 prototype complete. Restarting Level 1.`;
+            if (nextLevelIndex < levelConfigs.length) {
+                this.currentLevelIndex = nextLevelIndex;
+                const nextLevel = this.getCurrentLevelConfig();
+                this.nextEncounterMessage = `${level.name} cleared. Entering Level ${nextLevel.levelNumber} - ${nextLevel.name}.`;
+            } else {
+                this.currentLevelIndex = 0;
+                this.nextEncounterMessage = `${level.name} cleared. The Coward King prototype is complete. Restarting from Level 1.`;
+            }
             return;
         }
 
@@ -63,6 +91,7 @@ Object.assign(Game.prototype, {
         }
 
         const level            = this.getCurrentLevelConfig();
+        this.applyLevelBackground();
         this.turn              = 1;
         this.ap                = Math.min(startingAP, maxActionPoints);
         this.pendingApBonus    = 0;
@@ -71,8 +100,9 @@ Object.assign(Game.prototype, {
         this.selectedCard      = undefined;
         this.moveMode          = false;
         this.kingMovedThisTurn = false;
+        this.desperation       = 0;
         this.status            = "playing";
-        this.message           = "Protect the king for 30 turns.";
+        this.message           = `Protect the king through Level ${level.levelNumber}.`;
         this.king              = new King(4, 4);
         this.allies            = [];
         this.enemies           = [];
@@ -171,21 +201,32 @@ Object.assign(Game.prototype, {
 
     // handles everything at end of turn: zone effects, combat, win/loss checks, spawning enemies, and AP gain
     resolveTurn() {
+        const kingMovedLastTurn = this.kingMovedThisTurn;
+
         this.applyZoneEffects();
-        this.alliesAttack();
-        this.enemiesAttackAndMove();
+        if (this.currentHorde >= 2 || this.isBossFight) {
+            this.enemiesAttackAndMove();
+            this.alliesAttack();
+        } else {
+            this.alliesAttack();
+            this.enemiesAttackAndMove();
+        }
         this.cleanupObjects();
         this.tickEffects();
         this.checkDefeat();
 
         if (this.status === "playing") {
+            this.updateDesperation(kingMovedLastTurn);
+        }
+
+        if (this.status === "playing") {
             const bossDefeated = this.isBossFight && !this.enemies.some(enemy => enemy.isBoss);
             if (bossDefeated) {
                 this.status         = "won";
-                this.message        = "Boss defeated. Level cleared!";
+                this.message        = `${this.getCurrentLevelConfig().boss.name} defeated. Level cleared!`;
                 this.gold          += 25;
                 this.pendingApBonus = 0;
-                this.addLog("Victory: the Skeleton King has fallen.");
+                this.addLog(`Victory: ${this.getCurrentLevelConfig().boss.name} has fallen.`);
             } else if (!this.isBossFight && this.turn >= this.getCurrentTurnLimit()) {
                 this.status         = "won";
                 this.message        = `Horde ${this.currentHorde} survived.`;
@@ -194,7 +235,6 @@ Object.assign(Game.prototype, {
                 this.addLog(`Victory: Level ${this.getCurrentLevelConfig().levelNumber} Horde ${this.currentHorde} cleared. The King escaped.`);
             } else {
                 this.turn++;
-                const kingMovedLastTurn = this.kingMovedThisTurn;
                 if (!kingMovedLastTurn) this.gainAP(1);
                 if (!this.isBossFight) {
                     this.spawnEnemies();

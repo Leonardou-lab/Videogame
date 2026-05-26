@@ -146,7 +146,7 @@ Object.assign(Game.prototype, {
     // Cleans up defeated objects from the board
     cleanupObjects() {
         const defeated = this.enemies.filter(e => e.hp <= 0).length;
-        if (defeated > 0) this.addLog(`${defeated} skeleton defeated.`);
+        if (defeated > 0) this.addLog(`${defeated} enemy defeated.`);
         this.enemies = this.enemies.filter(e => e.hp > 0);
         this.allies  = this.allies.filter(a => a.hp > 0);
         this.effects = this.effects.filter(e => e.duration > 0);
