@@ -16,6 +16,16 @@ Object.assign(Game.prototype, {
         }
 
         this.king.setTile(row, col);
+
+        for (const ally of this.allies) {
+            if (ally.cardName !== "Royal Guard" || ally.hp <= 0) continue;
+            const guardRow = ally.row + rowDelta;
+            const guardCol = ally.col + colDelta;
+            if (this.isInsideBoard(guardRow, guardCol) && !this.getBlockingObject(guardRow, guardCol)) {
+                ally.setTile(guardRow, guardCol);
+            }
+        }
+
         this.kingMovedThisTurn = true;
         this.moveMode          = false;
         this.addLog("The king runs with dignity.");

@@ -145,6 +145,14 @@ Object.assign(Game.prototype, {
             this.allies.push(new Ally(row, col, card));
         } else {
             this.effects.push(new BoardEffect(row, col, card));
+            if (card.name === "Royal Decree") {
+                const effect = this.effects[this.effects.length - 1];
+                for (const enemy of this.enemies) {
+                    if (tileDistance(enemy, effect) <= effect.radius) {
+                        this.pushEnemyAway(enemy);
+                    }
+                }
+            }
         }
 
         this.selectedCard = undefined;

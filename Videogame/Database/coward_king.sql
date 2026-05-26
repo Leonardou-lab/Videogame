@@ -18,7 +18,7 @@ CREATE TABLE Card (
 -- Insertar las 15 cartas del GDD
 INSERT INTO Card (name, type, base_ap_cost, base_hp, base_damage, range_attack, duration, effect_description) VALUES
 ('Knight',       'attack',   3, 80,  30, 1, 0, 'Melee. Moves toward nearest enemy, attacks when adjacent.'),
-('Archer',       'attack',   2, 50,  20, 3, 0, 'range_attackd 3 tiles. Stationary. Auto-attacks nearest in range_attack.'),
+('Archer',       'attack',   3, 50,  20, 3, 0, 'range_attackd 3 tiles. Stationary. Auto-attacks nearest in range_attack.'),
 ('Mage',         'attack',   4, 40,  25, 2, 0, 'AoE cross pattern, range_attack 2. Fragile but powerful.'),
 ('Pikeman',      'attack',   2, 60,  15, 1, 0, 'Fast 2 tiles/turn. Intercepts quick enemies.'),
 ('Wall',         'defense',  3, 150, 0,  0, 0, 'Blocks tile. Enemies must destroy or go around.'),
