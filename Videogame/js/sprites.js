@@ -19,7 +19,7 @@ const SPRITE_DEFS = {
     braveking:     { src: "Assets/sprites/Brave King.png",    cols: 1, rows: 1 },
     tower:         { src: "Assets/sprites/Tower.png",         cols: 1, rows: 1 },
     decoy:         { src: "Assets/sprites/Decoy.png",         cols: 1, rows: 1 },
-    trench:        { src: "Assets/sprites/Trench.png",        cols: 1, rows: 1 },
+    trench:        { src: "Assets/sprites/Trench.png",        cols: 1, rows: 1 }, 
 };
 
 const spriteImages = {};
@@ -60,7 +60,7 @@ function spriteKey(type) {
     return type ? type.replace(/\s+/g, "").toLowerCase() : "";
 }
 
-// draws the correct animation frame for a unit, returns false if the sprite isn't loaded yet
+// draws the correct animation frame for a unit
 function drawSprite(ctx, unit) {
     const key = spriteKey(unit.type);
     const def = SPRITE_DEFS[key];
