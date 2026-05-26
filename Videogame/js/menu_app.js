@@ -6,9 +6,11 @@ const APP_CONFIG = {
     prototypeUrl: "../Videogame/index.html",
 };
 
+const API_BASE = "http://localhost:3000";
+
 const appState = {
     currentUser: {
-        id: "guest-player",
+        player_id: null,
         username: "Guest King",
         isGuest: true,
     },
@@ -19,9 +21,6 @@ const appState = {
     },
 };
 
-const mockStats = {
-    warning: "no stats are able",
-};
 
 const mockCredits = {
     project: "The Coward King",
@@ -83,7 +82,7 @@ function createLoginButton() {
 
     const button = document.createElement("button");
     button.className = "small-button";
-    button.innerHTML = appState.currentUser.isGuest ? "♙ LOGIN" : `♙ ${appState.currentUser.username}`;
+    button.innerHTML = appState.currentUser.isGuest ? "♙ LOGIN" : `♙ ${appState.currentUser.username.toUpperCase()}`;
     button.addEventListener("click", () => renderMenu(createLoginModal()));
 
     login.appendChild(button);
@@ -190,10 +189,26 @@ function createModal(title, content) {
 
 function createOverviewModal() {
     const content = document.createElement("div");
-    content.innerHTML = `
-        <div class="detail-list">
-            ${statRow("-", "Warning", mockStats.warning)}
-    `;
+    content.className = "detail-list";
+
+    if (!appState.currentUser.player_id) {
+        content.innerHTML = statRow("♙", "Info", "Login to see your stats");
+        return createModal("Stats / Overview", content);
+    }
+
+    content.innerHTML = statRow("…", "Loading", "fetching stats…");
+    fetch(`${API_BASE}/api/stats/${appState.currentUser.player_id}`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(s => {
+            content.innerHTML =
+                statRow("▶", "Runs played",      s.total_runs) +
+                statRow("☠", "Enemies killed",   s.total_enemies_killed) +
+                statRow("★", "Upgrades bought",  s.total_upgrades) +
+                statRow("◆", "Gold earned",      s.total_gold_earned) +
+                statRow("✓", "Levels completed", s.levels_completed);
+        })
+        .catch(() => { content.innerHTML = statRow("⚠", "Error", "could not load stats") });
+
     return createModal("Stats / Overview", content);
 }
 
@@ -254,29 +269,58 @@ function createLoginModal() {
     form.innerHTML = `
         <label>
             Username
-            <input name="username" type="text" placeholder="King Aldric">
+            <input name="username" type="text" placeholder="King Aldric" required>
         </label>
         <label>
             Password
-            <input name="password" type="password" placeholder="Temporary prototype only">
+            <input name="password" type="password" placeholder="••••••••" required>
         </label>
         <div class="form-actions">
             <button class="form-button" type="submit" data-action="login">Login</button>
             <button class="form-button" type="submit" data-action="signup">Sign Up</button>
         </div>
-        <p class="progress-pill">Prototype mode: login is visual only for now.</p>
+        <p class="progress-pill" id="login-msg"></p>
     `;
 
-    form.addEventListener("submit", event => {
+    form.addEventListener("submit", async event => {
         event.preventDefault();
-        const formData = new FormData(form);
-        const username = formData.get("username");
-        appState.currentUser = {
-            id: "mock-user",
-            username: username || "Guest King",
-            isGuest: false,
-        };
-        renderMenu();
+        const action = event.submitter?.dataset.action ?? "login";
+        const username = form.elements["username"].value.trim();
+        const password = form.elements["password"].value;
+        const msg = form.querySelector("#login-msg");
+
+        msg.textContent = "…";
+
+        try {
+            let player;
+            if (action === "signup") {
+                const res = await fetch(`${API_BASE}/api/player`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password }),
+                });
+                if (res.status === 409) { msg.textContent = "Username already taken."; return; }
+                if (!res.ok) { msg.textContent = "Sign up failed."; return; }
+                player = await res.json();
+            } else {
+                const res = await fetch(
+                    `${API_BASE}/api/player/${encodeURIComponent(username)}?password=${encodeURIComponent(password)}`
+                );
+                if (res.status === 404) { msg.textContent = "Player not found."; return; }
+                if (res.status === 401) { msg.textContent = "Wrong password."; return; }
+                if (!res.ok) { msg.textContent = "Login failed."; return; }
+                player = await res.json();
+            }
+
+            appState.currentUser = {
+                player_id: player.player_id,
+                username:  player.username,
+                isGuest:   false,
+            };
+            renderMenu();
+        } catch {
+            msg.textContent = "Could not reach server.";
+        }
     });
 
     return createModal("Login / Sign Up", form);

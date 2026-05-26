@@ -7,11 +7,11 @@ Object.assign(Game.prototype, {
         for (const ally of this.allies) {
             if (ally.hp <= 0) continue;
             if (ally.damage <= 0) continue;
-            const target = this.findNearestEnemy(ally, ally.range);
+const target = this.findNearestEnemy(ally, ally.range);
             if (target) {
                 target.takeDamage(ally.damage);
-                if (ally.type === "archer") triggerUnitAnim(ally);
-                this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`);
+                if (ally.type === "archer" || ally.type === "mage") triggerUnitAnim(ally);
+                this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`); 
             }
         }
     },
