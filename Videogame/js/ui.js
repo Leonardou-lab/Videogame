@@ -3,6 +3,17 @@
 // UI-related logic: event listeners, rendering the HUD and hand of cards, and logging messages
 Object.assign(Game.prototype, {
 
+    getCardImagePath(card) {
+        const explicitNames = {
+            "Royal Decree": "Royal_Decree",
+            "Peace Treaty": "Peace_Treaty",
+            "Royal Guard": "Royal_Guard",
+            "Royal Curse": "Royal_Curse",
+        };
+        const fileName = explicitNames[card.name] || card.name.replace(/\s+/g, "_");
+        return `Assets/cards/${fileName}.png`;
+    },
+
     createEventListeners() {
         document.getElementById("moveKingButton").addEventListener("click", () => {
             if (this.status !== "playing" || this.phase !== "player") return;
@@ -115,13 +126,14 @@ Object.assign(Game.prototype, {
                 ? `<span class="card-lvl-tag lvl${lvl}">◆ LVL ${lvl}</span>`
                 : "";
             button.innerHTML = `
-                <div class="cardTop">
-                    <strong>${card.name}</strong>
-                    <em>${card.cost} AP</em>
+                <div class="card-art">
+                    <img src="${this.getCardImagePath(card)}" alt="${card.name}">
                 </div>
-                ${statsLine}
-                <span>${card.text}</span>
-                ${lvlTag}
+                <div class="card-details">
+                    ${statsLine}
+                    <span>${card.text}</span>
+                    ${lvlTag}
+                </div>
             `;
             button.addEventListener("click", () => {
                 this.selectedCard = card;
@@ -147,6 +159,9 @@ Object.assign(Game.prototype, {
         }
 
         const value = Math.min(maxDesperation, this.desperation || 0);
+        const isCritical = value >= maxDesperation - 1;
+        panel.classList.toggle("critical", isCritical);
+        document.body.classList.toggle("desperation-critical", isCritical);
         panel.innerHTML = `
             <h2>Desperation</h2>
             <img src="Assets/images/Cara${value}.png" alt="Desperation level ${value}">

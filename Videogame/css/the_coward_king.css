@@ -8,20 +8,57 @@ body {
     min-height: 100vh;
     --level-background: url("../Assets/Level1.png");
     background:
-        radial-gradient(ellipse at 20% 30%, rgba(200, 120, 40, 0.08) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 70%, rgba(200, 120, 40, 0.06) 0%, transparent 55%),
-        linear-gradient(rgba(13, 11, 10, 0.18), rgba(13, 11, 10, 0.42)),
+        radial-gradient(ellipse at 22% 28%, rgba(230, 145, 48, 0.14) 0%, transparent 48%),
+        radial-gradient(ellipse at 80% 70%, rgba(124, 63, 163, 0.13) 0%, transparent 52%),
+        linear-gradient(rgba(13, 11, 10, 0.14), rgba(13, 11, 10, 0.36)),
         var(--level-background) center / cover no-repeat,
         #1a1208;
     color: #f4ecd8;
     overflow: hidden;
 }
 
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+body::before {
+    z-index: 0;
+    background:
+        radial-gradient(circle at 50% 42%, transparent 0 44%, rgba(0, 0, 0, 0.52) 100%),
+        rgba(7, 5, 4, 0.16);
+}
+
+body::after {
+    z-index: 30;
+    opacity: 0;
+    background:
+        radial-gradient(circle at center, rgba(255, 48, 36, 0) 0 38%, rgba(255, 0, 0, 0.36) 100%),
+        rgba(115, 0, 0, 0.16);
+    transition: opacity 0.18s ease;
+}
+
+body.desperation-critical::after {
+    opacity: 1;
+    animation: redPulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes redPulse {
+    from { opacity: 0.38; }
+    to { opacity: 0.72; }
+}
+
 #app {
+    position: relative;
+    z-index: 1;
     width: 100vw;
     height: 100vh;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    place-items: center;
+    padding: clamp(14px, 2vw, 28px);
 }
 
 h1,
@@ -46,22 +83,25 @@ p {
 }
 
 #hud {
-    flex: 0 0 50px;
-    background: rgba(44, 24, 16, 0.85);
-    border-bottom: 3px solid #5d4037;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 24px;
-    padding: 0 24px;
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    border: 2px solid #6e5430;
+    background: rgba(18, 12, 9, 0.84);
     color: #f0e6d3;
-    font-size: 11px;
+    font-size: 12px;
     letter-spacing: 0.5px;
     text-transform: uppercase;
+    box-shadow:
+        0 0 0 4px rgba(7, 5, 4, 0.82),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
 }
 
 #hud div {
-    white-space: nowrap;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    white-space: normal;
 }
 
 #hud div::first-letter {
@@ -69,37 +109,44 @@ p {
 }
 
 #desperationPanel {
-    position: fixed;
-    right: 18px;
-    top: 50%;
-    z-index: 5;
-    width: 132px;
-    transform: translateY(-50%);
-    border: 3px solid #5d4037;
-    background: rgba(25, 12, 10, 0.9);
+    width: 100%;
+    border: 2px solid #6e5430;
+    background: rgba(25, 12, 10, 0.88);
     box-shadow:
-        0 0 0 4px #0e0905,
-        0 0 26px rgba(0, 0, 0, 0.72),
+        0 0 0 4px rgba(7, 5, 4, 0.82),
+        0 0 22px rgba(0, 0, 0, 0.7),
         inset 0 0 0 2px rgba(230, 193, 106, 0.08);
-    padding: 10px;
+    padding: 14px;
     text-align: center;
-    pointer-events: none;
+}
+
+#desperationPanel.critical {
+    border-color: #d84c3f;
+    background:
+        radial-gradient(circle at 50% 34%, rgba(216, 76, 63, 0.26), transparent 55%),
+        rgba(38, 7, 6, 0.92);
+    box-shadow:
+        0 0 0 4px rgba(7, 5, 4, 0.82),
+        0 0 34px rgba(216, 76, 63, 0.66),
+        inset 0 0 18px rgba(216, 76, 63, 0.28);
 }
 
 #desperationPanel h2 {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     color: #e6c16a;
-    font-size: 10px;
+    font-size: 13px;
     text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 #desperationPanel img {
-    width: 92px;
-    height: 92px;
+    width: min(120px, 56%);
+    height: auto;
     object-fit: contain;
     image-rendering: pixelated;
     display: block;
-    margin: 0 auto 10px;
+    margin: 0 auto 12px;
+    filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.55));
 }
 
 .desperation-meter {
@@ -122,40 +169,41 @@ p {
 
 #desperationPanel strong {
     color: #f0e6d3;
-    font-size: 12px;
+    font-size: 13px;
+}
+
+#game-layout {
+    width: min(100%, 1380px);
+    height: min(100%, 760px);
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) minmax(520px, 640px) minmax(220px, 280px);
+    align-items: center;
+    justify-content: center;
+    gap: clamp(14px, 1.8vw, 24px);
 }
 
 #board-area {
-    flex: 1 1 0;
-    min-height: 0;
+    min-width: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 32px 24px 18px;
+    padding: 10px;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
 #canvas {
-    width: min(620px, calc(100vmin - 230px));
-    height: min(620px, calc(100vmin - 230px));
-    min-width: 420px;
-    min-height: 420px;
+    width: min(620px, calc(100vmin - 80px));
+    height: min(620px, calc(100vmin - 80px));
+    min-width: 500px;
+    min-height: 500px;
     background: rgba(13, 11, 10, 0.64);
     border: 3px solid #5d4037;
     box-shadow:
         0 0 0 6px #0e0905,
         0 0 40px rgba(0, 0, 0, 0.8),
         0 0 80px rgba(0, 0, 0, 0.5);
-}
-
-#bottomPanel {
-    flex: 0 0 174px;
-    background: rgba(44, 24, 16, 0.86);
-    border-top: 3px solid #5d4037;
-    display: grid;
-    grid-template-columns: 1fr 210px 260px;
-    gap: 16px;
-    align-items: stretch;
-    padding: 14px 24px;
 }
 
 section {
@@ -167,70 +215,111 @@ section {
 
 #handPanel {
     min-width: 0;
+    align-self: center;
+    max-height: calc(100vh - 42px);
+    background: rgba(18, 12, 9, 0.76);
+    border-color: #6e5430;
+    box-shadow:
+        0 0 0 4px rgba(7, 5, 4, 0.74),
+        0 14px 28px rgba(0, 0, 0, 0.55),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
+}
+
+#handPanel h2,
+#sidePanel h2 {
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 #hand {
-    display: flex;
+    display: grid;
     gap: 14px;
-    align-items: stretch;
-    overflow-x: auto;
-    padding: 2px 2px 6px;
+    max-height: calc(100vh - 118px);
+    overflow-y: auto;
+    padding: 4px 5px 6px;
 }
 
 .cardButton {
-    flex: 0 0 148px;
-    min-height: 104px;
-    padding: 10px 8px;
-    border: 2px solid #5d4037;
-    border-radius: 6px;
-    background: rgba(58, 31, 18, 0.88);
+    position: relative;
+    min-height: 392px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
     color: #f0e6d3;
-    text-align: center;
+    text-align: left;
     cursor: pointer;
-    box-shadow:
-        0 4px 12px rgba(0, 0, 0, 0.5),
-        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    box-shadow: none;
     transition: transform 0.1s, box-shadow 0.1s;
+    display: grid;
+    grid-template-rows: 1fr;
+    gap: 0;
+    overflow: visible;
 }
 
 .cardButton:hover {
     transform: translateY(-6px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.7);
+    box-shadow: none;
 }
 
-.cardTop {
+.card-art {
+    width: 100%;
+    height: 390px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
+    overflow: visible;
+}
+
+.card-art img {
+    max-width: min(100%, 380px);
+    max-height: 382px;
+    image-rendering: pixelated;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.66));
+}
+
+.card-details {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
     display: grid;
     gap: 8px;
-    margin-bottom: 8px;
+    padding: 12px;
+    border: 2px solid rgba(230, 193, 106, 0.42);
+    background:
+        linear-gradient(rgba(20, 12, 10, 0.94), rgba(8, 6, 5, 0.98));
+    box-shadow:
+        0 -10px 24px rgba(0, 0, 0, 0.62),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.06);
+    transform: translateY(calc(100% + 14px));
+    opacity: 0;
+    transition: transform 0.14s ease, opacity 0.14s ease;
+    pointer-events: none;
 }
 
-.cardTop strong {
-    display: block;
-    font-size: 9px;
-    color: #f39c12;
-}
-
-.cardTop em {
-    font-style: normal;
-    color: #e74c3c;
-    font-weight: 700;
-    font-size: 9px;
+.cardButton:hover .card-details,
+.cardButton:focus-visible .card-details,
+.cardButton.selected .card-details {
+    transform: translateY(0);
+    opacity: 1;
 }
 
 .cardButton span {
     display: block;
-    margin-top: 4px;
-    font-size: 7px;
-    line-height: 1.6;
-    color: #aaa;
+    margin-top: 0;
+    font-size: 10px;
+    line-height: 1.45;
+    color: #cfc4a7;
 }
 
 .cardButton.selected {
-    border-color: #e6c16a;
     box-shadow:
-        inset 0 0 0 2px #17100c,
-        0 0 0 3px rgba(230, 193, 106, 0.25),
-        0 0 18px rgba(124, 63, 163, 0.4);
+        0 0 0 3px rgba(230, 193, 106, 0.34),
+        0 0 22px rgba(124, 63, 163, 0.42);
 }
 
 .cardButton:disabled {
@@ -238,20 +327,48 @@ section {
     opacity: 0.55;
 }
 
+#sidePanel {
+    align-self: center;
+    max-height: calc(100vh - 42px);
+    display: grid;
+    gap: 16px;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
+}
+
 #controls {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    background: rgba(18, 12, 9, 0.76);
+    border-color: #6e5430;
+    box-shadow:
+        0 0 0 4px rgba(7, 5, 4, 0.74),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
 }
 
 #controls button {
-    min-height: 42px;
+    min-height: 52px;
     border: 2px solid #5d4037;
-    background: rgba(58, 31, 18, 0.88);
+    background:
+        linear-gradient(180deg, rgba(72, 40, 21, 0.96), rgba(19, 13, 10, 0.96));
     color: #f0e6d3;
     font-weight: 700;
     cursor: pointer;
     text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow:
+        0 5px 12px rgba(0, 0, 0, 0.46),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.06);
+}
+
+#controls button:hover {
+    border-color: #e6c16a;
+    box-shadow:
+        0 0 18px rgba(230, 193, 106, 0.22),
+        inset 0 0 0 2px rgba(230, 193, 106, 0.1);
 }
 
 #restartButton {
@@ -259,12 +376,7 @@ section {
 }
 
 #log {
-    min-height: 72px;
-    max-height: 112px;
-    overflow-y: auto;
-    color: #ded6c2;
-    font-size: 13px;
-    line-height: 1.4;
+    display: none;
 }
 
 .logLine {
@@ -279,16 +391,17 @@ section {
 
 .card-stats {
     display: block;
-    font-size: 7px;
-    color: #8fa8a0;
-    margin-top: 2px;
+    font-size: 10px;
+    color: #8fc2a0;
+    margin-top: 0;
+    font-weight: 700;
 }
 
 .card-lvl-tag {
     display: block;
-    font-size: 7px;
+    font-size: 9px;
     font-weight: 700;
-    margin-top: 3px;
+    margin-top: 0;
 }
 
 .card-lvl-tag.lvl1 { color: #4677c8; }
@@ -472,16 +585,62 @@ section {
         overflow: auto;
     }
 
-    #bottomPanel {
+    #app {
+        height: auto;
+        min-height: 100vh;
+    }
+
+    #game-layout {
+        height: auto;
         grid-template-columns: 1fr;
-        flex-basis: auto;
+        width: min(760px, 100%);
+    }
+
+    #handPanel,
+    #sidePanel {
+        max-height: none;
+        width: min(100%, 620px);
+        justify-self: center;
+    }
+
+    #hand {
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        max-height: none;
     }
 
     #canvas {
-        width: min(620px, calc(100vw - 36px));
-        height: auto;
+        width: min(620px, calc(100vw - 54px));
+        height: min(620px, calc(100vw - 54px));
         min-width: 0;
         min-height: 0;
         aspect-ratio: 1;
+    }
+}
+
+@media (max-height: 720px) and (min-width: 1101px) {
+    #game-layout {
+        grid-template-columns: 330px minmax(500px, 580px) 240px;
+        gap: 14px;
+    }
+
+    #canvas {
+        width: min(580px, calc(100vh - 48px));
+        height: min(580px, calc(100vh - 48px));
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .cardButton {
+        min-height: 306px;
+        grid-template-rows: 1fr;
+    }
+
+    .card-art {
+        height: 304px;
+    }
+
+    .card-art img {
+        max-width: 300px;
+        max-height: 300px;
     }
 }
