@@ -110,25 +110,19 @@ p {
 
 #desperationPanel {
     width: 100%;
-    border: 2px solid #6e5430;
-    background: rgba(25, 12, 10, 0.88);
-    box-shadow:
-        0 0 0 4px rgba(7, 5, 4, 0.82),
-        0 0 22px rgba(0, 0, 0, 0.7),
-        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     padding: 14px;
     text-align: center;
 }
 
 #desperationPanel.critical {
-    border-color: #d84c3f;
+    border: 0;
     background:
-        radial-gradient(circle at 50% 34%, rgba(216, 76, 63, 0.26), transparent 55%),
-        rgba(38, 7, 6, 0.92);
+        radial-gradient(circle at 50% 34%, rgba(216, 76, 63, 0.22), transparent 58%);
     box-shadow:
-        0 0 0 4px rgba(7, 5, 4, 0.82),
-        0 0 34px rgba(216, 76, 63, 0.66),
-        inset 0 0 18px rgba(216, 76, 63, 0.28);
+        0 0 34px rgba(216, 76, 63, 0.42);
 }
 
 #desperationPanel h2 {
@@ -176,7 +170,7 @@ p {
     width: min(100%, 1380px);
     height: min(100%, 760px);
     display: grid;
-    grid-template-columns: minmax(320px, 420px) minmax(520px, 640px) minmax(220px, 280px);
+    grid-template-columns: minmax(430px, 520px) minmax(500px, 620px) minmax(220px, 280px);
     align-items: center;
     justify-content: center;
     gap: clamp(14px, 1.8vw, 24px);
@@ -217,12 +211,9 @@ section {
     min-width: 0;
     align-self: center;
     max-height: calc(100vh - 42px);
-    background: rgba(18, 12, 9, 0.76);
-    border-color: #6e5430;
-    box-shadow:
-        0 0 0 4px rgba(7, 5, 4, 0.74),
-        0 14px 28px rgba(0, 0, 0, 0.55),
-        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
+    background: transparent;
+    border: 0;
+    box-shadow: none;
 }
 
 #handPanel h2,
@@ -232,17 +223,30 @@ section {
     text-transform: uppercase;
 }
 
+#handPanel.keep-mode h2::after {
+    content: attr(data-keep-hint);
+    display: block;
+    margin-top: 6px;
+    color: #8fc2a0;
+    font-size: 13px;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    text-shadow: 0 2px 0 #080504;
+}
+
 #hand {
     display: grid;
-    gap: 14px;
-    max-height: calc(100vh - 118px);
-    overflow-y: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    height: min(690px, calc(100vh - 118px));
+    grid-auto-rows: minmax(0, 1fr);
+    overflow: visible;
     padding: 4px 5px 6px;
 }
 
 .cardButton {
     position: relative;
-    min-height: 392px;
+    min-height: 0;
     padding: 0;
     border: 0;
     border-radius: 0;
@@ -259,13 +263,13 @@ section {
 }
 
 .cardButton:hover {
-    transform: translateY(-6px);
+    transform: translateY(-3px);
     box-shadow: none;
 }
 
 .card-art {
     width: 100%;
-    height: 390px;
+    height: 100%;
     display: grid;
     place-items: center;
     background: transparent;
@@ -274,8 +278,8 @@ section {
 }
 
 .card-art img {
-    max-width: min(100%, 380px);
-    max-height: 382px;
+    max-width: min(100%, 215px);
+    max-height: 100%;
     image-rendering: pixelated;
     object-fit: contain;
     filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.66));
@@ -283,12 +287,12 @@ section {
 
 .card-details {
     position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 12px;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
     display: grid;
-    gap: 8px;
-    padding: 12px;
+    gap: 10px;
+    padding: 14px;
     border: 2px solid rgba(230, 193, 106, 0.42);
     background:
         linear-gradient(rgba(20, 12, 10, 0.94), rgba(8, 6, 5, 0.98));
@@ -311,7 +315,7 @@ section {
 .cardButton span {
     display: block;
     margin-top: 0;
-    font-size: 10px;
+    font-size: 13px;
     line-height: 1.45;
     color: #cfc4a7;
 }
@@ -320,6 +324,12 @@ section {
     box-shadow:
         0 0 0 3px rgba(230, 193, 106, 0.34),
         0 0 22px rgba(124, 63, 163, 0.42);
+}
+
+.cardButton.kept {
+    filter:
+        drop-shadow(0 0 8px rgba(143, 194, 160, 0.8))
+        drop-shadow(0 0 18px rgba(230, 193, 106, 0.35));
 }
 
 .cardButton:disabled {
@@ -342,18 +352,17 @@ section {
     display: grid;
     grid-template-columns: 1fr;
     gap: 10px;
-    background: rgba(18, 12, 9, 0.76);
-    border-color: #6e5430;
-    box-shadow:
-        0 0 0 4px rgba(7, 5, 4, 0.74),
-        inset 0 0 0 2px rgba(230, 193, 106, 0.08);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    box-shadow: none;
 }
 
 #controls button {
     min-height: 52px;
-    border: 2px solid #5d4037;
+    border: 2px solid rgba(139, 106, 46, 0.58);
     background:
-        linear-gradient(180deg, rgba(72, 40, 21, 0.96), rgba(19, 13, 10, 0.96));
+        linear-gradient(180deg, rgba(72, 40, 21, 0.68), rgba(19, 13, 10, 0.72));
     color: #f0e6d3;
     font-weight: 700;
     cursor: pointer;
@@ -369,6 +378,11 @@ section {
     box-shadow:
         0 0 18px rgba(230, 193, 106, 0.22),
         inset 0 0 0 2px rgba(230, 193, 106, 0.1);
+}
+
+#controls button:disabled {
+    opacity: 0.52;
+    cursor: not-allowed;
 }
 
 #restartButton {
@@ -391,7 +405,7 @@ section {
 
 .card-stats {
     display: block;
-    font-size: 10px;
+    font-size: 13px;
     color: #8fc2a0;
     margin-top: 0;
     font-weight: 700;
@@ -399,7 +413,7 @@ section {
 
 .card-lvl-tag {
     display: block;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
     margin-top: 0;
 }
@@ -605,6 +619,7 @@ section {
 
     #hand {
         grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        height: auto;
         max-height: none;
     }
 
@@ -619,7 +634,7 @@ section {
 
 @media (max-height: 720px) and (min-width: 1101px) {
     #game-layout {
-        grid-template-columns: 330px minmax(500px, 580px) 240px;
+        grid-template-columns: 430px minmax(470px, 560px) 240px;
         gap: 14px;
     }
 
@@ -631,16 +646,16 @@ section {
     }
 
     .cardButton {
-        min-height: 306px;
+        min-height: 0;
         grid-template-rows: 1fr;
     }
 
     .card-art {
-        height: 304px;
+        height: 100%;
     }
 
     .card-art img {
-        max-width: 300px;
-        max-height: 300px;
+        max-width: 190px;
+        max-height: 100%;
     }
 }

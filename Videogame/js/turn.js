@@ -18,6 +18,22 @@ Object.assign(Game.prototype, {
         return this.isBossFight ? 99 : this.getCurrentHordeConfig().maxTurns;
     },
 
+    getCurrentHandSize() {
+        const isIntroHorde = this.currentLevelIndex === 0 && !this.isBossFight && this.currentHorde === 1;
+        return isIntroHorde ? introHandSize : maxHandSize;
+    },
+
+    canChooseKeepCard() {
+        return this.status === "won" && !this.isBossFight;
+    },
+
+    chooseCardToKeep(card) {
+        if (!this.canChooseKeepCard()) return;
+        this.keptCardName = card.name;
+        this.addLog(`${card.name} will stay in the next hand.`);
+        this.renderUI();
+    },
+
     // adds AP up to the max, called each turn the king didn't move
     gainAP(amount) {
         this.ap = Math.min(maxActionPoints, this.ap + amount);
@@ -79,6 +95,7 @@ Object.assign(Game.prototype, {
         this.currentHorde = 1;
         this.isBossFight = false;
         this.pendingApBonus = 0;
+        this.keptCardName = undefined;
         this.nextEncounterMessage = `Defeat resets ${level.name} to Horde 1.`;
     },
 
@@ -108,7 +125,8 @@ Object.assign(Game.prototype, {
         this.enemies           = [];
         this.effects           = [];
         this.obstacles         = [];
-        this.hand              = this.drawCards(maxHandSize);
+        this.hand              = this.drawCards(this.getCurrentHandSize());
+        this.keptCardName      = undefined;
         this.logLines          = [];
         this.generateObstacles();
         if (this.isBossFight) {
@@ -133,11 +151,19 @@ Object.assign(Game.prototype, {
     drawCards(amount) {
         const cards = [];
         const pool  = [...cardPool];
-        for (let i = 0; i < amount && pool.length > 0; i++) {
+
+        if (this.keptCardName) {
+            const keptIndex = pool.findIndex(card => card.name === this.keptCardName);
+            if (keptIndex !== -1) {
+                cards.push(this.applyUpgradeToCard(pool.splice(keptIndex, 1)[0]));
+            }
+        }
+
+        while (cards.length < amount && pool.length > 0) {
             const index = randomRange(pool.length);
             cards.push(this.applyUpgradeToCard(pool.splice(index, 1)[0]));
         }
-        return cards;
+        return cards.slice(0, amount);
     },
 
     // checks if the player has upgraded this card and applies the matching stat bonuses

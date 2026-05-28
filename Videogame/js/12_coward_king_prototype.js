@@ -29,6 +29,7 @@ class Game {
         this.isBossFight       = false;
         this.pendingApBonus    = 0;
         this.upgradeRegistry   = {};
+        this.keptCardName      = undefined;
         this.restart();
     }
 

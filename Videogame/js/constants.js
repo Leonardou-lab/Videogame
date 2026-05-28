@@ -8,7 +8,8 @@ const boardX         = 30;
 const boardY         = 30;
 const startingAP     = 5;
 const maxActionPoints = 5;
-const maxHandSize     = 3;
+const introHandSize   = 3;
+const maxHandSize     = 4;
 const maxDesperation  = 4;
 
 const levelConfigs = [
