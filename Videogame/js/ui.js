@@ -28,6 +28,11 @@ Object.assign(Game.prototype, {
         });
 
         document.getElementById("restartButton").addEventListener("click", () => {
+            if (this.canChooseKeepCard() && !this.keptCardName) {
+                this.addLog("Choose one card to keep before continuing.");
+                this.renderUI();
+                return;
+            }
             this.restart();
         });
 
@@ -91,6 +96,7 @@ Object.assign(Game.prototype, {
         const encounter = this.isBossFight ? "Boss" : `Horde ${this.currentHorde}`;
         const turnLimit = this.isBossFight ? "Boss" : this.getCurrentTurnLimit();
         const enemyLimit = this.isBossFight ? "Boss" : this.getCurrentHordeConfig().maxEnemiesOnBoard;
+        const keepMode = this.canChooseKeepCard();
 
         this.hudElement.innerHTML = `
             <div>Level: ${level.levelNumber} - ${level.name}</div>
@@ -103,13 +109,29 @@ Object.assign(Game.prototype, {
             <div>Status: ${this.status}</div>
         `;
 
+        const handPanel = document.getElementById("handPanel");
+        if (handPanel) {
+            const handTitle = handPanel.querySelector("h2");
+            handPanel.classList.toggle("keep-mode", keepMode);
+            if (handTitle) {
+                handTitle.dataset.keepHint = keepMode
+                    ? this.keptCardName
+                        ? `Keeping: ${this.keptCardName}`
+                        : "Choose 1 card to keep"
+                    : "";
+            }
+        }
+
         const restartButton = document.getElementById("restartButton");
         if (restartButton) {
-            restartButton.textContent = this.status === "won"
-                ? "Continue"
-                : this.status === "lost"
-                    ? "Retry Level"
-                    : "Restart";
+            restartButton.textContent = keepMode && !this.keptCardName
+                ? "Choose Card"
+                : this.status === "won"
+                    ? "Continue"
+                    : this.status === "lost"
+                        ? "Retry Level"
+                        : "Restart";
+            restartButton.disabled = keepMode && !this.keptCardName;
         }
 
         this.handElement.innerHTML = "";
@@ -118,7 +140,10 @@ Object.assign(Game.prototype, {
             const button = document.createElement("button");
             button.className = "cardButton" + (lvl > 0 ? ` lvl${lvl}` : "");
             if (this.selectedCard === card) button.classList.add("selected");
-            button.disabled = this.status !== "playing" || this.phase !== "player" || this.ap < card.cost;
+            if (this.keptCardName === card.name) button.classList.add("kept");
+            button.disabled = keepMode
+                ? false
+                : this.status !== "playing" || this.phase !== "player" || this.ap < card.cost;
             const statsLine = card.type === "ally"
                 ? `<span class="card-stats">HP:${card.hp} DMG:${card.damage}</span>`
                 : "";
@@ -136,6 +161,10 @@ Object.assign(Game.prototype, {
                 </div>
             `;
             button.addEventListener("click", () => {
+                if (keepMode) {
+                    this.chooseCardToKeep(card);
+                    return;
+                }
                 this.selectedCard = card;
                 this.moveMode     = false;
                 this.renderUI();
