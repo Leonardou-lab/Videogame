@@ -27,7 +27,7 @@ const CARD_META = {
     'Royal Guard':  { color: '#f39c12', game_type: 'ally'  },
     'Trench':       { color: '#795548', game_type: 'ally'  },
     'Exile':        { color: '#9b59b6', game_type: 'trap'  },
-    'Royal Decree': { color: '#d6a632', game_type: 'zone'  },
+    'Bomb':         { color: '#e74c3c', game_type: 'zone'  },
     'Peace Treaty': { color: '#55b7b3', game_type: 'zone'  },
     'Royal Curse':  { color: '#c0392b', game_type: 'zone'  },
     'Decoy':        { color: '#e74c3c', game_type: 'ally'  },

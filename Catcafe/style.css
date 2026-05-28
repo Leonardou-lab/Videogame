@@ -91,7 +91,6 @@ html {
   background-color: #965c28;
 }
 
-/* SECCIONES */
 
 section {
   padding: 70px 0;
@@ -116,7 +115,6 @@ h2 {
 }
 
 /* BOTONES DE DÍAS */
-
 .day-selector {
   display: flex;
   justify-content: center;
@@ -148,75 +146,122 @@ h2 {
   color: #8b5a35;
 }
 
-/* MENÚ */
-
+/* MENU */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 25px;
 }
 
 .menu-card {
-  background-color: white;
-  border-radius: 12px;
+  position: relative;
+  height: 360px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transition: transform 0.3s;
-}
-
-.menu-card:hover {
-  transform: translateY(-6px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .menu-img {
-  height: 160px;
-  overflow: hidden;
+  position: absolute;
+  inset: 0;
 }
 
 .menu-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.3s;
+  transition: transform 0.4s ease;
 }
 
 .menu-card:hover .menu-img img {
-  opacity: 1;
+  transform: scale(1.06);
 }
 
-.menu-info {
-  padding: 18px;
+.menu-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 16px 14px;
+  background: linear-gradient(transparent, rgba(30, 16, 8, 0.82));
+  color: white;
+  transition: opacity 0.3s;
 }
 
-.menu-info h3 {
+.menu-label h3 {
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+
+.menu-label .menu-footer span {
+  color: #f0c58a;
+  font-weight: bold;
+}
+
+.menu-label .menu-footer small {
+  color: rgba(0, 0, 0, 0.75);
+  font-size: 0.8rem;
+}
+
+.menu-card:hover .menu-label {
+  opacity: 0;
+}
+
+/* Overlay emergente desde abajo */
+.menu-overlay {
+  position: absolute;
+  bottom: -100%;
+  left: 0;
+  right: 0;
+  height: 58%;
+  background: rgba(255, 247, 237, 0.97);
+  border-radius: 14px 14px 0 0;
+  padding: 20px 18px 16px;
+  transition: bottom 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.menu-card:hover .menu-overlay {
+  bottom: 0;
+}
+
+.menu-overlay h3 {
+  font-size: 1.1rem;
+  color: #3b2618;
   margin-bottom: 8px;
 }
 
-.menu-info p {
-  font-size: 0.95rem;
-  margin-bottom: 15px;
+.menu-overlay p {
+  font-size: 0.92rem;
+  color: #6b3f22;
+  flex: 1;
 }
 
 .menu-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: 12px;
 }
 
 .menu-footer span {
   font-weight: bold;
   color: #b87535;
+  font-size: 1rem;
 }
 
 .menu-footer small {
   background-color: #f2dfca;
+  color: #3b2618;
   padding: 4px 10px;
   border-radius: 12px;
+  font-size: 0.8rem;
 }
 
 /* GATOS */
-
 .cats-section {
   background-color: #3b2618;
   color: white;
@@ -264,7 +309,6 @@ h2 {
 }
 
 /* FOOTER */
-
 .footer {
   background-color: #24150d;
   color: white;
@@ -288,16 +332,36 @@ h2 {
 
 /* ANIMACIONES */
 
+/* 1 — Entrada del hero */
 @keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(25px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 2 — Aparición de tarjetas al cargarse */
+@keyframes cardReveal {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.menu-card {
+  animation: cardReveal 0.45s ease both;
+}
+
+.cat-card {
+  animation: cardReveal 0.45s ease both;
 }
 
 /* RESPONSIVE */

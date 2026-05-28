@@ -16,6 +16,16 @@ Object.assign(Game.prototype, {
         }
 
         this.king.setTile(row, col);
+
+        for (const ally of this.allies) {
+            if (ally.cardName !== "Royal Guard" || ally.hp <= 0) continue;
+            const guardRow = ally.row + rowDelta;
+            const guardCol = ally.col + colDelta;
+            if (this.isInsideBoard(guardRow, guardCol) && !this.getBlockingObject(guardRow, guardCol)) {
+                ally.setTile(guardRow, guardCol);
+            }
+        }
+
         this.kingMovedThisTurn = true;
         this.desperation = 0;
         this.moveMode          = false;
@@ -71,9 +81,6 @@ Object.assign(Game.prototype, {
             enemy.slowedThisTurn = false;
             for (const effect of this.effects) {
                 const distance = tileDistance(enemy, effect);
-                if (effect.name === "Royal Decree" && distance <= effect.radius) {
-                    this.pushEnemyAway(enemy);
-                }
                 if (effect.name === "Peace Treaty" && distance <= effect.radius && this.turn % 2 === 0) {
                     enemy.slowedThisTurn = true;
                 }

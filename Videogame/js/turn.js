@@ -199,6 +199,17 @@ Object.assign(Game.prototype, {
 
         if (card.type === "ally") {
             this.allies.push(new Ally(row, col, card));
+        } else if (card.name === "Bomb") {
+            const blast = new BoardEffect(row, col, card);
+            const dmg   = card.damage ?? 40;
+            let hits    = 0;
+            for (const enemy of this.enemies) {
+                if (tileDistance(enemy, blast) <= blast.radius) {
+                    enemy.takeDamage(dmg);
+                    hits++;
+                }
+            }
+            this.addLog(`Bomb explodes! ${hits} enem${hits === 1 ? "y" : "ies"} hit for ${dmg} damage.`);
         } else {
             this.effects.push(new BoardEffect(row, col, card));
         }
