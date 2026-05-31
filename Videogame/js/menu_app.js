@@ -21,6 +21,18 @@ const appState = {
     },
 };
 
+(function restoreSession() {
+    try {
+        const saved = localStorage.getItem("cowardKingUser");
+        if (saved) {
+            const user = JSON.parse(saved);
+            if (user.player_id && user.username) {
+                appState.currentUser = { player_id: user.player_id, username: user.username, isGuest: false };
+            }
+        }
+    } catch {}
+})();
+
 
 const mockCredits = {
     project: "The Coward King",
@@ -83,7 +95,13 @@ function createLoginButton() {
     const button = document.createElement("button");
     button.className = "small-button";
     button.innerHTML = appState.currentUser.isGuest ? "♙ LOGIN" : `♙ ${appState.currentUser.username.toUpperCase()}`;
-    button.addEventListener("click", () => renderMenu(createLoginModal()));
+    button.addEventListener("click", () => {
+        if (appState.currentUser.isGuest) {
+            renderMenu(createLoginModal());
+        } else {
+            renderMenu(createLoggedInModal());
+        }
+    });
 
     login.appendChild(button);
     return login;
@@ -103,10 +121,10 @@ function createMenuActions() {
     actions.appendChild(menuButton("START", "sword", true, () => {
         window.location.href = APP_CONFIG.prototypeUrl;
     }));
-    actions.appendChild(menuButton("ESTADÍSTICAS", "chart", false, () => {
+    actions.appendChild(menuButton("STATS", "chart", false, () => {
         renderMenu(createOverviewModal());
     }));
-    actions.appendChild(menuButton("CRÉDITOS", "book", false, () => {
+    actions.appendChild(menuButton("CREDITS", "book", false, () => {
         renderMenu(createCreditsModal());
     }));
 
@@ -263,6 +281,32 @@ function createCreditsModal() {
     return createModal("Credits", content);
 }
 
+function createLoggedInModal() {
+    const content = document.createElement("div");
+    content.className = "detail-list";
+    content.innerHTML = `
+        <p style="text-align:center; color:#e6c16a; font-size:13px; letter-spacing:1px; text-transform:uppercase;">
+            ♙ ${appState.currentUser.username}
+        </p>
+        <p style="text-align:center; color:#cfc4a7; font-size:11px; margin-top:6px;">
+            Session active
+        </p>
+    `;
+
+    const logoutBtn = document.createElement("button");
+    logoutBtn.className = "form-button";
+    logoutBtn.style.cssText = "margin-top:18px; width:100%; border-color:rgba(200,60,40,0.5); color:#d4a0a0;";
+    logoutBtn.textContent = "Log Out";
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("cowardKingUser");
+        appState.currentUser = { player_id: null, username: "Guest King", isGuest: true };
+        renderMenu();
+    });
+
+    content.appendChild(logoutBtn);
+    return createModal(`Logged in`, content);
+}
+
 function createLoginModal() {
     const form = document.createElement("form");
     form.className = "login-form";
@@ -317,6 +361,10 @@ function createLoginModal() {
                 username:  player.username,
                 isGuest:   false,
             };
+            localStorage.setItem("cowardKingUser", JSON.stringify({
+                player_id: player.player_id,
+                username:  player.username,
+            }));
             renderMenu();
         } catch {
             msg.textContent = "Could not reach server.";

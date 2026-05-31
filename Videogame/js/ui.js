@@ -48,7 +48,29 @@ Object.assign(Game.prototype, {
             this.handleCanvasClick(event);
         });
 
+        document.getElementById("menuButton").addEventListener("click", () => {
+            this.openPauseOverlay();
+        });
+
+        document.getElementById("resumeGameBtn").addEventListener("click", () => {
+            this.closePauseOverlay();
+        });
+
+        document.getElementById("saveGameBtn").addEventListener("click", () => {
+            this.saveGameToStorage();
+        });
+
+        document.getElementById("goToMenuBtn").addEventListener("click", () => {
+            this.saveGameToStorage();
+            window.location.href = "indexMenu.html";
+        });
+
+
         window.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                const pauseOpen = document.getElementById("pauseOverlay").classList.contains("open");
+                if (pauseOpen) { this.closePauseOverlay(); return; }
+            }
             if (this.status !== "playing" || this.phase !== "player") return;
             if (event.key in keyDirections) {
                 this.tryMoveKing(keyDirections[event.key].row, keyDirections[event.key].col);
@@ -209,6 +231,40 @@ Object.assign(Game.prototype, {
         this.logLines = this.logLines.slice(0, 8);
     },
 
+    openPauseOverlay() {
+        document.getElementById("saveConfirmMsg").textContent = "";
+        document.getElementById("pauseOverlay").classList.add("open");
+    },
+
+    closePauseOverlay() {
+        document.getElementById("pauseOverlay").classList.remove("open");
+        document.getElementById("saveConfirmMsg").textContent = "";
+    },
+
+    saveGameToStorage() {
+        const state = {
+            savedAt: new Date().toISOString(),
+            turn: this.turn,
+            phase: this.phase,
+            status: this.status,
+            ap: this.ap,
+            gold: this.gold,
+            desperation: this.desperation,
+            currentLevel: this.currentLevel,
+            currentHorde: this.currentHorde,
+            isBossFight: this.isBossFight,
+            upgradeRegistry: { ...this.upgradeRegistry },
+            keptCardName: this.keptCardName,
+            hand: this.hand.map(c => ({ ...c })),
+        };
+        localStorage.setItem("cowardKingSave", JSON.stringify(state));
+        const msg = document.getElementById("saveConfirmMsg");
+        if (msg) {
+            msg.textContent = "Saved";
+            setTimeout(() => { msg.textContent = ""; }, 2500);
+        }
+    },
+
     openUpgradeOverlay() {
         this.renderUpgradeOverlay();
         document.getElementById("upgradeOverlay").classList.add("open");
@@ -283,6 +339,7 @@ Object.assign(Game.prototype, {
 
         this.gold -= nextTier.cost;
         this.upgradeRegistry[cardName] = level + 1;
+        this.encounterUpgrades++;
 
         const baseCard = cardPool.find(c => c.name === cardName);
         if (baseCard) {
