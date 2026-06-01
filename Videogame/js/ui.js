@@ -3,13 +3,17 @@
 // UI-related logic: event listeners, rendering the HUD and hand of cards, and logging messages
 Object.assign(Game.prototype, {
 
-    getCardImagePath(card) {
+    getCardImagePath(card, lvl) {
         const explicitNames = {
-            "Royal Decree": "Royal_Decree",
-            "Peace Treaty": "Peace_Treaty",
-            "Royal Guard": "Royal_Guard",
-            "Royal Curse": "Royal_Curse",
+            "Royal Decree": "Royal Decree",
+            "Peace Treaty": "Peace Treaty",
+            "Royal Guard": "Royal Guard",
+            "Royal Curse": "Royal Curse",
         };
+        if(lvl > 0){
+            const fileName = explicitNames[card.name] || card.name.replace(/\s+/g, "_");
+            return `Assets/cards/lvl${lvl}/${fileName}Lvl${lvl}.png`;
+        }
         const fileName = explicitNames[card.name] || card.name.replace(/\s+/g, "_");
         return `Assets/cards/${fileName}.png`;
     },
@@ -174,7 +178,7 @@ Object.assign(Game.prototype, {
                 : "";
             button.innerHTML = `
                 <div class="card-art">
-                    <img src="${this.getCardImagePath(card)}" alt="${card.name}">
+                    <img src="${this.getCardImagePath(card,lvl)}" alt="${card.name}">
                 </div>
                 <div class="card-details">
                     ${statsLine}
