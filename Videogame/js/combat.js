@@ -10,7 +10,7 @@ Object.assign(Game.prototype, {
 const target = this.findNearestEnemy(ally, ally.range);
             if (target) {
                 target.takeDamage(ally.damage);
-                if (ally.type === "archer" || ally.type === "mage") triggerUnitAnim(ally);
+                if (["archer", "mage", "knight", "pikeman", "guardian"].includes(ally.type)) triggerUnitAnim(ally);
                 this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`); 
             }
         }

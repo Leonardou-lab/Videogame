@@ -7,11 +7,10 @@ const pool = mysql.createPool({
     database:'coward_king'
 }).promise()
 
-// Test de conexión
+// Test
 const [rows] = await pool.query('SELECT 1')
 console.log('Conexión exitosa:', rows)
 
-// Al final de database.js
 async function testConnection() {
   try {
     const [rows] = await pool.query('SELECT 1')
