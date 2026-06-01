@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>The Coward King - Official Site</title>
+        <link rel="stylesheet" href="css/website.css">
+        <script src="js/website.js" defer></script>
+    </head>
+
+    <body>
+        <header class="site-header">
+            <a class="brand-mark" href="#top" aria-label="The Coward King home">
+                <img src="Assets/images/title-logo.png" alt="The Coward King">
+            </a>
+
+            <nav class="site-nav" aria-label="Site navigation">
+                <a href="#play">Play</a>
+                <a href="#description">Game</a>
+                <a href="#cards">Cards</a>
+                <a href="#tutorial">Tutorial</a>
+                <a href="#statistics">Statistics</a>
+            </nav>
+        </header>
+
+        <main id="top">
+            <section class="hero-section" id="play">
+                <div class="hero-copy">
+                    <p class="eyebrow">Pixel art tactical survival</p>
+                    <h1>The Coward King</h1>
+                    <p class="hero-text">
+                        Command loyal defenders, spend every point of AP with care, and keep a terrified king alive while enemy hordes break into the realm.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="primary-action" href="indexMenu.html">Play</a>
+                        <a class="secondary-action" href="#tutorial">Learn the rules</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-band" id="description">
+                <div class="section-heading">
+                    <p class="eyebrow">Game Description</p>
+                    <h2>Survive the throne room siege</h2>
+                </div>
+                <div class="description-grid">
+                    <article class="feature-panel">
+                        <h3>Protect a king who would rather run</h3>
+                        <p>
+                            The Coward King is a turn-based tactical card game where the player protects a frightened monarch through escalating hordes. Victory is not about clearing every enemy. It is about surviving long enough for the king to escape.
+                        </p>
+                    </article>
+                    <article class="feature-panel">
+                        <h3>Cards, allies, walls, and desperate movement</h3>
+                        <p>
+                            Every turn asks for a choice: place allies, build defenses, trigger traps, preserve AP, or move the king before desperation overtakes him.
+                        </p>
+                    </article>
+                    <article class="feature-panel">
+                        <h3>Three levels of pressure</h3>
+                        <p>
+                            Catacombs teach the siege, ogres turn the board into a war of endurance, and elite warriors force faster reactions before the Brave King arrives.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-band cards-band" id="cards">
+                <div class="section-heading">
+                    <p class="eyebrow">Cards</p>
+                    <h2>The royal hand</h2>
+                    <p>
+                        These are the current prototype cards used by the game. Stats are prepared from the same card pool used by the gameplay code.
+                    </p>
+                </div>
+                <div class="card-gallery" id="cardGallery" aria-live="polite"></div>
+            </section>
+
+            <section class="content-band tutorial-band" id="tutorial">
+                <div class="section-heading">
+                    <p class="eyebrow">Tutorial</p>
+                    <h2>A field guide for a very nervous crown</h2>
+                </div>
+                <div class="tutorial-grid">
+                    <article class="tutorial-step">
+                        <span>01</span>
+                        <h3>The king must live</h3>
+                        <p>
+                            The Coward King stands at the center of a 3x3 safe zone. Enemies want to overrun that space. If enemy pressure inside the safe zone reaches 2, the defense collapses.
+                        </p>
+                    </article>
+                    <article class="tutorial-step">
+                        <span>02</span>
+                        <h3>Spend AP like royal coin</h3>
+                        <p>
+                            The player starts with 5 AP and cannot hold more than 5. Cards cost AP every time they are used. If the king does not move during a turn, the next turn gains 1 AP.
+                        </p>
+                    </article>
+                    <article class="tutorial-step">
+                        <span>03</span>
+                        <h3>Summon defenders</h3>
+                        <p>
+                            Allies such as Knight, Archer, and Wall hold the line. They block tiles, absorb attacks, and strike enemies based on their range.
+                        </p>
+                    </article>
+                    <article class="tutorial-step">
+                        <span>04</span>
+                        <h3>Move before panic wins</h3>
+                        <p>
+                            If the king refuses to move, Desperation rises. Moving the king resets the meter. At 4 Desperation, the king surrenders to fear and the run is lost.
+                        </p>
+                    </article>
+                    <article class="tutorial-step">
+                        <span>05</span>
+                        <h3>Survive, do not chase</h3>
+                        <p>
+                            A horde ends when its turn limit is survived. Remaining enemies vanish because the king escapes deeper into the level. After each horde, choose one card to keep for the next hand.
+                        </p>
+                    </article>
+                    <article class="tutorial-step">
+                        <span>06</span>
+                        <h3>Face the rulers of each level</h3>
+                        <p>
+                            After three hordes, a boss fight begins. Bosses occupy 2x2 tiles, count as heavy safe-zone pressure, and must be defeated to clear the level.
+                        </p>
+                    </article>
+                </div>
+            </section>
+
+            <section class="content-band stats-band" id="statistics">
+                <div class="section-heading">
+                    <p class="eyebrow">Statistics</p>
+                    <h2>Prepared for API and SQL</h2>
+                    <p>
+                        This section uses placeholder data now. The JavaScript is separated so future endpoints can replace the mock values without rebuilding the interface.
+                    </p>
+                </div>
+                <div class="stats-layout">
+                    <article class="stats-panel">
+                        <h3>Player Stats</h3>
+                        <div class="stats-list" id="playerStats"></div>
+                    </article>
+                    <article class="stats-panel">
+                        <h3>Global Stats</h3>
+                        <div class="stats-list" id="globalStats"></div>
+                    </article>
+                </div>
+            </section>
+        </main>
+
+        <footer class="site-footer">
+            <span>The Coward King prototype site</span>
+            <a href="indexMenu.html">Enter the game</a>
+        </footer>
+    </body>
+</html>
