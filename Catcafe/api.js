@@ -10,9 +10,10 @@ app.use(cors());
 app.use(express.static(path.join(__dirname)));
 
 const db = mysql.createConnection({
-  host:     "localhost",
+  host:     "127.0.0.1",
+  port: 3306,
   user:     "root",      
-  password: "Leolol10",           
+  password: "Nicocasl2244!",           
   database: "nekocafe"
 });
 
