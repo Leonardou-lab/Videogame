@@ -5,15 +5,11 @@ Object.assign(Game.prototype, {
 
     getCardImagePath(card) {
         const explicitNames = {
-            "Royal Decree": "Royal Decree",
-            "Peace Treaty": "Peace Treaty",
-            "Royal Guard": "Royal Guard",
-            "Royal Curse": "Royal Curse",
+            "Royal Decree": "Royal_Decree",
+            "Peace Treaty": "Peace_Treaty",
+            "Royal Guard": "Royal_Guard",
+            "Royal Curse": "Royal_Curse",
         };
-        if(lvl > 0){
-            const fileName = explicitNames[card.name] || card.name.replace(/\s+/g, "_");
-            return `Assets/cards/lvl${lvl}/${fileName}Lvl${lvl}.png`;
-        }
         const fileName = explicitNames[card.name] || card.name.replace(/\s+/g, "_");
         return `Assets/cards/${fileName}.png`;
     },
