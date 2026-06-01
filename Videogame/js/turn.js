@@ -18,6 +18,22 @@ Object.assign(Game.prototype, {
         return this.isBossFight ? 99 : this.getCurrentHordeConfig().maxTurns;
     },
 
+    getCurrentHandSize() {
+        const isIntroHorde = this.currentLevelIndex === 0 && !this.isBossFight && this.currentHorde === 1;
+        return isIntroHorde ? introHandSize : maxHandSize;
+    },
+
+    canChooseKeepCard() {
+        return this.status === "won" && !this.isBossFight;
+    },
+
+    chooseCardToKeep(card) {
+        if (!this.canChooseKeepCard()) return;
+        this.keptCardName = card.name;
+        this.addLog(`${card.name} will stay in the next hand.`);
+        this.renderUI();
+    },
+
     // adds AP up to the max, called each turn the king didn't move
     gainAP(amount) {
         this.ap = Math.min(maxActionPoints, this.ap + amount);
@@ -79,6 +95,7 @@ Object.assign(Game.prototype, {
         this.currentHorde = 1;
         this.isBossFight = false;
         this.pendingApBonus = 0;
+        this.keptCardName = undefined;
         this.nextEncounterMessage = `Defeat resets ${level.name} to Horde 1.`;
     },
 
@@ -108,8 +125,11 @@ Object.assign(Game.prototype, {
         this.enemies           = [];
         this.effects           = [];
         this.obstacles         = [];
-        this.hand              = this.drawCards(maxHandSize);
+        this.hand              = this.drawCards(this.getCurrentHandSize());
+        this.keptCardName      = undefined;
         this.logLines          = [];
+        this.encounterKills    = 0;
+        this.encounterUpgrades = 0;
         this.generateObstacles();
         if (this.isBossFight) {
             this.spawnBoss();
@@ -126,6 +146,7 @@ Object.assign(Game.prototype, {
         } else {
             this.addLog(`Level ${level.levelNumber} - Horde ${this.currentHorde} started.`);
         }
+
         this.renderUI();
     },
 
@@ -133,11 +154,19 @@ Object.assign(Game.prototype, {
     drawCards(amount) {
         const cards = [];
         const pool  = [...cardPool];
-        for (let i = 0; i < amount && pool.length > 0; i++) {
+
+        if (this.keptCardName) {
+            const keptIndex = pool.findIndex(card => card.name === this.keptCardName);
+            if (keptIndex !== -1) {
+                cards.push(this.applyUpgradeToCard(pool.splice(keptIndex, 1)[0]));
+            }
+        }
+
+        while (cards.length < amount && pool.length > 0) {
             const index = randomRange(pool.length);
             cards.push(this.applyUpgradeToCard(pool.splice(index, 1)[0]));
         }
-        return cards;
+        return cards.slice(0, amount);
     },
 
     // checks if the player has upgraded this card and applies the matching stat bonuses
@@ -173,6 +202,17 @@ Object.assign(Game.prototype, {
 
         if (card.type === "ally") {
             this.allies.push(new Ally(row, col, card));
+        } else if (card.name === "Bomb") {
+            const blast = new BoardEffect(row, col, card);
+            const dmg   = card.damage ?? 40;
+            let hits    = 0;
+            for (const enemy of this.enemies) {
+                if (tileDistance(enemy, blast) <= blast.radius) {
+                    enemy.takeDamage(dmg);
+                    hits++;
+                }
+            }
+            this.addLog(`Bomb explodes! ${hits} enem${hits === 1 ? "y" : "ies"} hit for ${dmg} damage.`);
         } else {
             this.effects.push(new BoardEffect(row, col, card));
         }
@@ -193,6 +233,7 @@ Object.assign(Game.prototype, {
 
     // handles everything at end of turn: zone effects, combat, win/loss checks, spawning enemies, and AP gain
     resolveTurn() {
+        const wasPlaying        = this.status === "playing";
         const kingMovedLastTurn = this.kingMovedThisTurn;
 
         this.applyZoneEffects();
@@ -239,6 +280,19 @@ Object.assign(Game.prototype, {
                     this.addLog(`Turn ${this.turn}. The King held position: AP +1, capped at ${maxActionPoints}.`);
                 }
             }
+        }
+
+        if (wasPlaying && this.status !== "playing") {
+            const goldEarned = this.status === "won" ? (this.isBossFight ? 25 : 10) : 0;
+            saveStats({
+                kills:    this.encounterKills,
+                gold:     goldEarned,
+                upgrades: this.encounterUpgrades,
+                runs:     1,
+                levels:   this.status === "won" && this.isBossFight ? 1 : 0,
+            });
+            this.encounterKills    = 0;
+            this.encounterUpgrades = 0;
         }
 
         this.renderUI();

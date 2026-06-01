@@ -8,7 +8,8 @@ const boardX         = 30;
 const boardY         = 30;
 const startingAP     = 5;
 const maxActionPoints = 5;
-const maxHandSize     = 3;
+const introHandSize   = 3;
+const maxHandSize     = 4;
 const maxDesperation  = 4;
 
 const levelConfigs = [
@@ -276,12 +277,12 @@ const cardPool = [
         text:     "Trap. Stuns an enemy for 2 turns.",
     },
     {
-        name:     "Royal Decree",
-        type:     "zone",
-        cost:     3,
-        duration: 3,
-        color:    "#d6a632",
-        text:     "3x3 zone. Pushes enemies 1 tile away.",
+        name:   "Bomb",
+        type:   "zone",
+        cost:   4,
+        damage: 40,
+        color:  "#e74c3c",
+        text:   "Explodes on placement. 40 damage to all enemies in 3x3.",
     },
     {
         name:     "Peace Treaty",

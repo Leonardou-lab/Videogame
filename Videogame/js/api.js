@@ -25,3 +25,26 @@ async function loadGameData(levelId = 1) {
         console.warn('API fail');
     }
 }
+
+async function saveStats({ kills = 0, gold = 0, upgrades = 0, runs = 0, levels = 0 }) {
+    try {
+        const saved = localStorage.getItem("cowardKingUser");
+        if (!saved) return;
+        const { player_id } = JSON.parse(saved);
+        if (!player_id) return;
+        await fetch(`${API_BASE}/api/stats`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                player_id,
+                total_runs:           runs,
+                total_enemies_killed: kills,
+                total_upgrades:       upgrades,
+                total_gold_earned:    gold,
+                levels_completed:     levels,
+            }),
+        });
+    } catch {
+        console.warn('Stats save fail');
+    }
+}

@@ -3,6 +3,17 @@
 // UI-related logic: event listeners, rendering the HUD and hand of cards, and logging messages
 Object.assign(Game.prototype, {
 
+    getCardImagePath(card) {
+        const explicitNames = {
+            "Royal Decree": "Royal_Decree",
+            "Peace Treaty": "Peace_Treaty",
+            "Royal Guard": "Royal_Guard",
+            "Royal Curse": "Royal_Curse",
+        };
+        const fileName = explicitNames[card.name] || card.name.replace(/\s+/g, "_");
+        return `Assets/cards/${fileName}.png`;
+    },
+
     createEventListeners() {
         document.getElementById("moveKingButton").addEventListener("click", () => {
             if (this.status !== "playing" || this.phase !== "player") return;
@@ -17,6 +28,11 @@ Object.assign(Game.prototype, {
         });
 
         document.getElementById("restartButton").addEventListener("click", () => {
+            if (this.canChooseKeepCard() && !this.keptCardName) {
+                this.addLog("Choose one card to keep before continuing.");
+                this.renderUI();
+                return;
+            }
             this.restart();
         });
 
@@ -32,7 +48,29 @@ Object.assign(Game.prototype, {
             this.handleCanvasClick(event);
         });
 
+        document.getElementById("menuButton").addEventListener("click", () => {
+            this.openPauseOverlay();
+        });
+
+        document.getElementById("resumeGameBtn").addEventListener("click", () => {
+            this.closePauseOverlay();
+        });
+
+        document.getElementById("saveGameBtn").addEventListener("click", () => {
+            this.saveGameToStorage();
+        });
+
+        document.getElementById("goToMenuBtn").addEventListener("click", () => {
+            this.saveGameToStorage();
+            window.location.href = "indexMenu.html";
+        });
+
+
         window.addEventListener("keydown", event => {
+            if (event.key === "Escape") {
+                const pauseOpen = document.getElementById("pauseOverlay").classList.contains("open");
+                if (pauseOpen) { this.closePauseOverlay(); return; }
+            }
             if (this.status !== "playing" || this.phase !== "player") return;
             if (event.key in keyDirections) {
                 this.tryMoveKing(keyDirections[event.key].row, keyDirections[event.key].col);
@@ -80,6 +118,7 @@ Object.assign(Game.prototype, {
         const encounter = this.isBossFight ? "Boss" : `Horde ${this.currentHorde}`;
         const turnLimit = this.isBossFight ? "Boss" : this.getCurrentTurnLimit();
         const enemyLimit = this.isBossFight ? "Boss" : this.getCurrentHordeConfig().maxEnemiesOnBoard;
+        const keepMode = this.canChooseKeepCard();
 
         this.hudElement.innerHTML = `
             <div>Level: ${level.levelNumber} - ${level.name}</div>
@@ -92,13 +131,29 @@ Object.assign(Game.prototype, {
             <div>Status: ${this.status}</div>
         `;
 
+        const handPanel = document.getElementById("handPanel");
+        if (handPanel) {
+            const handTitle = handPanel.querySelector("h2");
+            handPanel.classList.toggle("keep-mode", keepMode);
+            if (handTitle) {
+                handTitle.dataset.keepHint = keepMode
+                    ? this.keptCardName
+                        ? `Keeping: ${this.keptCardName}`
+                        : "Choose 1 card to keep"
+                    : "";
+            }
+        }
+
         const restartButton = document.getElementById("restartButton");
         if (restartButton) {
-            restartButton.textContent = this.status === "won"
-                ? "Continue"
-                : this.status === "lost"
-                    ? "Retry Level"
-                    : "Restart";
+            restartButton.textContent = keepMode && !this.keptCardName
+                ? "Choose Card"
+                : this.status === "won"
+                    ? "Continue"
+                    : this.status === "lost"
+                        ? "Retry Level"
+                        : "Restart";
+            restartButton.disabled = keepMode && !this.keptCardName;
         }
 
         this.handElement.innerHTML = "";
@@ -107,7 +162,10 @@ Object.assign(Game.prototype, {
             const button = document.createElement("button");
             button.className = "cardButton" + (lvl > 0 ? ` lvl${lvl}` : "");
             if (this.selectedCard === card) button.classList.add("selected");
-            button.disabled = this.status !== "playing" || this.phase !== "player" || this.ap < card.cost;
+            if (this.keptCardName === card.name) button.classList.add("kept");
+            button.disabled = keepMode
+                ? false
+                : this.status !== "playing" || this.phase !== "player" || this.ap < card.cost;
             const statsLine = card.type === "ally"
                 ? `<span class="card-stats">HP:${card.hp} DMG:${card.damage}</span>`
                 : "";
@@ -115,15 +173,20 @@ Object.assign(Game.prototype, {
                 ? `<span class="card-lvl-tag lvl${lvl}">◆ LVL ${lvl}</span>`
                 : "";
             button.innerHTML = `
-                <div class="cardTop">
-                    <strong>${card.name}</strong>
-                    <em>${card.cost} AP</em>
+                <div class="card-art">
+                    <img src="${this.getCardImagePath(card)}" alt="${card.name}">
                 </div>
-                ${statsLine}
-                <span>${card.text}</span>
-                ${lvlTag}
+                <div class="card-details">
+                    ${statsLine}
+                    <span>${card.text}</span>
+                    ${lvlTag}
+                </div>
             `;
             button.addEventListener("click", () => {
+                if (keepMode) {
+                    this.chooseCardToKeep(card);
+                    return;
+                }
                 this.selectedCard = card;
                 this.moveMode     = false;
                 this.renderUI();
@@ -147,6 +210,9 @@ Object.assign(Game.prototype, {
         }
 
         const value = Math.min(maxDesperation, this.desperation || 0);
+        const isCritical = value >= maxDesperation - 1;
+        panel.classList.toggle("critical", isCritical);
+        document.body.classList.toggle("desperation-critical", isCritical);
         panel.innerHTML = `
             <h2>Desperation</h2>
             <img src="Assets/images/Cara${value}.png" alt="Desperation level ${value}">
@@ -163,6 +229,40 @@ Object.assign(Game.prototype, {
         if (!this.logLines) this.logLines = [];
         this.logLines.unshift(text);
         this.logLines = this.logLines.slice(0, 8);
+    },
+
+    openPauseOverlay() {
+        document.getElementById("saveConfirmMsg").textContent = "";
+        document.getElementById("pauseOverlay").classList.add("open");
+    },
+
+    closePauseOverlay() {
+        document.getElementById("pauseOverlay").classList.remove("open");
+        document.getElementById("saveConfirmMsg").textContent = "";
+    },
+
+    saveGameToStorage() {
+        const state = {
+            savedAt: new Date().toISOString(),
+            turn: this.turn,
+            phase: this.phase,
+            status: this.status,
+            ap: this.ap,
+            gold: this.gold,
+            desperation: this.desperation,
+            currentLevel: this.currentLevel,
+            currentHorde: this.currentHorde,
+            isBossFight: this.isBossFight,
+            upgradeRegistry: { ...this.upgradeRegistry },
+            keptCardName: this.keptCardName,
+            hand: this.hand.map(c => ({ ...c })),
+        };
+        localStorage.setItem("cowardKingSave", JSON.stringify(state));
+        const msg = document.getElementById("saveConfirmMsg");
+        if (msg) {
+            msg.textContent = "Saved";
+            setTimeout(() => { msg.textContent = ""; }, 2500);
+        }
     },
 
     openUpgradeOverlay() {
@@ -239,6 +339,7 @@ Object.assign(Game.prototype, {
 
         this.gold -= nextTier.cost;
         this.upgradeRegistry[cardName] = level + 1;
+        this.encounterUpgrades++;
 
         const baseCard = cardPool.find(c => c.name === cardName);
         if (baseCard) {

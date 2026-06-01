@@ -28,40 +28,56 @@
 
     <body>
         <div id="app">
-            <div id="hud"></div>
-
-            <main id="board-area">
-                <canvas id="canvas"></canvas>
-            </main>
-
-            <footer id="bottomPanel">
+            <main id="game-layout">
                 <section id="handPanel">
-                    <h2>Hand</h2>
+                    <h2>Cards</h2>
                     <div id="hand"></div>
                 </section>
 
-                <section id="controls" aria-label="Game controls">
-                    <button id="moveKingButton">Move King</button>
-                    <button id="endTurnButton">End Turn</button>
-                    <button id="upgradesButton">Upgrades</button>
-                    <button id="restartButton">Restart</button>
+                <section id="board-area" aria-label="Game board">
+                    <canvas id="canvas"></canvas>
                 </section>
 
-                <section id="logPanel">
-                    <h2>Log</h2>
-                    <div id="log"></div>
+                <section id="sidePanel" aria-label="Game information and controls">
+                    <div id="hud-section">
+                        <div id="hud-top">
+                            <button id="menuButton">&#9776; Menu</button>
+                        </div>
+                        <div id="hud"></div>
+                    </div>
+                    <section id="desperationPanel"></section>
+                    <section id="controls" aria-label="Game controls">
+                        <button id="moveKingButton">Move King</button>
+                        <button id="endTurnButton">End Turn</button>
+                        <button id="upgradesButton">Upgrades</button>
+                        <button id="restartButton">Restart</button>
+                    </section>
+                    <div id="log" aria-hidden="true"></div>
                 </section>
-            </footer>
-        <div id="upgradeOverlay" class="upgrade-overlay">
-            <div class="upgrade-panel">
-                <div class="upgrade-header">
-                    <h2>&#9876; Card Upgrades</h2>
-                    <span id="upgradeGoldDisplay" class="upgrade-gold">Gold: 0</span>
-                    <button id="closeUpgradesButton" class="close-upgrade-btn">&#10005; Back</button>
+            </main>
+
+            <div id="pauseOverlay" class="pause-overlay">
+                <div class="pause-panel">
+                    <h2>&#9680; Paused</h2>
+                    <div class="pause-buttons">
+                        <button id="resumeGameBtn">Resume</button>
+                        <button id="saveGameBtn">Save Game</button>
+                        <button id="goToMenuBtn">Go Back to Menu</button>
+                    </div>
+                    <div id="saveConfirmMsg" class="save-confirm"></div>
                 </div>
-                <div id="upgradeCardList"></div>
             </div>
-        </div>
+
+            <div id="upgradeOverlay" class="upgrade-overlay">
+                <div class="upgrade-panel">
+                    <div class="upgrade-header">
+                        <h2>&#9876; Card Upgrades</h2>
+                        <span id="upgradeGoldDisplay" class="upgrade-gold">Gold: 0</span>
+                        <button id="closeUpgradesButton" class="close-upgrade-btn">&#10005; Back</button>
+                    </div>
+                    <div id="upgradeCardList"></div>
+                </div>
+            </div>
         </div>
 
         <script>

@@ -14,7 +14,6 @@ const pool = mysql.createPool({
     database: 'coward_king',
 }).promise()
 
-// color y game_type son propiedades visuales/de gameplay — no tienen sentido en la BD
 const CARD_META = {
     'Knight':       { color: '#4677c8', game_type: 'ally'  },
     'Archer':       { color: '#4b9d69', game_type: 'ally'  },
@@ -27,13 +26,15 @@ const CARD_META = {
     'Royal Guard':  { color: '#f39c12', game_type: 'ally'  },
     'Trench':       { color: '#795548', game_type: 'ally'  },
     'Exile':        { color: '#9b59b6', game_type: 'trap'  },
-    'Royal Decree': { color: '#d6a632', game_type: 'zone'  },
+    'Bomb':         { color: '#e74c3c', game_type: 'zone'  },
     'Peace Treaty': { color: '#55b7b3', game_type: 'zone'  },
     'Royal Curse':  { color: '#c0392b', game_type: 'zone'  },
     'Decoy':        { color: '#e74c3c', game_type: 'ally'  },
 }
 
-// GET /api/cards  →  cartas con campos listos para el juego (hp, damage, cost, range, color, type)
+//ENDPOINTS
+
+// GET api-cards
 app.get('/api/cards', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM Card')
@@ -57,7 +58,7 @@ app.get('/api/cards', async (req, res) => {
     }
 })
 
-// GET /api/enemies/:levelId  →  enemigos del nivel con sus stats de BD
+// GET api-enemies with stats levelId 
 app.get('/api/enemies/:levelId', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -70,7 +71,7 @@ app.get('/api/enemies/:levelId', async (req, res) => {
     }
 })
 
-// GET /api/levels  →  lista de niveles
+// GET api-levels
 app.get('/api/levels', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM Level')
@@ -84,7 +85,7 @@ function hashPassword(p) {
     return crypto.createHash('sha256').update(p).digest('hex')
 }
 
-// POST /api/player  →  crear jugador nuevo + fila de Stats inicial
+// POST api-player  ccreate new player + row of stats
 app.post('/api/player', async (req, res) => {
     const { username, password } = req.body
     if (!username || !password) return res.status(400).json({ error: 'username and password required' })
@@ -102,7 +103,7 @@ app.post('/api/player', async (req, res) => {
     }
 })
 
-// GET /api/player/:username  →  obtener jugador (+ login si viene ?password=)
+// GET api-player username if exists input password 
 app.get('/api/player/:username', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -121,7 +122,7 @@ app.get('/api/player/:username', async (req, res) => {
     }
 })
 
-// POST /api/run  →  iniciar una run nueva
+// POST api-run  start a new run
 app.post('/api/run', async (req, res) => {
     const { player_id, level_id } = req.body
     if (!player_id) return res.status(400).json({ error: 'player_id required' })
@@ -136,7 +137,7 @@ app.post('/api/run', async (req, res) => {
     }
 })
 
-// PUT /api/run/:runId  →  actualizar resultado de una run (victory / defeat)
+// PUT api-run  update new run ID
 app.put('/api/run/:runId', async (req, res) => {
     const { result, total_gold_earned, current_level_id } = req.body
     if (!result) return res.status(400).json({ error: 'result required (victory|defeat)' })
@@ -157,7 +158,7 @@ app.put('/api/run/:runId', async (req, res) => {
     }
 })
 
-// POST /api/upgrade  →  guardar (o actualizar) upgrade permanente de carta
+// POST api-upgrade  saves upgrade 
 app.post('/api/upgrade', async (req, res) => {
     const { player_id, card_id, level, ap_cost_bonus, hp_bonus, damage_bonus, gold_spent } = req.body
     if (!player_id || !card_id) return res.status(400).json({ error: 'player_id and card_id required' })
@@ -191,7 +192,7 @@ app.post('/api/upgrade', async (req, res) => {
     }
 })
 
-// POST /api/stats  →  sumar a las estadísticas del jugador (incrementos, no reemplazos)
+// POST api-stats  sum stats of the player
 app.post('/api/stats', async (req, res) => {
     const { player_id, total_runs, total_enemies_killed, total_upgrades, total_gold_earned, levels_completed } = req.body
     if (!player_id) return res.status(400).json({ error: 'player_id required' })
@@ -213,7 +214,7 @@ app.post('/api/stats', async (req, res) => {
     }
 })
 
-// GET /api/stats/:playerId  →  obtener estadísticas del jugador
+// GET api-stats playerId  
 app.get('/api/stats/:playerId', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM Stats WHERE player_id = ?', [req.params.playerId])
