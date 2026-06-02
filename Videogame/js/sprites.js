@@ -7,7 +7,7 @@ const SPRITE_DEFS = {
     boss:          { src: "Assets/sprites/Skeleton King.png", cols: 1, rows: 1 },
     knight:        { src: "Assets/sprites/Knight.png",        cols: 2, rows: 2 },
     archer:        { src: "Assets/sprites/Archer.png",        cols: 3, rows: 2 },
-    wall:          { src: "Assets/sprites/Wall.png",          cols: 1, rows: 1 },
+    wall:          { src: "Assets/sprites/Wall.png",          cols: 3, rows: 1 },
     mage:          { src: "Assets/sprites/Mage.png",          cols: 3, rows: 2 },
     guardian:      { src: "Assets/sprites/Guardian.png",      cols: 3, rows: 2 },
     ogre:          { src: "Assets/sprites/Ogre.png",          cols: 2, rows: 2 },
@@ -60,6 +60,14 @@ function spriteKey(type) {
     return type ? type.replace(/\s+/g, "").toLowerCase() : "";
 }
 
+// returns which column frame to show for the wall based on current HP
+function wallFrame(unit) {
+    const pct = unit.maxHp > 0 ? unit.hp / unit.maxHp : 0;
+    if (pct > 0.5)  return 0;
+    if (pct > 0.01) return 1;
+    return 2;
+}
+
 // draws the correct animation frame for a unit
 function drawSprite(ctx, unit) {
     const key = spriteKey(unit.type);
@@ -73,7 +81,7 @@ function drawSprite(ctx, unit) {
     const cy       = boardY + unit.row * tileSize + (tileSize * span) / 2;
 
     const totalFrames = def.cols * def.rows;
-    const frame       = getUnitFrame(unit, totalFrames);
+    const frame       = key === "wall" ? wallFrame(unit) : getUnitFrame(unit, totalFrames);
     const frameCol    = frame % def.cols;
     const frameRow    = Math.floor(frame / def.cols);
     const frameW      = img.naturalWidth  / def.cols;

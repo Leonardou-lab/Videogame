@@ -37,8 +37,11 @@ Object.assign(Game.prototype, {
     moveEnemyTowardKing(enemy) {
         if (enemy.isBoss && this.turn % enemy.summonEveryTurns !== 0) return;
 
-        const rowStep = Math.sign(this.king.row - enemy.row);
-        const colStep = Math.sign(this.king.col - enemy.col);
+        const decoy  = this.allies.find(a => a.cardName === "Decoy" && a.hp > 0);
+        const target = decoy || this.king;
+
+        const rowStep = Math.sign(target.row - enemy.row);
+        const colStep = Math.sign(target.col - enemy.col);
         const options = [
             { row: enemy.row + rowStep, col: enemy.col + colStep },
             { row: enemy.row + rowStep, col: enemy.col },
@@ -79,10 +82,14 @@ Object.assign(Game.prototype, {
     applyZoneEffects() {
         for (const enemy of this.enemies) {
             enemy.slowedThisTurn = false;
+            enemy.cursedThisTurn = false;
             for (const effect of this.effects) {
                 const distance = tileDistance(enemy, effect);
-                if (effect.name === "Peace Treaty" && distance <= effect.radius && this.turn % 2 === 0) {
+                if (effect.name === "Peace Treaty" && distance <= effect.radius) {
                     enemy.slowedThisTurn = true;
+                }
+                if (effect.name === "Royal Curse" && distance <= effect.radius) {
+                    enemy.cursedThisTurn = true;
                 }
             }
         }

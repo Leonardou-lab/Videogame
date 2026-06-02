@@ -209,6 +209,27 @@ Object.assign(Game.prototype, {
                     ctx.strokeRect(x + 3, y + 3, tileSize - 6, tileSize - 6);
                 }
 
+                for (const effect of this.effects) {
+                    if (effect.name === "Peace Treaty" &&
+                        Math.abs(row - effect.row) <= effect.radius &&
+                        Math.abs(col - effect.col) <= effect.radius) {
+                        ctx.fillStyle   = "rgba(255, 255, 255, 0.18)";
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                        ctx.strokeStyle = "rgba(200, 200, 200, 0.35)";
+                        ctx.lineWidth   = 2;
+                        ctx.strokeRect(x + 3, y + 3, tileSize - 6, tileSize - 6);
+                    }
+                    if (effect.name === "Royal Curse" &&
+                        Math.abs(row - effect.row) <= effect.radius &&
+                        Math.abs(col - effect.col) <= effect.radius) {
+                        ctx.fillStyle   = "rgba(192, 57, 43, 0.18)";
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                        ctx.strokeStyle = "rgba(192, 57, 43, 0.35)";
+                        ctx.lineWidth   = 2;
+                        ctx.strokeRect(x + 3, y + 3, tileSize - 6, tileSize - 6);
+                    }
+                }
+
                 ctx.strokeStyle = "#11161d";
                 ctx.lineWidth   = 2;
                 ctx.strokeRect(x, y, tileSize, tileSize);

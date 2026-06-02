@@ -24,8 +24,9 @@ class Unit extends BoardObject {
         this.damage         = damage;
         this.range          = range;
         this.speed          = speed;
-        this.stunTurns      = 0;
-        this.slowedThisTurn = false;
+        this.stunTurns       = 0;
+        this.slowedThisTurn  = false;
+        this.cursedThisTurn  = false;
     }
 
     takeDamage(amount) {
