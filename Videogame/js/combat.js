@@ -30,7 +30,9 @@ const target = this.findNearestEnemy(ally, ally.range);
 
             const adjacentAlly = this.findAdjacentAlly(enemy);
             if (adjacentAlly) {
-                adjacentAlly.takeDamage(enemy.damage);
+                let dmg = enemy.cursedThisTurn ? Math.floor(enemy.damage * 0.5) : enemy.damage;
+                if (this.isProtectedBySquire(adjacentAlly)) dmg = Math.floor(dmg * 0.5);
+                adjacentAlly.takeDamage(dmg);
                 triggerUnitAnim(enemy);
                 this.addLog(`${enemy.name} attacks a defender.`);
                 continue;
@@ -98,6 +100,10 @@ const target = this.findNearestEnemy(ally, ally.range);
 
     areObjectsAdjacent(first, second) {
         return this.getObjectDistance(first, second) <= 1;
+    },
+
+    isProtectedBySquire(ally) {
+        return this.allies.some(a => a.cardName === "Squire" && a.hp > 0 && this.getObjectDistance(ally, a) <= 1);
     },
 
 });

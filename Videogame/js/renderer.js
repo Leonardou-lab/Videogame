@@ -20,6 +20,22 @@ function labelForType(type) {
 
 function drawToken(ctx, unit) {
     if (drawSprite(ctx, unit)) {
+        if (unit.slowedThisTurn || unit.cursedThisTurn) {
+            const span     = unit.tileSpan || 1;
+            const drawSize = tileSize * span - 6;
+            const cx       = boardX + unit.col * tileSize + (tileSize * span) / 2;
+            const cy       = boardY + unit.row * tileSize + (tileSize * span) / 2;
+            ctx.save();
+            if (unit.slowedThisTurn) {
+                ctx.fillStyle = "rgba(180, 230, 255, 0.38)";
+                ctx.fillRect(Math.round(cx - drawSize / 2), Math.round(cy - drawSize / 2), drawSize, drawSize);
+            }
+            if (unit.cursedThisTurn) {
+                ctx.fillStyle = "rgba(192, 57, 43, 0.35)";
+                ctx.fillRect(Math.round(cx - drawSize / 2), Math.round(cy - drawSize / 2), drawSize, drawSize);
+            }
+            ctx.restore();
+        }
         drawHpBar(ctx, unit);
     }
 }

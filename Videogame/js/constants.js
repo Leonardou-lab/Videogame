@@ -269,6 +269,16 @@ const cardPool = [
         text:   "Blocks a tile and absorbs attacks.",
     },
     {
+        name:   "Decoy",
+        type:   "ally",
+        cost:   2,
+        hp:     80,
+        damage: 0,
+        range:  0,
+        color:  "#e74c3c",
+        text:   "Draws all enemies toward it. No attack.",
+    },
+    {
         name:     "Exile",
         type:     "trap",
         cost:     2,
@@ -290,6 +300,14 @@ const cardPool = [
         cost:     2,
         duration: 4,
         color:    "#55b7b3",
-        text:     "3x3 zone. Slows enemies every other turn.",
+        text:     "3x3 zone. Freezes enemies each turn for 4 turns.",
+    },
+    {
+        name:     "Royal Curse",
+        type:     "zone",
+        cost:     3,
+        duration: 5,
+        color:    "#c0392b",
+        text:     "3x3 zone. Reduces enemy damage to allies by 50% for 5 turns.",
     },
 ];
