@@ -25,10 +25,10 @@ const CARD_META = {
     'Guardian':     { color: '#2980b9', game_type: 'ally'  },
     'Royal Guard':  { color: '#f39c12', game_type: 'ally'  },
     'Trench':       { color: '#795548', game_type: 'ally'  },
-    'Exile':        { color: '#9b59b6', game_type: 'trap'  },
+    'Exile':        { color: '#9b59b6', game_type: 'trap', duration: 2 },
     'Bomb':         { color: '#e74c3c', game_type: 'zone'  },
-    'Peace Treaty': { color: '#55b7b3', game_type: 'zone'  },
-    'Royal Curse':  { color: '#c0392b', game_type: 'zone'  },
+    'Peace Treaty': { color: '#55b7b3', game_type: 'zone', duration: 4 },
+    'Royal Curse':  { color: '#c0392b', game_type: 'zone', duration: 5 },
     'Decoy':        { color: '#e74c3c', game_type: 'ally'  },
 }
 
@@ -41,15 +41,16 @@ app.get('/api/cards', async (req, res) => {
         const cards = rows.map(c => {
             const meta = CARD_META[c.name] ?? { range: 1, color: '#888', game_type: 'ally' }
             return {
-                card_id: c.card_id,
-                name:    c.name,
-                type:    meta.game_type,
-                cost:    c.base_ap_cost,
-                hp:      c.base_hp,
-                damage:  c.base_damage,
-                range:   c.range_attack,
-                color:   meta.color,
-                text:    c.effect_description,
+                card_id:  c.card_id,
+                name:     c.name,
+                type:     meta.game_type,
+                cost:     c.base_ap_cost,
+                hp:       c.base_hp,
+                damage:   c.base_damage,
+                range:    c.range_attack,
+                color:    meta.color,
+                text:     c.effect_description,
+                duration: meta.duration ?? undefined,
             }
         })
         res.json(cards)
