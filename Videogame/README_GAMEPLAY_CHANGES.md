@@ -124,22 +124,29 @@ After the first horde, the hand size becomes 4 cards. When the player wins a hor
 
 Cards remain reusable during the horde. Playing a card does not remove it from the hand, but every use still costs AP. A card is only disabled when the player does not have enough AP, the game is not in the player phase, or the encounter is not actively playing.
 
-## Active Card Pool
+## Card Pool And Tutorial Gallery
 
-The current prototype card pool was reduced to the cards below. These are the cards used by the fallback `cardPool` in `js/constants.js` and shown in the main menu tutorial.
+The menu tutorial now shows the full card image gallery available in `Assets/cards`, excluding `Royal Decree` because that card was removed/replaced. The SQL files were reviewed for card names, costs, stats, and descriptions, but were not modified.
 
-| Card | Type | AP | HP | Damage | Image | Current behavior |
+| Card | Type | AP | HP | Damage | Image | Notes |
 | --- | --- | ---: | ---: | ---: | --- | --- |
-| Knight | Ally / Attack | 3 | 80 | 30 | `Assets/cards/Knight.png` | Melee ally. Attacks adjacent enemies. |
-| Archer | Ally / Ranged | 2 | 50 | 20 | `Assets/cards/Archer.png` | Stationary ranged ally. Range 3. |
-| Wall | Ally / Defense | 3 | 150 | 0 | `Assets/cards/Wall.png` | Blocks a tile and absorbs attacks. |
-| Decoy | Ally / Defense | 2 | 80 | 0 | `Assets/cards/Decoy.png` | Draws enemies toward it. No attack. |
-| Exile | Trap | 2 | - | - | `Assets/cards/Exile.png` | Stuns an enemy for 2 turns. |
-| Bomb | Zone | 4 | - | 40 | `Assets/cards/Bomb.png` | Explodes on placement. Deals damage to enemies in a 3x3 area. |
-| Peace Treaty | Zone | 2 | - | - | `Assets/cards/Peace Treaty.png` | 3x3 zone. Freezes enemies each turn for 4 turns. |
-| Royal Curse | Zone | 3 | - | - | `Assets/cards/Royal Curse.png` | 3x3 zone. Reduces enemy damage to allies by 50% for 5 turns. |
+| Knight | Attack | 3 | 80 | 30 | `Assets/cards/Knight.png` | Melee ally. Attacks adjacent enemies. |
+| Archer | Attack | 3 | 50 | 20 | `Assets/cards/Archer.png` | Stationary ranged ally. Range 3. |
+| Mage | Attack | 4 | 40 | 25 | `Assets/cards/Mage.png` | AoE/cross-style ranged attacker. |
+| Pikeman | Attack | 2 | 60 | 15 | `Assets/cards/Pikeman.png` | Fast interceptor for quick enemies. |
+| Wall | Defense | 3 | 150 | 0 | `Assets/cards/Wall.png` | Blocks a tile and absorbs attacks. |
+| Squire | Defense | 2 | 70 | 10 | `Assets/cards/Squire.png` | Reduces damage to adjacent allies. |
+| Tower | Defense | 4 | 100 | 35 | `Assets/cards/Tower.png` | Stationary ranged defense. Range 4. |
+| Guardian | Defense | 3 | 120 | 25 | `Assets/cards/Guardian.png` | Tanky unit that absorbs heavy damage. |
+| Royal Guard | Defense | 2 | 90 | 0 | `Assets/cards/Royal Guard.png` | Follows/protects the King. |
+| Trench | Defense | 1 | 40 | 0 | `Assets/cards/Trench.png` | Cheap barricade-style defense. |
+| Exile | Political / Trap | 2 | - | - | `Assets/cards/Exile.png` | Stuns an enemy for 2 turns. |
+| Bomb | Political / Zone | 4 | - | 40 | `Assets/cards/Bomb.png` | Explodes in a 3x3 area. |
+| Peace Treaty | Political / Zone | 2 | - | - | `Assets/cards/Peace Treaty.png` | 3x3 freeze/slow control zone. |
+| Royal Curse | Political / Zone | 4 | - | - | `Assets/cards/Royal Curse.png` | Reduces enemy damage in a 3x3 zone. |
+| Decoy | Political / Unit | 1 | 30 | 0 | `Assets/cards/Decoy.png` | Enemies prioritize it over the King. |
 
-The SQL files still contain the broader historical/GDD card list, including cards such as Mage, Pikeman, Squire, Tower, Guardian, Royal Guard, and Trench. Those cards are not part of the reduced prototype fallback pool right now. The SQL was reviewed for reference only and was not modified in this update.
+Important implementation note: the fallback `cardPool` in `js/constants.js` currently contains a smaller prototype subset, while the API can load the broader SQL card list when the database server is active. The tutorial gallery is visual/documentation-facing and intentionally includes the broader card set that has available artwork.
 
 ## Enemy Spawns
 
