@@ -73,13 +73,48 @@ async function fetchPlayerStats() {
 async function fetchGlobalStats() {
     // Future API hook:
     // return fetch("/api/global/stats").then(response => response.json());
-    return {
-        farthestPlayers: "3 players reached the Brave King",
-        progressRanking: "1. RoyalGuard42, 2. WallMaker, 3. APKeeper",
-        totalVictories: 128,
-        totalDefeats: 914,
-        averageHorde: "Level 1 - Horde 3",
-    };
+    return [
+        {
+            rank: 1,
+            playerName: "RoyalGuard42",
+            farthestHorde: "Level 3 - Boss",
+            highestLevel: "Brave King's Castle",
+            wins: 12,
+            losses: 31,
+            averageHorde: "Level 2 - Horde 3",
+            favoriteCard: "Knight",
+        },
+        {
+            rank: 2,
+            playerName: "WallMaker",
+            farthestHorde: "Level 3 - Horde 2",
+            highestLevel: "Brave King's Castle",
+            wins: 8,
+            losses: 27,
+            averageHorde: "Level 2 - Horde 2",
+            favoriteCard: "Wall",
+        },
+        {
+            rank: 3,
+            playerName: "APKeeper",
+            farthestHorde: "Level 2 - Boss",
+            highestLevel: "Ogre Dungeon",
+            wins: 6,
+            losses: 19,
+            averageHorde: "Level 2 - Horde 1",
+            favoriteCard: "Peace Treaty",
+        },
+        {
+            rank: 4,
+            playerName: "ExileScribe",
+            farthestHorde: "Level 2 - Horde 3",
+            highestLevel: "Ogre Dungeon",
+            wins: 4,
+            losses: 22,
+            averageHorde: "Level 1 - Boss",
+            favoriteCard: "Exile",
+        },
+    ];
 }
 
 function cardStatLine(card) {
@@ -130,10 +165,61 @@ async function renderPlayerStats() {
 }
 
 async function renderGlobalStats() {
-    renderStats("globalStats", await fetchGlobalStats());
+    renderGlobalRanking(await fetchGlobalStats());
+}
+
+function renderGlobalRanking(players) {
+    const container = document.getElementById("globalStats");
+    if (!container) return;
+
+    container.innerHTML = players.map(player => `
+        <details class="ranking-card" ${player.rank === 1 ? "open" : ""}>
+            <summary>
+                <span class="ranking-place">#${player.rank}</span>
+                <span class="ranking-name">${player.playerName}</span>
+                <span class="ranking-progress">${player.farthestHorde}</span>
+            </summary>
+            <div class="ranking-details">
+                <div><span>Highest Level:</span> ${player.highestLevel}</div>
+                <div><span>Wins:</span> ${player.wins}</div>
+                <div><span>Losses:</span> ${player.losses}</div>
+                <div><span>Average Horde:</span> ${player.averageHorde}</div>
+                <div><span>Favorite Card:</span> ${player.favoriteCard}</div>
+            </div>
+        </details>
+    `).join("");
+}
+
+function showScreen(screenId) {
+    const targetId = screenId || "play";
+    document.querySelectorAll("[data-screen]").forEach(screen => {
+        screen.classList.toggle("active-screen", screen.dataset.screen === targetId);
+    });
+    document.querySelectorAll("[data-screen-link]").forEach(link => {
+        link.classList.toggle("active-nav", link.dataset.screenLink === targetId);
+    });
+}
+
+function setupScreenNavigation() {
+    document.querySelectorAll("[data-screen-link]").forEach(link => {
+        link.addEventListener("click", event => {
+            const screenId = link.dataset.screenLink;
+            if (!screenId) return;
+            event.preventDefault();
+            history.pushState(null, "", `#${screenId}`);
+            showScreen(screenId);
+        });
+    });
+
+    window.addEventListener("popstate", () => {
+        showScreen(location.hash.replace("#", "") || "play");
+    });
+
+    showScreen(location.hash.replace("#", "") || "play");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    setupScreenNavigation();
     renderCards();
     renderPlayerStats();
     renderGlobalStats();
