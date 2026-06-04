@@ -118,9 +118,28 @@ Starting in Horde 2, and during boss fights, enemies act first:
 
 ## Hand Management
 
-The current hand size is fixed at 3 cards.
+Level 1 Horde 1 starts with 3 random cards.
 
-Cards remain reusable during the horde. This keeps the prototype simple while still forcing AP-based decisions.
+After the first horde, the hand size becomes 4 cards. When the player wins a horde, they must choose 1 card from the previous hand to keep before the next encounter starts. The rest of the hand is filled with new random cards.
+
+Cards remain reusable during the horde. Playing a card does not remove it from the hand, but every use still costs AP. A card is only disabled when the player does not have enough AP, the game is not in the player phase, or the encounter is not actively playing.
+
+## Active Card Pool
+
+The current prototype card pool was reduced to the cards below. These are the cards used by the fallback `cardPool` in `js/constants.js` and shown in the main menu tutorial.
+
+| Card | Type | AP | HP | Damage | Image | Current behavior |
+| --- | --- | ---: | ---: | ---: | --- | --- |
+| Knight | Ally / Attack | 3 | 80 | 30 | `Assets/cards/Knight.png` | Melee ally. Attacks adjacent enemies. |
+| Archer | Ally / Ranged | 2 | 50 | 20 | `Assets/cards/Archer.png` | Stationary ranged ally. Range 3. |
+| Wall | Ally / Defense | 3 | 150 | 0 | `Assets/cards/Wall.png` | Blocks a tile and absorbs attacks. |
+| Decoy | Ally / Defense | 2 | 80 | 0 | `Assets/cards/Decoy.png` | Draws enemies toward it. No attack. |
+| Exile | Trap | 2 | - | - | `Assets/cards/Exile.png` | Stuns an enemy for 2 turns. |
+| Bomb | Zone | 4 | - | 40 | `Assets/cards/Bomb.png` | Explodes on placement. Deals damage to enemies in a 3x3 area. |
+| Peace Treaty | Zone | 2 | - | - | `Assets/cards/Peace Treaty.png` | 3x3 zone. Freezes enemies each turn for 4 turns. |
+| Royal Curse | Zone | 3 | - | - | `Assets/cards/Royal Curse.png` | 3x3 zone. Reduces enemy damage to allies by 50% for 5 turns. |
+
+The SQL files still contain the broader historical/GDD card list, including cards such as Mage, Pikeman, Squire, Tower, Guardian, Royal Guard, and Trench. Those cards are not part of the reduced prototype fallback pool right now. The SQL was reviewed for reference only and was not modified in this update.
 
 ## Enemy Spawns
 

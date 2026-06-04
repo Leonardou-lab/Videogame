@@ -78,6 +78,16 @@ const menuCards = [
         chant: "Stone has more courage than the crown.",
     },
     {
+        name: "Decoy",
+        image: "Assets/cards/Decoy.png",
+        cost: 2,
+        hp: 80,
+        damage: 0,
+        type: "Defense Unit",
+        ability: "Draws all enemies toward it. No attack.",
+        chant: "A wooden hero with better nerves than the King.",
+    },
+    {
         name: "Exile",
         image: "Assets/cards/Exile.png",
         cost: 2,
@@ -99,13 +109,23 @@ const menuCards = [
     },
     {
         name: "Peace Treaty",
-        image: "Assets/cards/Peace_Treaty.png",
+        image: "Assets/cards/Peace Treaty.png",
         cost: 2,
         hp: null,
         damage: null,
         type: "Zone",
-        ability: "3x3 zone. Slows enemies every other turn.",
+        ability: "3x3 zone. Freezes enemies each turn for 4 turns.",
         chant: "A signed delay before the next scream.",
+    },
+    {
+        name: "Royal Curse",
+        image: "Assets/cards/Royal Curse.png",
+        cost: 3,
+        hp: null,
+        damage: null,
+        type: "Zone",
+        ability: "3x3 zone. Reduces enemy damage to allies by 50% for 5 turns.",
+        chant: "The royal family finally weaponizes bad luck.",
     },
 ];
 
