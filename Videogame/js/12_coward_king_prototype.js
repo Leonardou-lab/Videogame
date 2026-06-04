@@ -56,6 +56,9 @@ async function main() {
     }
 
     loadSprites();
+    if (window.cowardKingAudio) {
+        window.cowardKingAudio.init();
+    }
 
     const canvas  = document.getElementById("canvas");
     canvas.width  = canvasWidth;

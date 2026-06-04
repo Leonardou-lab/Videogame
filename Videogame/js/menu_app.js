@@ -7,6 +7,7 @@ const APP_CONFIG = {
 };
 
 const API_BASE = "http://localhost:3000";
+const SETTINGS_STORAGE_KEY = "cowardKingSettings";
 
 const appState = {
     currentUser: {
@@ -29,6 +30,18 @@ const appState = {
             if (user.player_id && user.username) {
                 appState.currentUser = { player_id: user.player_id, username: user.username, isGuest: false };
             }
+        }
+    } catch {}
+})();
+
+(function restoreSettings() {
+    try {
+        const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+        if (saved) {
+            appState.settings = {
+                ...appState.settings,
+                ...JSON.parse(saved),
+            };
         }
     } catch {}
 })();
@@ -652,6 +665,10 @@ function sliderRow(label, key) {
     input.addEventListener("input", event => {
         const nextValue = Number(event.target.value);
         appState.settings[key] = nextValue;
+        localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(appState.settings));
+        if (window.cowardKingAudio) {
+            window.cowardKingAudio.updateSettings({ [key]: nextValue });
+        }
         output.textContent = `${nextValue}%`;
     });
 
@@ -767,3 +784,7 @@ function createLoginModal() {
 }
 
 renderMenu();
+if (window.cowardKingAudio) {
+    window.cowardKingAudio.init();
+    window.cowardKingAudio.setRandomMenuTrack();
+}
