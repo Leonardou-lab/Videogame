@@ -104,6 +104,26 @@ The Desperation meter forces the player to move the King instead of hiding perma
 - At 4 Desperation, the player loses immediately.
 - The right side of the screen shows the current Desperation face using `Cara0.png` through `Cara4.png`.
 
+## Music And Audio Settings
+
+The game now has a level-based music system prepared in `js/audio.js`. Music switches automatically when the current level changes.
+
+Expected music files:
+
+| Level | File | Mood |
+| --- | --- | --- |
+| Level 1 - Catacombs | `Assets/audio/level1-skeletons.mp3` | Skeleton/catacomb medieval ambience. |
+| Level 2 - Ogre Dungeon | `Assets/audio/level2-ogres.mp3` | Heavy ogre dungeon percussion. |
+| Level 3 - Brave King's Castle | `Assets/audio/level3-royal.mp3` | Royal medieval final-level tension. |
+
+The menu Settings sliders now save to `localStorage` under `cowardKingSettings`. The gameplay audio reads those values:
+
+- Master volume affects all game audio.
+- Music volume affects level music.
+- Sound effects volume is stored for future SFX implementation.
+
+Browsers block autoplay, so music begins after the first player interaction on the game screen.
+
 ## Horde Attack Order
 
 Horde 1 keeps the easier tutorial-like resolution order:

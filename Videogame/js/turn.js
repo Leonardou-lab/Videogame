@@ -43,6 +43,9 @@ Object.assign(Game.prototype, {
         const level = this.getCurrentLevelConfig();
         if (!level.backgroundImage) return;
         document.body.style.setProperty("--level-background", `url("../${level.backgroundImage}")`);
+        if (window.cowardKingAudio) {
+            window.cowardKingAudio.setLevel(level);
+        }
     },
 
     updateDesperation(kingMovedLastTurn) {
