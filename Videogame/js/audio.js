@@ -44,6 +44,7 @@ const cowardKingAudio = {
     currentLevelNumber: null,
     currentTrack: null,
     unlocked: false,
+    unlockHandler: null,
 
     init() {
         this.applyVolume();
@@ -51,15 +52,25 @@ const cowardKingAudio = {
     },
 
     unlockOnFirstInput() {
+        if (this.unlockHandler) return;
+
         const unlock = () => {
             this.unlocked = true;
-            this.playCurrentTrack();
-            window.removeEventListener("pointerdown", unlock);
-            window.removeEventListener("keydown", unlock);
+            this.playCurrentTrack().then(started => {
+                if (!started) return;
+                window.removeEventListener("pointerdown", unlock, true);
+                window.removeEventListener("click", unlock, true);
+                window.removeEventListener("touchstart", unlock, true);
+                window.removeEventListener("keydown", unlock, true);
+                this.unlockHandler = null;
+            });
         };
 
-        window.addEventListener("pointerdown", unlock);
-        window.addEventListener("keydown", unlock);
+        this.unlockHandler = unlock;
+        window.addEventListener("pointerdown", unlock, true);
+        window.addEventListener("click", unlock, true);
+        window.addEventListener("touchstart", unlock, true);
+        window.addEventListener("keydown", unlock, true);
     },
 
     setLevel(levelConfig) {
@@ -93,6 +104,7 @@ const cowardKingAudio = {
         audio.loop = true;
         audio.preload = "auto";
         audio.dataset.trackLabel = trackInfo.label;
+        audio.load();
         audio.addEventListener("error", () => {
             console.warn(`Missing music file: ${trackInfo.src}`);
         });
@@ -103,9 +115,10 @@ const cowardKingAudio = {
     },
 
     playCurrentTrack() {
-        if (!this.unlocked || !this.currentTrack) return;
-        this.currentTrack.play().catch(() => {
+        if (!this.unlocked || !this.currentTrack) return Promise.resolve(false);
+        return this.currentTrack.play().then(() => true).catch(() => {
             console.warn("Music will start after the next player interaction.");
+            return false;
         });
     },
 
