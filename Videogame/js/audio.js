@@ -39,16 +39,38 @@ function clampVolume(value) {
     return Math.max(0, Math.min(100, Number(value) || 0));
 }
 
+function createTrackAudio(trackInfo) {
+    const audio = new Audio(trackInfo.src);
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.dataset.trackLabel = trackInfo.label;
+    audio.load();
+    audio.addEventListener("error", () => {
+        console.warn(`Missing music file: ${trackInfo.src}`);
+    });
+    return audio;
+}
+
 const cowardKingAudio = {
     settings: readAudioSettings(),
     currentLevelNumber: null,
     currentTrack: null,
+    trackCache: {},
     unlocked: false,
     unlockHandler: null,
 
     init() {
+        this.preloadTracks();
         this.applyVolume();
         this.unlockOnFirstInput();
+    },
+
+    preloadTracks() {
+        for (const track of MENU_MUSIC_TRACKS) {
+            if (!this.trackCache[track.src]) {
+                this.trackCache[track.src] = createTrackAudio(track);
+            }
+        }
     },
 
     unlockOnFirstInput() {
@@ -100,14 +122,10 @@ const cowardKingAudio = {
             this.currentTrack.pause();
         }
 
-        const audio = new Audio(trackInfo.src);
-        audio.loop = true;
-        audio.preload = "auto";
+        const audio = this.trackCache[trackInfo.src] || createTrackAudio(trackInfo);
+        this.trackCache[trackInfo.src] = audio;
+        audio.currentTime = 0;
         audio.dataset.trackLabel = trackInfo.label;
-        audio.load();
-        audio.addEventListener("error", () => {
-            console.warn(`Missing music file: ${trackInfo.src}`);
-        });
 
         this.currentTrack = audio;
         this.applyVolume();
