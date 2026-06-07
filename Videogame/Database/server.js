@@ -32,9 +32,15 @@ const CARD_META = {
     'Decoy':        { color: '#e74c3c', game_type: 'ally'  },
 }
 
-//ENDPOINTS
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 
-// GET api-cards
+function hashPassword(p) {
+    return crypto.createHash('sha256').update(p).digest('hex')
+}
+
+// ─── GAME DATA ────────────────────────────────────────────────────────────────
+
+// GET /api/cards
 app.get('/api/cards', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM Card')
@@ -59,7 +65,7 @@ app.get('/api/cards', async (req, res) => {
     }
 })
 
-// GET api-enemies with stats levelId 
+// GET /api/enemies/:levelId
 app.get('/api/enemies/:levelId', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -72,7 +78,7 @@ app.get('/api/enemies/:levelId', async (req, res) => {
     }
 })
 
-// GET api-levels
+// GET /api/levels
 app.get('/api/levels', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM Level')
@@ -82,21 +88,18 @@ app.get('/api/levels', async (req, res) => {
     }
 })
 
-function hashPassword(p) {
-    return crypto.createHash('sha256').update(p).digest('hex')
-}
+// ─── PLAYER ───────────────────────────────────────────────────────────────────
 
-// POST api-player  ccreate new player + row of stats
+// POST /api/player — registra jugador (Stats se crea automáticamente por trigger)
 app.post('/api/player', async (req, res) => {
     const { username, password } = req.body
     if (!username || !password) return res.status(400).json({ error: 'username and password required' })
     try {
-        const [result] = await pool.query(
-            'INSERT INTO Player (username, password_hash) VALUES (?, ?)',
+        const [rows] = await pool.query(
+            'CALL sp_register_player(?, ?)',
             [username, hashPassword(password)]
         )
-        const player_id = result.insertId
-        await pool.query('INSERT INTO Stats (player_id) VALUES (?)', [player_id])
+        const player_id = rows[0][0].new_player_id
         res.status(201).json({ player_id, username })
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'username already taken' })
@@ -104,7 +107,7 @@ app.post('/api/player', async (req, res) => {
     }
 })
 
-// GET api-player username if exists input password 
+// GET /api/player/:username — login / buscar jugador por nombre
 app.get('/api/player/:username', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -123,22 +126,133 @@ app.get('/api/player/:username', async (req, res) => {
     }
 })
 
-// POST api-run  start a new run
-app.post('/api/run', async (req, res) => {
-    const { player_id, level_id } = req.body
-    if (!player_id) return res.status(400).json({ error: 'player_id required' })
+// GET /api/player/:id/stats — overview del jugador (v_player_overview)
+app.get('/api/player/:id/stats', async (req, res) => {
     try {
-        const [result] = await pool.query(
-            'INSERT INTO Run (player_id, current_level_id) VALUES (?, ?)',
-            [player_id, level_id ?? null]
+        const [rows] = await pool.query(
+            'SELECT * FROM v_player_overview WHERE player_id = ?',
+            [req.params.id]
         )
-        res.status(201).json({ run_id: result.insertId, player_id, result: 'in_progress' })
+        if (!rows.length) return res.status(404).json({ error: 'player not found' })
+        res.json(rows[0])
     } catch (err) {
         res.status(500).json({ error: err.message })
     }
 })
 
-// PUT api-run  update new run ID
+// GET /api/player/:id/upgrades — cartas mejoradas del jugador (v_player_upgrades)
+app.get('/api/player/:id/upgrades', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM v_player_upgrades WHERE player_id = ?',
+            [req.params.id]
+        )
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/player/:id/history — historial de runs (v_player_run_history)
+app.get('/api/player/:id/history', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM v_player_run_history WHERE player_id = ?',
+            [req.params.id]
+        )
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/player/:id/dashboard — 4 result sets: overview, best_run, upgrades, últimos 10 runs
+app.get('/api/player/:id/dashboard', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'CALL sp_get_player_dashboard(?)',
+            [req.params.id]
+        )
+        res.json({
+            overview:    rows[0][0] ?? null,
+            best_run:    rows[1][0] ?? null,
+            upgrades:    rows[2],
+            run_history: rows[3],
+        })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// ─── RUN ──────────────────────────────────────────────────────────────────────
+
+// POST /api/run/start — inicia nuevo run (sp_start_run, level_id=1 por default)
+app.post('/api/run/start', async (req, res) => {
+    const { player_id } = req.body
+    if (!player_id) return res.status(400).json({ error: 'player_id required' })
+    try {
+        const [rows] = await pool.query('CALL sp_start_run(?)', [player_id])
+        const run_id = rows[0][0].new_run_id
+        res.status(201).json({ run_id, player_id, result: 'in_progress' })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// POST /api/run — alias de /api/run/start (backward compatibility)
+app.post('/api/run', async (req, res) => {
+    const { player_id } = req.body
+    if (!player_id) return res.status(400).json({ error: 'player_id required' })
+    try {
+        const [rows] = await pool.query('CALL sp_start_run(?)', [player_id])
+        const run_id = rows[0][0].new_run_id
+        res.status(201).json({ run_id, player_id, result: 'in_progress' })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// POST /api/run/:id/complete-horde — completa una horde (kills y gold los suman los triggers)
+app.post('/api/run/:id/complete-horde', async (req, res) => {
+    const { horde_id, turns, kills } = req.body
+    if (!horde_id) return res.status(400).json({ error: 'horde_id required' })
+    try {
+        await pool.query(
+            'CALL sp_complete_horde(?, ?, ?, ?)',
+            [req.params.id, horde_id, turns ?? 0, kills ?? 0]
+        )
+        res.json({ run_id: Number(req.params.id), horde_id, completed: true })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// POST /api/run/:id/death — registra derrota (feeds v_death_distribution)
+app.post('/api/run/:id/death', async (req, res) => {
+    try {
+        await pool.query('CALL sp_record_death(?)', [req.params.id])
+        res.json({ run_id: Number(req.params.id), result: 'defeat' })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// PATCH /api/run/:id/level — avanza nivel sin cerrar el run (el trigger suma levels_completed)
+app.patch('/api/run/:id/level', async (req, res) => {
+    const { level_id } = req.body
+    if (!level_id) return res.status(400).json({ error: 'level_id required' })
+    try {
+        await pool.query(
+            'UPDATE Run SET current_level_id = ? WHERE run_id = ?',
+            [level_id, req.params.id]
+        )
+        res.json({ run_id: Number(req.params.id), current_level_id: level_id })
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// PUT /api/run/:runId — actualiza run (victoria, avance de nivel, gold final)
 app.put('/api/run/:runId', async (req, res) => {
     const { result, total_gold_earned, current_level_id } = req.body
     if (!result) return res.status(400).json({ error: 'result required (victory|defeat)' })
@@ -159,63 +273,35 @@ app.put('/api/run/:runId', async (req, res) => {
     }
 })
 
-// POST api-upgrade  saves upgrade 
+// ─── UPGRADE ──────────────────────────────────────────────────────────────────
+
+// POST /api/upgrade — compra upgrade de carta (tier y bonos calculados por el SP)
 app.post('/api/upgrade', async (req, res) => {
-    const { player_id, card_id, level, ap_cost_bonus, hp_bonus, damage_bonus, gold_spent } = req.body
+    const { player_id, card_id, gold_cost, gold_spent } = req.body
     if (!player_id || !card_id) return res.status(400).json({ error: 'player_id and card_id required' })
     try {
-        const [existing] = await pool.query(
-            'SELECT upgrade_id FROM Card_Upgrade WHERE player_id = ? AND card_id = ?',
-            [player_id, card_id]
-        )
-        if (existing.length) {
-            await pool.query(
-                `UPDATE Card_Upgrade SET
-                    level          = ?,
-                    ap_cost_bonus  = ?,
-                    hp_bonus       = ?,
-                    damage_bonus   = ?,
-                    gold_spent     = gold_spent + ?
-                 WHERE player_id = ? AND card_id = ?`,
-                [level ?? 1, ap_cost_bonus ?? 0, hp_bonus ?? 0, damage_bonus ?? 0,
-                 gold_spent ?? 0, player_id, card_id]
-            )
-            res.json({ updated: true, player_id, card_id })
-        } else {
-            const [result] = await pool.query(
-                'INSERT INTO Card_Upgrade (player_id, card_id, level, ap_cost_bonus, hp_bonus, damage_bonus, gold_spent) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [player_id, card_id, level ?? 1, ap_cost_bonus ?? 0, hp_bonus ?? 0, damage_bonus ?? 0, gold_spent ?? 0]
-            )
-            res.status(201).json({ upgrade_id: result.insertId, player_id, card_id })
-        }
-    } catch (err) {
-        res.status(500).json({ error: err.message })
-    }
-})
-
-// POST api-stats  sum stats of the player
-app.post('/api/stats', async (req, res) => {
-    const { player_id, total_runs, total_enemies_killed, total_upgrades, total_gold_earned, levels_completed } = req.body
-    if (!player_id) return res.status(400).json({ error: 'player_id required' })
-    try {
         await pool.query(
-            `UPDATE Stats SET
-                total_runs           = total_runs           + ?,
-                total_enemies_killed = total_enemies_killed + ?,
-                total_upgrades       = total_upgrades       + ?,
-                total_gold_earned    = total_gold_earned    + ?,
-                levels_completed     = levels_completed     + ?
-             WHERE player_id = ?`,
-            [total_runs ?? 0, total_enemies_killed ?? 0, total_upgrades ?? 0,
-             total_gold_earned ?? 0, levels_completed ?? 0, player_id]
+            'CALL sp_upgrade_card(?, ?, ?)',
+            [player_id, card_id, gold_cost ?? gold_spent ?? 0]
         )
-        res.json({ updated: true, player_id })
+        res.status(201).json({ upgraded: true, player_id, card_id })
     } catch (err) {
+        if (err.message?.includes('cannot exceed'))
+            return res.status(400).json({ error: 'Card already at max upgrade tier (3)' })
         res.status(500).json({ error: err.message })
     }
 })
 
-// GET api-stats playerId  
+// ─── STATS ────────────────────────────────────────────────────────────────────
+
+// POST /api/stats — no-op: los triggers actualizan Stats automáticamente
+app.post('/api/stats', async (req, res) => {
+    const { player_id } = req.body
+    if (!player_id) return res.status(400).json({ error: 'player_id required' })
+    res.json({ updated: true, player_id })
+})
+
+// GET /api/stats/:playerId — stats directas de la tabla Stats
 app.get('/api/stats/:playerId', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM Stats WHERE player_id = ?', [req.params.playerId])
@@ -225,5 +311,69 @@ app.get('/api/stats/:playerId', async (req, res) => {
         res.status(500).json({ error: err.message })
     }
 })
+
+// ─── ADMIN ────────────────────────────────────────────────────────────────────
+
+// GET /api/admin/death-distribution — dificultad por level/horde
+app.get('/api/admin/death-distribution', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM v_death_distribution')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/admin/most-upgraded-cards — meta del juego, cartas más populares
+app.get('/api/admin/most-upgraded-cards', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM v_most_upgraded_cards')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/admin/horde-difficulty — tasa de completion por horde
+app.get('/api/admin/horde-difficulty', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM v_horde_difficulty')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/admin/leaderboard — ranking global de jugadores
+app.get('/api/admin/leaderboard', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM v_global_leaderboard')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/admin/card-usage — distribución de cartas en manos
+app.get('/api/admin/card-usage', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM v_card_usage_frequency')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/admin/run-duration — duración promedio de sesiones
+app.get('/api/admin/run-duration', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT * FROM v_average_run_duration')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 app.listen(3000, () => console.log('API corriendo en http://localhost:3000'))
