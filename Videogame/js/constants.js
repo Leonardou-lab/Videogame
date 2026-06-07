@@ -31,13 +31,14 @@ const levelConfigs = [
             name: "Skeleton King",
             type: "boss",
             color: "#6f1d2b",
-            hp: 300,
+            hp: 500,
             damage: 30,
             range: 1,
             speed: 1,
             safeZoneWeight: 2,
             tileSpan: 2,
-            summonEveryTurns: 30,
+            summonEveryTurns: 2,
+            moveEveryTurns: 3,
         },
         bossSummon: {
             name: "Skeleton Vanguard",
@@ -52,7 +53,7 @@ const levelConfigs = [
         hordes: [
             {
                 hordeNumber: 1,
-                maxTurns: 18,
+                maxTurns: 10,
                 enemiesPerTurn: 1,
                 maxEnemiesOnBoard: 8,
                 obstacleCount: 0,
@@ -60,7 +61,7 @@ const levelConfigs = [
             },
             {
                 hordeNumber: 2,
-                maxTurns: 24,
+                maxTurns: 15,
                 enemiesPerTurn: 1,
                 maxEnemiesOnBoard: 10,
                 obstacleCount: 2,
@@ -68,7 +69,7 @@ const levelConfigs = [
             },
             {
                 hordeNumber: 3,
-                maxTurns: 30,
+                maxTurns: 20,
                 enemiesPerTurn: 2,
                 maxEnemiesOnBoard: 12,
                 obstacleCount: 4,
@@ -104,6 +105,7 @@ const levelConfigs = [
             safeZoneWeight: 2,
             tileSpan: 2,
             summonEveryTurns: 2,
+            moveEveryTurns: 3,
         },
         bossSummon: {
             name: "Ogre Brute",
@@ -170,6 +172,7 @@ const levelConfigs = [
             safeZoneWeight: 2,
             tileSpan: 2,
             summonEveryTurns: 2,
+            moveEveryTurns: 3,
         },
         bossSummon: {
             name: "Royal Elite",
