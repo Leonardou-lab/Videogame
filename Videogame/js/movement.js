@@ -28,6 +28,10 @@ Object.assign(Game.prototype, {
 
         this.kingMovedThisTurn = true;
         this.desperation = 0;
+        if (window.cowardKingAudio) {
+            window.cowardKingAudio.stopLoopSfx("desperationCritical");
+            window.cowardKingAudio.playSfx("movementKing");
+        }
         this.moveMode          = false;
         this.addLog("The king runs with dignity.");
         this.endPlayerTurn();

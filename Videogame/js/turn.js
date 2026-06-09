@@ -51,14 +51,24 @@ Object.assign(Game.prototype, {
     updateDesperation(kingMovedLastTurn) {
         if (kingMovedLastTurn) {
             this.desperation = 0;
+            if (window.cowardKingAudio) {
+                window.cowardKingAudio.stopLoopSfx("desperationCritical");
+            }
             return;
         }
 
         this.desperation = Math.min(maxDesperation, this.desperation + 1);
+        if (this.desperation >= maxDesperation - 1 && window.cowardKingAudio) {
+            window.cowardKingAudio.startLoopSfx("desperationCritical");
+        }
         if (this.desperation >= maxDesperation) {
             this.status = "lost";
             this.message = "Defeat: the King surrendered to desperation.";
             this.addLog(this.message);
+            if (window.cowardKingAudio) {
+                window.cowardKingAudio.stopLoopSfx("desperationCritical");
+                window.cowardKingAudio.playSfx("desperationDeath");
+            }
         }
     },
 
@@ -104,6 +114,9 @@ Object.assign(Game.prototype, {
 
     // sets up the next encounter after a win or loss, resetting all game state
     restart() {
+        if (window.cowardKingAudio) {
+            window.cowardKingAudio.stopLoopSfx("desperationCritical");
+        }
         if (this.status === "won") {
             this.advanceProgressionAfterVictory();
         } else if (this.status === "lost") {
@@ -222,6 +235,9 @@ Object.assign(Game.prototype, {
 
         this.selectedCard = undefined;
         this.addLog(`${card.name} played.`);
+        if (window.cowardKingAudio) {
+            window.cowardKingAudio.playCardSfx(card.name);
+        }
         this.renderUI();
     },
 
@@ -286,6 +302,14 @@ Object.assign(Game.prototype, {
         }
 
         if (wasPlaying && this.status !== "playing") {
+            if (window.cowardKingAudio) {
+                window.cowardKingAudio.stopLoopSfx("desperationCritical");
+                if (this.status === "won") {
+                    window.cowardKingAudio.playSfx("victory");
+                } else if (this.message !== "Defeat: the King surrendered to desperation.") {
+                    window.cowardKingAudio.playSfx("defeat");
+                }
+            }
             const goldEarned = this.status === "won" ? (this.isBossFight ? 25 : 10) : 0;
             saveStats({
                 kills:    this.encounterKills,
