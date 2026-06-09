@@ -19,6 +19,33 @@ const LEVEL_MUSIC_TRACKS = {
 
 const MENU_MUSIC_TRACKS = Object.values(LEVEL_MUSIC_TRACKS);
 
+const SFX_TRACKS = {
+    button: "Assets/audio/sfx/button-click.mp3",
+    movementKing: "Assets/audio/sfx/button-click.mp3",
+    victory: "Assets/audio/sfx/victory.m4a",
+    defeat: "Assets/audio/sfx/defeat.m4a",
+    desperationCritical: "Assets/audio/sfx/desperation-critical.mp3",
+    desperationDeath: "Assets/audio/sfx/desperation-death.mp3",
+};
+
+const CARD_SFX_TRACKS = {
+    Knight: "Assets/audio/sfx/cards/knight.mp3",
+    Archer: "Assets/audio/sfx/cards/archer.mp3",
+    Mage: "Assets/audio/sfx/cards/mage.mp3",
+    Pikeman: "Assets/audio/sfx/cards/pikeman.mp3",
+    Wall: "Assets/audio/sfx/cards/wall.mp3",
+    Squire: "Assets/audio/sfx/cards/squire.mp3",
+    Tower: "Assets/audio/sfx/cards/tower.mp3",
+    Guardian: "Assets/audio/sfx/cards/guardian.mp3",
+    "Royal Guard": "Assets/audio/sfx/cards/royal-guard.mp3",
+    Trench: "Assets/audio/sfx/cards/trench.mp3",
+    Exile: "Assets/audio/sfx/cards/exile.mp3",
+    Bomb: "Assets/audio/sfx/cards/bomb.mp3",
+    "Peace Treaty": "Assets/audio/sfx/cards/peace-treaty.mp3",
+    "Royal Curse": "Assets/audio/sfx/cards/royal-curse.mp3",
+    Decoy: "Assets/audio/sfx/cards/decoy.mp3",
+};
+
 function readAudioSettings() {
     const fallback = {
         masterVolume: 80,
@@ -56,13 +83,17 @@ const cowardKingAudio = {
     currentLevelNumber: null,
     currentTrack: null,
     trackCache: {},
+    sfxCache: {},
+    loopSfx: {},
     unlocked: false,
     unlockHandler: null,
 
     init() {
         this.preloadTracks();
+        this.preloadSfx();
         this.applyVolume();
         this.unlockOnFirstInput();
+        this.bindButtonSounds();
     },
 
     preloadTracks() {
@@ -71,6 +102,33 @@ const cowardKingAudio = {
                 this.trackCache[track.src] = createTrackAudio(track);
             }
         }
+    },
+
+    preloadSfx() {
+        const allSfx = [
+            ...Object.values(SFX_TRACKS),
+            ...Object.values(CARD_SFX_TRACKS),
+        ];
+        for (const src of allSfx) {
+            if (this.sfxCache[src]) continue;
+            const audio = new Audio(src);
+            audio.preload = "auto";
+            audio.load();
+            audio.addEventListener("error", () => {
+                console.warn(`Missing SFX file: ${src}`);
+            });
+            this.sfxCache[src] = audio;
+        }
+    },
+
+    bindButtonSounds() {
+        if (this.buttonSoundsBound) return;
+        this.buttonSoundsBound = true;
+        document.addEventListener("click", event => {
+            const button = event.target.closest("button");
+            if (!button || button.disabled) return;
+            this.playSfx("button");
+        });
     },
 
     unlockOnFirstInput() {
@@ -149,7 +207,59 @@ const cowardKingAudio = {
         this.applyVolume();
     },
 
+    getSfxVolume() {
+        const master = clampVolume(this.settings.masterVolume) / 100;
+        const sfx    = clampVolume(this.settings.sfxVolume) / 100;
+        return master * sfx;
+    },
+
+    playSfx(key) {
+        const src = SFX_TRACKS[key];
+        if (!src || !this.unlocked) return;
+        const base = this.sfxCache[src] || new Audio(src);
+        this.sfxCache[src] = base;
+
+        const sound = base.cloneNode();
+        sound.volume = this.getSfxVolume();
+        sound.play().catch(() => {});
+    },
+
+    playCardSfx(cardName) {
+        const src = CARD_SFX_TRACKS[cardName];
+        if (!src || !this.unlocked) return;
+        const base = this.sfxCache[src] || new Audio(src);
+        this.sfxCache[src] = base;
+
+        const sound = base.cloneNode();
+        sound.volume = this.getSfxVolume();
+        sound.play().catch(() => {});
+    },
+
+    startLoopSfx(key) {
+        const src = SFX_TRACKS[key];
+        if (!src || !this.unlocked) return;
+        if (this.loopSfx[key] && !this.loopSfx[key].paused) return;
+
+        const loop = this.sfxCache[src] || new Audio(src);
+        this.sfxCache[src] = loop;
+        loop.loop = true;
+        loop.volume = this.getSfxVolume();
+        loop.currentTime = 0;
+        this.loopSfx[key] = loop;
+        loop.play().catch(() => {});
+    },
+
+    stopLoopSfx(key) {
+        const loop = this.loopSfx[key];
+        if (!loop) return;
+        loop.pause();
+        loop.currentTime = 0;
+    },
+
     applyVolume() {
+        for (const loop of Object.values(this.loopSfx)) {
+            loop.volume = this.getSfxVolume();
+        }
         if (!this.currentTrack) return;
         const master = clampVolume(this.settings.masterVolume) / 100;
         const music  = clampVolume(this.settings.musicVolume) / 100;
