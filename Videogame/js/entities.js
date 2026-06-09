@@ -71,6 +71,7 @@ class Enemy extends Unit {
         this.safeZoneWeight = enemyStats.safeZoneWeight || 1;
         this.tileSpan = enemyStats.tileSpan || 1;
         this.summonEveryTurns = enemyStats.summonEveryTurns || 0;
+        this.moveEveryTurns   = enemyStats.moveEveryTurns   || 0;
     }
 }
 class Boss extends Enemy {

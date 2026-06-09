@@ -739,6 +739,238 @@
     padding: 0 12px 12px;
 }
 
+/* ── Stats tabs ──────────────────────────────────────────────────────────── */
+
+.stats-tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid rgba(139, 106, 46, 0.45);
+}
+
+.tab-button {
+    padding: 8px 26px;
+    min-height: 38px;
+    border: 3px solid #8b6a2e;
+    color: #b89b67;
+    background: linear-gradient(#1e1c1a, #0f0e0d);
+    box-shadow:
+        inset 0 0 0 2px #17100c,
+        0 4px 0 #0a0808;
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 #160d07;
+    image-rendering: pixelated;
+}
+
+.tab-button.active {
+    background: linear-gradient(#743d91, #4b1d63 58%, #24102e);
+    border-color: #c99a3b;
+    color: #f5dda0;
+    box-shadow:
+        inset 0 0 0 2px rgba(230, 193, 106, 0.13),
+        0 0 14px rgba(124, 63, 163, 0.28),
+        0 4px 0 #0a0808;
+}
+
+.tab-button:hover:not(.active) {
+    filter: brightness(1.2);
+    border-color: #c99a3b;
+    color: #e6c16a;
+}
+
+.tab-panel.hidden {
+    display: none;
+}
+
+.stats-section {
+    margin-bottom: 20px;
+}
+
+.stats-section-title {
+    color: #e6c16a;
+    font-size: 15px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(139, 106, 46, 0.4);
+    font-family: "Courier New", "Lucida Console", monospace;
+    text-shadow: 2px 2px 0 #1d1208;
+}
+
+.stats-top-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.stats-box {
+    padding: 14px;
+    border: 2px solid rgba(139, 106, 46, 0.55);
+    background: rgba(8, 6, 5, 0.46);
+    box-shadow: inset 0 0 0 1px rgba(230, 193, 106, 0.05);
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.tier-pill {
+    display: inline-block;
+    padding: 2px 8px;
+    background: rgba(92, 47, 116, 0.55);
+    border: 1px solid #9a6bb0;
+    color: #d8c9a8;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.result-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.result-badge.victory {
+    background: rgba(39, 174, 96, 0.18);
+    border: 1px solid rgba(39, 174, 96, 0.48);
+    color: #7ed9a0;
+}
+
+.result-badge.defeat {
+    background: rgba(192, 57, 43, 0.18);
+    border: 1px solid rgba(192, 57, 43, 0.48);
+    color: #e07a6e;
+}
+
+.result-badge.in_progress {
+    background: rgba(52, 152, 219, 0.18);
+    border: 1px solid rgba(52, 152, 219, 0.48);
+    color: #7ec8e3;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* ── Chart components ──────────────────────────────────────────────────────── */
+
+.stats-overview-boxes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.overview-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(139, 106, 46, 0.5);
+    border-radius: 8px;
+    text-align: center;
+}
+
+.overview-box strong {
+    color: #f0d89a;
+    font-size: 28px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.overview-box span {
+    color: #b89b67;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: "Courier New", monospace;
+}
+
+.chart-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 18px;
+}
+
+.chart-title {
+    margin: 0 0 14px;
+    color: #e6c16a;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: "Courier New", "Lucida Console", monospace;
+    font-weight: 900;
+    text-shadow: 2px 2px 0 #1d1208;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(139, 106, 46, 0.4);
+}
+
+.chart-canvas-wrap {
+    position: relative;
+    height: 280px;
+    max-height: 300px;
+}
+
+.chart-canvas-wrap--doughnut {
+    height: 280px;
+    max-width: 380px;
+    margin: 0 auto;
+}
+
+.chart-empty-msg {
+    color: #b89b67;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px 0;
+    margin: 0;
+}
+
+.upgrade-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.upgrade-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(92, 47, 116, 0.5);
+    border: 1px solid #9a6bb0;
+    color: #d8c9a8;
+    font-size: 11px;
+    font-family: "Courier New", monospace;
+    text-transform: uppercase;
+    border-radius: 3px;
+}
+
+.upgrade-badge em {
+    color: #e6c16a;
+    font-style: normal;
+    font-weight: 900;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
 @media (max-width: 1050px) {
     body {
         overflow: auto;
@@ -790,6 +1022,11 @@
         grid-template-columns: 1fr;
     }
 
+    .stats-top-grid,
+    .admin-grid {
+        grid-template-columns: 1fr;
+    }
+
     .menu-card-entry {
         grid-template-columns: 92px 1fr;
     }
@@ -797,5 +1034,9 @@
     .menu-card-entry img {
         width: 92px;
         height: 130px;
+    }
+
+    .stats-overview-boxes {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
