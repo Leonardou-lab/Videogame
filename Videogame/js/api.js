@@ -33,16 +33,25 @@ async function loadGameData(levelId = 1) {
         }
 
         pendingUpgradeRegistry = {};
-        if (upgradesRes?.ok) {
-            const upgrades = await upgradesRes.json();
-            for (const u of upgrades) {
-                if (u.card_name && u.upgrade_level > 0) {
-                    pendingUpgradeRegistry[u.card_name] = u.upgrade_level;
+        if (upgradesRes) {
+            if (upgradesRes.ok) {
+                const upgrades = await upgradesRes.json();
+                for (const u of upgrades) {
+                    if (u.card_name && u.upgrade_level > 0) {
+                        pendingUpgradeRegistry[u.card_name] = Math.max(
+                            pendingUpgradeRegistry[u.card_name] ?? 0,
+                            u.upgrade_level
+                        );
+                    }
                 }
+                console.log('[upgrades loaded]', pendingUpgradeRegistry);
+            } else {
+                const errBody = await upgradesRes.json().catch(() => ({}));
+                console.error('[upgrades] endpoint error', upgradesRes.status, errBody);
             }
         }
-    } catch {
-        console.warn('API fail');
+    } catch (err) {
+        console.error('[loadGameData] failed:', err);
     }
 }
 

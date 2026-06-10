@@ -191,22 +191,23 @@ GROUP BY
     r.started_at, r.ended_at
 ORDER BY r.started_at DESC;
 
--- View for player card upgrades
+-- View for player card upgrades (one row per player+card, highest level wins)
 CREATE OR REPLACE VIEW v_player_upgrades AS
-SELECT 
+SELECT
     cu.player_id,
     p.username,
     cu.card_id,
-    c.name   AS card_name,
-    c.type   AS card_type,
-    cu.level AS upgrade_level,
-    cu.ap_cost_bonus,
-    cu.hp_bonus,
-    cu.damage_bonus,
-    cu.gold_spent
+    c.name        AS card_name,
+    c.type        AS card_type,
+    MAX(cu.level) AS upgrade_level,
+    MAX(cu.ap_cost_bonus) AS ap_cost_bonus,
+    MAX(cu.hp_bonus)      AS hp_bonus,
+    MAX(cu.damage_bonus)  AS damage_bonus,
+    SUM(cu.gold_spent)    AS gold_spent
 FROM Card_Upgrade cu
 JOIN Player p ON cu.player_id = p.player_id
-JOIN Card c   ON cu.card_id   = c.card_id;
+JOIN Card c   ON cu.card_id   = c.card_id
+GROUP BY cu.player_id, p.username, cu.card_id, c.name, c.type;
 
 -- View for player best run 
 CREATE OR REPLACE VIEW v_player_best_run AS
