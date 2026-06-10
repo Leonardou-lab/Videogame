@@ -547,6 +547,16 @@ function createTutorialModal() {
                 `).join("")}
             </div>
         </section>
+        <section class="tutorial-video-section">
+            <h3>Tutorial video</h3>
+            <p>
+                Watch the court's official survival briefing before placing the King's life in the hands of suspiciously underpaid defenders.
+            </p>
+            <video class="tutorial-video" controls preload="metadata">
+                <source src="Assets/videos/tutorial.mp4" type="video/mp4">
+                Your browser does not support the tutorial video.
+            </video>
+        </section>
     `;
     return createModal("Learn The Rules", content);
 }

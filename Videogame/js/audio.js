@@ -22,7 +22,7 @@ const MENU_MUSIC_TRACKS = Object.values(LEVEL_MUSIC_TRACKS);
 const SFX_TRACKS = {
     button: "Assets/audio/sfx/button-click.mp3",
     movementKing: "Assets/audio/sfx/button-click.mp3",
-    victory: "Assets/audio/sfx/victory.m4a",
+    victory: "Assets/audio/sfx/victory.mp3",
     defeat: "Assets/audio/sfx/defeat.m4a",
     desperationCritical: "Assets/audio/sfx/desperation-critical.mp3",
     desperationDeath: "Assets/audio/sfx/desperation-death.mp3",
