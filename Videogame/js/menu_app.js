@@ -14,6 +14,7 @@ const appState = {
         player_id: null,
         username: "Guest King",
         isGuest: true,
+        isAdmin: false,
     },
     settings: {
         masterVolume: 80,
@@ -28,7 +29,7 @@ const appState = {
         if (saved) {
             const user = JSON.parse(saved);
             if (user.player_id && user.username) {
-                appState.currentUser = { player_id: user.player_id, username: user.username, isGuest: false };
+                appState.currentUser = { player_id: user.player_id, username: user.username, isGuest: false, isAdmin: user.isAdmin === true };
             }
         }
     } catch {}
@@ -218,6 +219,7 @@ const app = document.getElementById("app");
 let chartRunPerf = null;
 let chartCardUpg = null;
 let chartDeathDist = null;
+let chartDeathRates = null;
 let chartHordeComp = null;
 let chartUpgPop = null;
 
@@ -571,39 +573,46 @@ function createOverviewModal() {
     myStatsBtn.className = "tab-button active";
     myStatsBtn.textContent = "MY STATS";
 
-    const adminBtn = document.createElement("button");
-    adminBtn.className = "tab-button";
-    adminBtn.textContent = "ADMIN";
-
-    tabBar.append(myStatsBtn, adminBtn);
+    tabBar.append(myStatsBtn);
 
     const myStatsPanel = document.createElement("div");
     myStatsPanel.className = "tab-panel";
 
-    const adminPanel = document.createElement("div");
-    adminPanel.className = "tab-panel hidden";
+    let adminBtn = null;
+    let adminPanel = null;
+
+    if (appState.currentUser.isAdmin) {
+        adminBtn = document.createElement("button");
+        adminBtn.className = "tab-button";
+        adminBtn.textContent = "ADMIN";
+        tabBar.append(adminBtn);
+
+        adminPanel = document.createElement("div");
+        adminPanel.className = "tab-panel hidden";
+
+        adminBtn.addEventListener("click", () => {
+            adminBtn.classList.add("active");
+            myStatsBtn.classList.remove("active");
+            adminPanel.classList.remove("hidden");
+            myStatsPanel.classList.add("hidden");
+            if (!adminPanel.dataset.loaded) {
+                adminPanel.dataset.loaded = "1";
+                loadAdminPanel(adminPanel);
+            }
+        });
+    }
 
     myStatsBtn.addEventListener("click", () => {
         myStatsBtn.classList.add("active");
-        adminBtn.classList.remove("active");
+        if (adminBtn) adminBtn.classList.remove("active");
         myStatsPanel.classList.remove("hidden");
-        adminPanel.classList.add("hidden");
-    });
-
-    adminBtn.addEventListener("click", () => {
-        adminBtn.classList.add("active");
-        myStatsBtn.classList.remove("active");
-        adminPanel.classList.remove("hidden");
-        myStatsPanel.classList.add("hidden");
-        if (!adminPanel.dataset.loaded) {
-            adminPanel.dataset.loaded = "1";
-            loadAdminPanel(adminPanel);
-        }
+        if (adminPanel) adminPanel.classList.add("hidden");
     });
 
     loadMyStatsPanel(myStatsPanel);
 
-    wrapper.append(tabBar, myStatsPanel, adminPanel);
+    wrapper.append(tabBar, myStatsPanel);
+    if (adminPanel) wrapper.append(adminPanel);
     return createModal("Statistics", wrapper);
 }
 
@@ -790,7 +799,11 @@ function renderMyStats(container, { overview, best_run, upgrades, run_history })
                         legend: { labels: { color: "#c8b06b" } },
                     },
                     scales: {
-                        x: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                        x: {
+                            ticks: { color: "#aaa" },
+                            grid: { color: "rgba(255,255,255,0.07)" },
+                            title: { display: true, text: "Date (MM/DD)", color: "#7a6a50", font: { size: 11 } },
+                        },
                         y: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
                     },
                 },
@@ -844,14 +857,15 @@ function loadAdminPanel(container) {
         fetch(`${API_BASE}/api/admin/death-distribution`).then(r => r.ok ? r.json() : []),
         fetch(`${API_BASE}/api/admin/horde-difficulty`).then(r => r.ok ? r.json() : []),
         fetch(`${API_BASE}/api/admin/most-upgraded-cards`).then(r => r.ok ? r.json() : []),
+        fetch(`${API_BASE}/api/admin/death-rates`).then(r => r.ok ? r.json() : []),
     ])
-        .then(([leaderboard, deaths, hordes, cards]) => renderAdminPanel(container, leaderboard, deaths, hordes, cards))
+        .then(([leaderboard, deaths, hordes, cards, deathRates]) => renderAdminPanel(container, leaderboard, deaths, hordes, cards, deathRates))
         .catch(() => {
             container.innerHTML = `<p style="color:#d4a0a0;">Could not load admin data. Is the server running?</p>`;
         });
 }
 
-function renderAdminPanel(container, leaderboard, deaths, hordes, cards) {
+function renderAdminPanel(container, leaderboard, deaths, hordes, cards, deathRates) {
     const leaderboardHtml = `
         <div class="stats-section">
             <p class="stats-section-title">Global Leaderboard</p>
@@ -881,7 +895,7 @@ function renderAdminPanel(container, leaderboard, deaths, hordes, cards) {
     const deathChartHtml = `
         <div class="chart-container">
             <h3 class="chart-title">Where Players Die Most</h3>
-            ${deaths.length
+            ${deathRates?.length
                 ? `<div class="chart-canvas-wrap"><canvas id="chartDeathDist"></canvas></div>`
                 : `<p class="chart-empty-msg">No death data yet.</p>`
             }
@@ -985,27 +999,30 @@ function renderAdminPanel(container, leaderboard, deaths, hordes, cards) {
 
     if (typeof Chart === "undefined") return;
 
-    if (deaths.length) {
+    if (deathRates?.length) {
         if (chartDeathDist) { chartDeathDist.destroy(); chartDeathDist = null; }
         const cvs = document.getElementById("chartDeathDist");
         if (cvs) {
-            const levelNames = [...new Set(deaths.map(d => d.level_name))];
-            const levelPalette = [
-                "rgba(108,128,160,0.8)",
-                "rgba(52,115,68,0.8)",
-                "rgba(185,80,50,0.8)",
-            ];
             chartDeathDist = new Chart(cvs, {
                 type: "bar",
                 data: {
-                    labels: deaths.map(d => `L${levelNames.indexOf(d.level_name) + 1}-H${d.current_horde}`),
-                    datasets: [{
-                        label: "Total Deaths",
-                        data: deaths.map(d => d.total_deaths),
-                        backgroundColor: deaths.map(d => levelPalette[Math.min(levelNames.indexOf(d.level_name), 2)]),
-                        borderColor: "rgba(255,255,255,0.15)",
-                        borderWidth: 1,
-                    }],
+                    labels: deathRates.map(r => r.label),
+                    datasets: [
+                        {
+                            label: "Partidas jugadas",
+                            data: deathRates.map(r => r.runs_played),
+                            backgroundColor: "rgba(230,193,106,0.65)",
+                            borderColor: "rgba(230,193,106,1)",
+                            borderWidth: 1,
+                        },
+                        {
+                            label: "Muertes",
+                            data: deathRates.map(r => r.total_deaths),
+                            backgroundColor: "rgba(192,57,43,0.75)",
+                            borderColor: "rgba(192,57,43,1)",
+                            borderWidth: 1,
+                        },
+                    ],
                 },
                 options: {
                     responsive: true,
@@ -1015,7 +1032,11 @@ function renderAdminPanel(container, leaderboard, deaths, hordes, cards) {
                     },
                     scales: {
                         x: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
-                        y: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: "#aaa", stepSize: 1 },
+                            grid: { color: "rgba(255,255,255,0.07)" },
+                        },
                     },
                 },
             });
@@ -1196,7 +1217,7 @@ function createLoggedInModal() {
     logoutBtn.textContent = "Log Out";
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("cowardKingUser");
-        appState.currentUser = { player_id: null, username: "Guest King", isGuest: true };
+        appState.currentUser = { player_id: null, username: "Guest King", isGuest: true, isAdmin: false };
         renderMenu();
     });
 
@@ -1216,6 +1237,10 @@ function createLoginModal() {
             Password
             <input name="password" type="password" placeholder="••••••••" required>
         </label>
+        <label class="admin-check-label" title="Only applies when creating a new account">
+            <input type="checkbox" name="is_admin">
+            Register as Administrator <em>(sign up only)</em>
+        </label>
         <div class="form-actions">
             <button class="form-button" type="submit" data-action="login">Login</button>
             <button class="form-button" type="submit" data-action="signup">Sign Up</button>
@@ -1228,6 +1253,7 @@ function createLoginModal() {
         const action = event.submitter?.dataset.action ?? "login";
         const username = form.elements["username"].value.trim();
         const password = form.elements["password"].value;
+        const is_admin = form.elements["is_admin"].checked;
         const msg = form.querySelector("#login-msg");
 
         msg.textContent = "…";
@@ -1238,7 +1264,7 @@ function createLoginModal() {
                 const res = await fetch(`${API_BASE}/api/player`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ username, password }),
+                    body: JSON.stringify({ username, password, is_admin }),
                 });
                 if (res.status === 409) { msg.textContent = "Username already taken."; return; }
                 if (!res.ok) { msg.textContent = "Sign up failed."; return; }
@@ -1257,10 +1283,12 @@ function createLoginModal() {
                 player_id: player.player_id,
                 username:  player.username,
                 isGuest:   false,
+                isAdmin:   player.is_admin === true,
             };
             localStorage.setItem("cowardKingUser", JSON.stringify({
                 player_id: player.player_id,
                 username:  player.username,
+                isAdmin:   player.is_admin === true,
             }));
             renderMenu();
         } catch {

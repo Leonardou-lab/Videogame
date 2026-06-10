@@ -28,7 +28,7 @@ class Game {
         this.currentHorde      = 1;
         this.isBossFight       = false;
         this.pendingApBonus    = 0;
-        this.upgradeRegistry   = {};
+        this.upgradeRegistry   = { ...(typeof pendingUpgradeRegistry !== "undefined" ? pendingUpgradeRegistry : {}) };
         this.keptCardName      = undefined;
         this.restart();
     }
