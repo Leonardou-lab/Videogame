@@ -112,7 +112,7 @@ Object.assign(Game.prototype, {
         this.isBossFight = false;
         this.pendingApBonus = 0;
         this.keptCardName = undefined;
-        this.upgradeRegistry = {};
+        // upgradeRegistry is intentionally kept — upgrades persist across deaths
         this.nextEncounterMessage = `Defeat in ${level.name}. The run restarts from Level 1 - Horde 1.`;
     },
 
