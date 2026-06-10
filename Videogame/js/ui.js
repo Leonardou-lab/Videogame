@@ -69,6 +69,10 @@ Object.assign(Game.prototype, {
             window.location.href = "indexMenu.html";
         });
 
+        document.getElementById("winMenuBtn").addEventListener("click", () => {
+            window.location.href = "indexMenu.html";
+        });
+
 
         window.addEventListener("keydown", event => {
             if (event.key === "Escape") {
