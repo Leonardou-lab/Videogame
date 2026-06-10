@@ -733,33 +733,7 @@ function renderMyStats(container, { overview, best_run, upgrades, run_history })
             <p style="color:#b89b67; font-size:13px;">No upgrades purchased yet.</p>
         </div>`;
 
-    const historyHtml = run_history?.length
-        ? `<div class="stats-section">
-            <p class="stats-section-title">Last 10 Runs</p>
-            <table class="tutorial-table">
-                <thead>
-                    <tr><th>Result</th><th>Level</th><th>Horde</th><th>Gold</th><th>Duration</th><th>Date</th></tr>
-                </thead>
-                <tbody>
-                    ${run_history.map(r => `
-                        <tr>
-                            <td><span class="result-badge ${r.result}">${r.result}</span></td>
-                            <td>${r.level_name ?? "—"}</td>
-                            <td>${r.current_horde ?? "—"}</td>
-                            <td>${r.total_gold_earned} ◆</td>
-                            <td>${r.duration_minutes != null ? `${r.duration_minutes} min` : "—"}</td>
-                            <td>${new Date(r.started_at).toLocaleDateString()}</td>
-                        </tr>
-                    `).join("")}
-                </tbody>
-            </table>
-        </div>`
-        : `<div class="stats-section">
-            <p class="stats-section-title">Last 10 Runs</p>
-            <p style="color:#b89b67; font-size:13px;">No runs recorded yet.</p>
-        </div>`;
-
-    container.innerHTML = overviewBoxes + runChartHtml + upgradesChartHtml + topGrid + upgradesHtml + historyHtml;
+    container.innerHTML = overviewBoxes + runChartHtml + upgradesChartHtml + topGrid + upgradesHtml;
 
     if (typeof Chart === "undefined") return;
 

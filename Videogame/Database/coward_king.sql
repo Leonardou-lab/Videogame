@@ -444,11 +444,34 @@ BEGIN
     WHERE run_id = p_run_id AND horde_id = p_horde_id;
 END$$
 
--- Procedure: record player death (feeds v_death_distribution chart)
+-- Procedure: record player death (feeds v_death_distribution + v_horde_difficulty)
 CREATE PROCEDURE sp_record_death(
     IN p_run_id INT
 )
 BEGIN
+    DECLARE v_level_id  INT;
+    DECLARE v_horde_num INT;
+    DECLARE v_horde_id  INT;
+    DECLARE v_exists    INT DEFAULT 0;
+
+    SELECT current_level_id, current_horde
+    INTO v_level_id, v_horde_num
+    FROM Run WHERE run_id = p_run_id;
+
+    SELECT horde_id INTO v_horde_id
+    FROM Horde WHERE level_id = v_level_id AND horde_number = v_horde_num
+    LIMIT 1;
+
+    IF v_horde_id IS NOT NULL THEN
+        SELECT COUNT(*) INTO v_exists
+        FROM Run_Horde WHERE run_id = p_run_id AND horde_id = v_horde_id;
+
+        IF v_exists = 0 THEN
+            INSERT INTO Run_Horde (run_id, horde_id, turns_survived, enemies_killed, completed)
+            VALUES (p_run_id, v_horde_id, 0, 0, FALSE);
+        END IF;
+    END IF;
+
     UPDATE Run
     SET result    = 'defeat',
         is_active = FALSE,
