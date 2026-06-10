@@ -32,13 +32,13 @@ const CARD_META = {
     'Decoy':        { color: '#e74c3c', game_type: 'ally'  },
 }
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+//  HELPERS
 
 function hashPassword(p) {
     return crypto.createHash('sha256').update(p).digest('hex')
 }
 
-// ─── GAME DATA ────────────────────────────────────────────────────────────────
+//  GAME DATA
 
 // GET /api/cards
 app.get('/api/cards', async (req, res) => {
@@ -88,19 +88,19 @@ app.get('/api/levels', async (req, res) => {
     }
 })
 
-// ─── PLAYER ───────────────────────────────────────────────────────────────────
+//  PLAYER 
 
 // POST /api/player — registra jugador (Stats se crea automáticamente por trigger)
 app.post('/api/player', async (req, res) => {
-    const { username, password } = req.body
+    const { username, password, is_admin } = req.body
     if (!username || !password) return res.status(400).json({ error: 'username and password required' })
     try {
         const [rows] = await pool.query(
-            'CALL sp_register_player(?, ?)',
-            [username, hashPassword(password)]
+            'CALL sp_register_player(?, ?, ?)',
+            [username, hashPassword(password), is_admin ? 1 : 0]
         )
         const player_id = rows[0][0].new_player_id
-        res.status(201).json({ player_id, username })
+        res.status(201).json({ player_id, username, is_admin: is_admin ? true : false })
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ error: 'username already taken' })
         res.status(500).json({ error: err.message })
@@ -111,7 +111,7 @@ app.post('/api/player', async (req, res) => {
 app.get('/api/player/:username', async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT player_id, username, password_hash, created_at FROM Player WHERE username = ?',
+            'SELECT player_id, username, password_hash, is_admin, created_at FROM Player WHERE username = ?',
             [req.params.username]
         )
         if (!rows.length) return res.status(404).json({ error: 'player not found' })
@@ -120,7 +120,7 @@ app.get('/api/player/:username', async (req, res) => {
             if (player.password_hash !== hashPassword(req.query.password))
                 return res.status(401).json({ error: 'wrong password' })
         }
-        res.json({ player_id: player.player_id, username: player.username, created_at: player.created_at })
+        res.json({ player_id: player.player_id, username: player.username, is_admin: player.is_admin === 1 || player.is_admin === true, created_at: player.created_at })
     } catch (err) {
         res.status(500).json({ error: err.message })
     }
@@ -184,7 +184,7 @@ app.get('/api/player/:id/dashboard', async (req, res) => {
     }
 })
 
-// ─── RUN ──────────────────────────────────────────────────────────────────────
+//  RUN 
 
 // POST /api/run/start — inicia nuevo run (sp_start_run, level_id=1 por default)
 app.post('/api/run/start', async (req, res) => {
@@ -221,6 +221,12 @@ app.post('/api/run/:id/complete-horde', async (req, res) => {
             'CALL sp_complete_horde(?, ?, ?, ?)',
             [req.params.id, horde_id, turns ?? 0, kills ?? 0]
         )
+        // Avanza current_horde al número de la siguiente horde para que recordDeath
+        // sepa exactamente en cuál murió el jugador si muere en la siguiente.
+        await pool.query(
+            'UPDATE Run SET current_horde = (SELECT horde_number + 1 FROM Horde WHERE horde_id = ?) WHERE run_id = ?',
+            [horde_id, req.params.id]
+        )
         res.json({ run_id: Number(req.params.id), horde_id, completed: true })
     } catch (err) {
         res.status(500).json({ error: err.message })
@@ -243,7 +249,7 @@ app.patch('/api/run/:id/level', async (req, res) => {
     if (!level_id) return res.status(400).json({ error: 'level_id required' })
     try {
         await pool.query(
-            'UPDATE Run SET current_level_id = ? WHERE run_id = ?',
+            'UPDATE Run SET current_level_id = ?, current_horde = 1 WHERE run_id = ?',
             [level_id, req.params.id]
         )
         res.json({ run_id: Number(req.params.id), current_level_id: level_id })
@@ -273,7 +279,7 @@ app.put('/api/run/:runId', async (req, res) => {
     }
 })
 
-// ─── UPGRADE ──────────────────────────────────────────────────────────────────
+//  UPGRADE 
 
 // POST /api/upgrade — compra upgrade de carta (tier y bonos calculados por el SP)
 app.post('/api/upgrade', async (req, res) => {
@@ -292,7 +298,7 @@ app.post('/api/upgrade', async (req, res) => {
     }
 })
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
+//  STATS 
 
 // POST /api/stats — no-op: los triggers actualizan Stats automáticamente
 app.post('/api/stats', async (req, res) => {
@@ -312,12 +318,39 @@ app.get('/api/stats/:playerId', async (req, res) => {
     }
 })
 
-// ─── ADMIN ────────────────────────────────────────────────────────────────────
+//  ADMIN 
 
 // GET /api/admin/death-distribution — dificultad por level/horde
 app.get('/api/admin/death-distribution', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM v_death_distribution')
+        res.json(rows)
+    } catch (err) {
+        res.status(500).json({ error: err.message })
+    }
+})
+
+// GET /api/admin/death-rates — partidas jugadas vs muertes por level-horde (grouped bar)
+app.get('/api/admin/death-rates', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT
+                CONCAT('L', l.level_number, '-H', h.horde_number) AS label,
+                (
+                    SELECT COUNT(*) FROM Run r2
+                    WHERE (r2.current_level_id = l.level_id AND r2.current_horde >= h.horde_number)
+                       OR r2.current_level_id > l.level_id
+                ) AS runs_played,
+                (
+                    SELECT COUNT(*) FROM Run r3
+                    WHERE r3.current_level_id = l.level_id
+                      AND r3.result = 'defeat'
+                      AND r3.current_horde = h.horde_number
+                ) AS total_deaths
+            FROM Horde h
+            JOIN Level l ON h.level_id = l.level_id
+            ORDER BY l.level_number, h.horde_number
+        `)
         res.json(rows)
     } catch (err) {
         res.status(500).json({ error: err.message })
@@ -374,6 +407,6 @@ app.get('/api/admin/run-duration', async (req, res) => {
     }
 })
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 
 app.listen(3000, () => console.log('API corriendo en http://localhost:3000'))

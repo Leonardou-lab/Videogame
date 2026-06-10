@@ -150,14 +150,16 @@ Object.assign(Game.prototype, {
 
         const restartButton = document.getElementById("restartButton");
         if (restartButton) {
-            restartButton.textContent = keepMode && !this.keptCardName
-                ? "Choose Card"
-                : this.status === "won"
-                    ? "Continue"
-                    : this.status === "lost"
-                        ? "Retry Level"
-                        : "Restart";
-            restartButton.disabled = keepMode && !this.keptCardName;
+            const gameOver = this.status === "won" || this.status === "lost";
+            restartButton.hidden = !gameOver;
+            if (gameOver) {
+                restartButton.textContent = keepMode && !this.keptCardName
+                    ? "Choose Card"
+                    : this.status === "won"
+                        ? "Continue"
+                        : "Retry Level";
+                restartButton.disabled = keepMode && !this.keptCardName;
+            }
         }
 
         this.handElement.innerHTML = "";
@@ -295,7 +297,7 @@ Object.assign(Game.prototype, {
         const list = document.getElementById("upgradeCardList");
         list.innerHTML = "";
 
-        const upgradeable = cardPool.filter(c => c.type === "ally");
+        const upgradeable = cardPool.filter(c => c.type === "ally" && c.name !== "Decoy");
 
         for (const base of upgradeable) {
             const level   = this.upgradeRegistry[base.name] || 0;
