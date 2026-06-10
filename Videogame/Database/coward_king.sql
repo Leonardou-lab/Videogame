@@ -70,6 +70,7 @@ CREATE TABLE Player (
     player_id     INT AUTO_INCREMENT PRIMARY KEY,
     username      VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(64),
+    is_admin      BOOLEAN DEFAULT FALSE,
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -166,7 +167,7 @@ LEFT JOIN Stats s ON p.player_id = s.player_id;
 
 -- View for player run history
 CREATE OR REPLACE VIEW v_player_run_history AS
-SELECT 
+SELECT
     r.run_id,
     r.player_id,
     p.username,
@@ -177,10 +178,17 @@ SELECT
     r.total_gold_earned,
     r.started_at,
     r.ended_at,
-    TIMESTAMPDIFF(MINUTE, r.started_at, r.ended_at) AS duration_minutes
+    TIMESTAMPDIFF(MINUTE, r.started_at, r.ended_at) AS duration_minutes,
+    COALESCE(SUM(rh.enemies_killed), 0) AS enemies_killed
 FROM Run r
 JOIN Player p ON r.player_id = p.player_id
 LEFT JOIN Level l ON r.current_level_id = l.level_id
+LEFT JOIN Run_Horde rh ON r.run_id = rh.run_id
+GROUP BY
+    r.run_id, r.player_id, p.username,
+    l.level_number, l.name,
+    r.current_horde, r.result, r.total_gold_earned,
+    r.started_at, r.ended_at
 ORDER BY r.started_at DESC;
 
 -- View for player card upgrades
@@ -392,10 +400,11 @@ DELIMITER $$
 -- Procedure: register a new player (Stats row auto-created via trigger)
 CREATE PROCEDURE sp_register_player(
     IN p_username      VARCHAR(50),
-    IN p_password_hash VARCHAR(64)
+    IN p_password_hash VARCHAR(64),
+    IN p_is_admin      BOOLEAN
 )
 BEGIN
-    INSERT INTO Player (username, password_hash) VALUES (p_username, p_password_hash);
+    INSERT INTO Player (username, password_hash, is_admin) VALUES (p_username, p_password_hash, p_is_admin);
     SELECT LAST_INSERT_ID() AS new_player_id;
 END$$
 
@@ -435,11 +444,34 @@ BEGIN
     WHERE run_id = p_run_id AND horde_id = p_horde_id;
 END$$
 
--- Procedure: record player death (feeds v_death_distribution chart)
+-- Procedure: record player death (feeds v_death_distribution + v_horde_difficulty)
 CREATE PROCEDURE sp_record_death(
     IN p_run_id INT
 )
 BEGIN
+    DECLARE v_level_id  INT;
+    DECLARE v_horde_num INT;
+    DECLARE v_horde_id  INT;
+    DECLARE v_exists    INT DEFAULT 0;
+
+    SELECT current_level_id, current_horde
+    INTO v_level_id, v_horde_num
+    FROM Run WHERE run_id = p_run_id;
+
+    SELECT horde_id INTO v_horde_id
+    FROM Horde WHERE level_id = v_level_id AND horde_number = v_horde_num
+    LIMIT 1;
+
+    IF v_horde_id IS NOT NULL THEN
+        SELECT COUNT(*) INTO v_exists
+        FROM Run_Horde WHERE run_id = p_run_id AND horde_id = v_horde_id;
+
+        IF v_exists = 0 THEN
+            INSERT INTO Run_Horde (run_id, horde_id, turns_survived, enemies_killed, completed)
+            VALUES (p_run_id, v_horde_id, 0, 0, FALSE);
+        END IF;
+    END IF;
+
     UPDATE Run
     SET result    = 'defeat',
         is_active = FALSE,

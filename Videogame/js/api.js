@@ -4,13 +4,22 @@ const API_BASE = 'http://localhost:3000';
 
 let enemyPool = [];
 let currentRunId = null;
+let pendingUpgradeRegistry = {};
 
 async function loadGameData(levelId = 1) {
     try {
-        const [cardsRes, enemiesRes] = await Promise.all([
+        const saved = localStorage.getItem("cowardKingUser");
+        const player_id = saved ? JSON.parse(saved).player_id : null;
+
+        const requests = [
             fetch(`${API_BASE}/api/cards`),
             fetch(`${API_BASE}/api/enemies/${levelId}`),
-        ]);
+        ];
+        if (player_id) {
+            requests.push(fetch(`${API_BASE}/api/player/${player_id}/upgrades`));
+        }
+
+        const [cardsRes, enemiesRes, upgradesRes] = await Promise.all(requests);
 
         if (cardsRes.ok) {
             const cards = await cardsRes.json();
@@ -21,6 +30,16 @@ async function loadGameData(levelId = 1) {
         if (enemiesRes.ok) {
             const enemies = await enemiesRes.json();
             enemyPool = enemies.filter(e => !e.is_boss);
+        }
+
+        pendingUpgradeRegistry = {};
+        if (upgradesRes?.ok) {
+            const upgrades = await upgradesRes.json();
+            for (const u of upgrades) {
+                if (u.card_name && u.upgrade_level > 0) {
+                    pendingUpgradeRegistry[u.card_name] = u.upgrade_level;
+                }
+            }
         }
     } catch {
         console.warn('API fail');

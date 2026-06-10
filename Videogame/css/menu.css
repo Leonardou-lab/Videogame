@@ -535,6 +535,29 @@
     color: var(--text);
 }
 
+.admin-check-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.admin-check-label input[type="checkbox"] {
+    min-height: unset;
+    width: 16px;
+    height: 16px;
+    accent-color: #e6c16a;
+    cursor: pointer;
+}
+
+.admin-check-label em {
+    font-style: italic;
+    opacity: 0.6;
+    font-size: 11px;
+}
+
 .form-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>The Coward King - Prototype</title>
+        <title>The Coward King</title>
         <link rel="stylesheet" href="css/the_coward_king.css">
 
         <!-- Engine libs -->
@@ -51,7 +51,7 @@
                         <button id="moveKingButton">Move King</button>
                         <button id="endTurnButton">End Turn</button>
                         <button id="upgradesButton">Upgrades</button>
-                        <button id="restartButton">Restart</button>
+                        <button id="restartButton" hidden>Continue</button>
                     </section>
                     <div id="log" aria-hidden="true"></div>
                 </section>
@@ -67,6 +67,11 @@
                     </div>
                     <div id="saveConfirmMsg" class="save-confirm"></div>
                 </div>
+            </div>
+
+            <div id="winOverlay" class="win-overlay">
+                <img src="Assets/images/Win.jpg" alt="Victory" class="win-image">
+                <button id="winMenuBtn" class="win-menu-btn">Go Back to Menu</button>
             </div>
 
             <div id="upgradeOverlay" class="upgrade-overlay">

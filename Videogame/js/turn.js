@@ -116,6 +116,10 @@ Object.assign(Game.prototype, {
         this.nextEncounterMessage = `Defeat in ${level.name}. The run restarts from Level 1 - Horde 1.`;
     },
 
+    showFinalVictoryScreen() {
+        document.getElementById("winOverlay").classList.add("open");
+    },
+
     // sets up the next encounter after a win or loss, resetting all game state
     restart() {
         if (window.cowardKingAudio) {
@@ -124,6 +128,10 @@ Object.assign(Game.prototype, {
         const needsNewRun = this.status !== "won";
 
         if (this.status === "won") {
+            if (this.isBossFight && this.currentLevelIndex + 1 >= levelConfigs.length) {
+                this.showFinalVictoryScreen();
+                return;
+            }
             this.advanceProgressionAfterVictory();
         } else if (this.status === "lost") {
             this.resetProgressionAfterDefeat();
