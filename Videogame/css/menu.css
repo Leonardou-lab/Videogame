@@ -687,6 +687,28 @@
     margin-top: 6px;
 }
 
+.tutorial-video-section {
+    display: grid;
+    gap: 14px;
+    padding: 15px;
+    border: 2px solid rgba(139, 106, 46, 0.55);
+    background: rgba(8, 6, 5, 0.34);
+}
+
+.tutorial-video-section > p {
+    max-width: 78ch;
+}
+
+.tutorial-video {
+    width: 100%;
+    max-height: 70vh;
+    border: 3px solid rgba(139, 106, 46, 0.72);
+    background: #070504;
+    box-shadow:
+        inset 0 0 0 2px rgba(230, 193, 106, 0.08),
+        0 12px 24px rgba(0, 0, 0, 0.42);
+}
+
 .stats-hub {
     display: grid;
     grid-template-columns: minmax(240px, 0.9fr) minmax(320px, 1.1fr);
