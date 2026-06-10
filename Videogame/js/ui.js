@@ -163,10 +163,15 @@ Object.assign(Game.prototype, {
         this.handElement.innerHTML = "";
         for (const card of this.hand) {
             const lvl = card.upgradeLevel || 0;
+            const limitReached = !keepMode && this.hasReachedPlacementLimit(card);
             const button = document.createElement("button");
             button.className = "cardButton" + (lvl > 0 ? ` lvl${lvl}` : "");
             if (this.selectedCard === card) button.classList.add("selected");
             if (this.keptCardName === card.name) button.classList.add("kept");
+            if (limitReached) button.classList.add("limit-reached");
+            if (limitReached) {
+                button.title = `${card.name} has reached its placement limit.`;
+            }
             button.disabled = keepMode
                 ? false
                 : this.status !== "playing" || this.phase !== "player" || this.ap < card.cost;
@@ -176,6 +181,9 @@ Object.assign(Game.prototype, {
             const lvlTag = lvl > 0
                 ? `<span class="card-lvl-tag lvl${lvl}">◆ LVL ${lvl}</span>`
                 : "";
+            const limitTag = limitReached
+                ? `<span class="card-limit-tag">MAX ON BOARD</span>`
+                : "";
             button.innerHTML = `
                 <div class="card-art">
                     <img src="${this.getCardImagePath(card,lvl)}" alt="${card.name}">
@@ -184,6 +192,7 @@ Object.assign(Game.prototype, {
                     ${statsLine}
                     <span>${card.text}</span>
                     ${lvlTag}
+                    ${limitTag}
                 </div>
             `;
             button.addEventListener("click", () => {

@@ -24,7 +24,9 @@ Object.assign(Game.prototype, {
     },
 
     canChooseKeepCard() {
-        return this.status === "won" && !this.isBossFight;
+        if (this.status !== "won" || !this.hand || this.hand.length === 0) return false;
+        if (!this.isBossFight) return true;
+        return this.currentLevelIndex + 1 < levelConfigs.length;
     },
 
     chooseCardToKeep(card) {
@@ -102,14 +104,16 @@ Object.assign(Game.prototype, {
         this.nextEncounterMessage = `The King escaped the final horde. Boss fight unlocked: ${level.boss.name}.`;
     },
 
-    // resets back to horde 1 of the current level after losing
+    // resets back to the start of the full game after losing
     resetProgressionAfterDefeat() {
         const level = this.getCurrentLevelConfig();
+        this.currentLevelIndex = 0;
         this.currentHorde = 1;
         this.isBossFight = false;
         this.pendingApBonus = 0;
         this.keptCardName = undefined;
-        this.nextEncounterMessage = `Defeat resets ${level.name} to Horde 1.`;
+        this.upgradeRegistry = {};
+        this.nextEncounterMessage = `Defeat in ${level.name}. The run restarts from Level 1 - Horde 1.`;
     },
 
     // sets up the next encounter after a win or loss, resetting all game state
@@ -204,6 +208,25 @@ Object.assign(Game.prototype, {
         };
     },
 
+    getPlacementLimitForCard(card) {
+        const level = card.upgradeLevel || 0;
+        if (level >= 3) return 3;
+        if (level >= 2) return 5;
+        return Infinity;
+    },
+
+    countPlacedCardsByName(cardName) {
+        const allies = this.allies.filter(ally => ally.cardName === cardName && ally.hp > 0).length;
+        const effects = this.effects.filter(effect => effect.name === cardName && effect.duration > 0).length;
+        return allies + effects;
+    },
+
+    hasReachedPlacementLimit(card) {
+        const limit = this.getPlacementLimitForCard(card);
+        if (!Number.isFinite(limit)) return false;
+        return this.countPlacedCardsByName(card.name) >= limit;
+    },
+
     // places the selected card on the board if the player has enough AP and the tile is free
     playCard(row, col) {
         const card = this.selectedCard;
@@ -215,6 +238,12 @@ Object.assign(Game.prototype, {
         }
         if (this.getBlockingObject(row, col) || this.getEffect(row, col)) {
             this.addLog("That tile is occupied.");
+            return;
+        }
+        if (this.hasReachedPlacementLimit(card)) {
+            const limit = this.getPlacementLimitForCard(card);
+            this.addLog(`${card.name} placement limit reached: max ${limit} on the board at upgrade level ${card.upgradeLevel}.`);
+            this.renderUI();
             return;
         }
 

@@ -433,6 +433,13 @@ section {
         drop-shadow(0 0 18px rgba(230, 193, 106, 0.35));
 }
 
+.cardButton.limit-reached {
+    border-color: #b94a3b;
+    filter:
+        grayscale(0.25)
+        drop-shadow(0 0 10px rgba(185, 74, 59, 0.55));
+}
+
 .cardButton:disabled {
     cursor: not-allowed;
     opacity: 0.55;
@@ -522,6 +529,13 @@ section {
 .card-lvl-tag.lvl1 { color: #4677c8; }
 .card-lvl-tag.lvl2 { color: #9b59b6; }
 .card-lvl-tag.lvl3 { color: #f1c40f; }
+
+.card-limit-tag {
+    color: #ffb09f !important;
+    font-size: 11px !important;
+    font-weight: 900;
+    text-transform: uppercase;
+}
 
 /* Upgrade overlay */
 .upgrade-overlay {
