@@ -57,6 +57,15 @@ Defeat still uses the safe zone rule:
 
 The player also loses immediately if the Desperation meter reaches 4.
 
+On any defeat, the run now resets to the beginning of the full game:
+
+- Level 1.
+- Horde 1.
+- No retained card.
+- Gold reset to 0.
+- Card upgrades reset to the initial state.
+- No continuation from the level or horde where the player died.
+
 ## Bosses
 
 Each boss occupies 2x2 tiles, counts as 2 safe zone pressure, summons a stronger enemy every 2 turns, and advances toward the King every 2 turns.
@@ -143,6 +152,26 @@ Level 1 Horde 1 starts with 3 random cards.
 After the first horde, the hand size becomes 4 cards. When the player wins a horde, they must choose 1 card from the previous hand to keep before the next encounter starts. The rest of the hand is filled with new random cards.
 
 Cards remain reusable during the horde. Playing a card does not remove it from the hand, but every use still costs AP. A card is only disabled when the player does not have enough AP, the game is not in the player phase, or the encounter is not actively playing.
+
+Card retention is required after horde victories and when moving from a boss victory into the next level. The Continue/Restart button is blocked until the player chooses a card whenever retention applies.
+
+## Upgraded Card Placement Limits
+
+Upgraded cards now have individual placement limits based on their upgrade level. The limit is per card name, not global.
+
+| Upgrade level | Placement limit |
+| --- | ---: |
+| Normal / Level 1 | No special limit |
+| Level 2 | Max 5 copies of that same card on the board |
+| Level 3 | Max 3 copies of that same card on the board |
+
+Examples:
+
+- 5 Level 2 Archers and 5 Level 2 Knights can exist at the same time.
+- A 6th Level 2 Archer is blocked.
+- A 4th Level 3 Archer is blocked.
+
+If the limit is reached, the card is marked in the hand with `MAX ON BOARD`, and placement is blocked with a log message.
 
 ## Card Pool And Tutorial Gallery
 
