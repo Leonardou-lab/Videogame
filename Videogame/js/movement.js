@@ -39,8 +39,7 @@ Object.assign(Game.prototype, {
 // Enemy movement toward the king, with simple pathfinding that tries to move diagonally when possible
 // Enemies will never move into the safe zone around the king, but they can move around it
     moveEnemyTowardKing(enemy) {
-        if (enemy.isBoss && this.turn % enemy.summonEveryTurns !== 0) return;
-
+        if (enemy.isBoss && enemy.moveEveryTurns > 0 && this.turn % enemy.moveEveryTurns !== 0) return;
         const decoy  = this.allies.find(a => a.cardName === "Decoy" && a.hp > 0);
         const target = decoy || this.king;
 

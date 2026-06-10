@@ -346,6 +346,7 @@ Object.assign(Game.prototype, {
         this.encounterUpgrades++;
 
         const baseCard = cardPool.find(c => c.name === cardName);
+        if (baseCard?.card_id) saveUpgrade({ card_id: baseCard.card_id, gold_spent: nextTier.cost });
         if (baseCard) {
             const newLevel = level + 1;
             const tier = UPGRADE_TIERS[newLevel];

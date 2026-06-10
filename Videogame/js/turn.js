@@ -117,6 +117,8 @@ Object.assign(Game.prototype, {
         if (window.cowardKingAudio) {
             window.cowardKingAudio.stopLoopSfx("desperationCritical");
         }
+        const needsNewRun = this.status !== "won";
+
         if (this.status === "won") {
             this.advanceProgressionAfterVictory();
         } else if (this.status === "lost") {
@@ -162,6 +164,8 @@ Object.assign(Game.prototype, {
         } else {
             this.addLog(`Level ${level.levelNumber} - Horde ${this.currentHorde} started.`);
         }
+
+        if (needsNewRun) startRun();
 
         this.renderUI();
     },
@@ -318,6 +322,15 @@ Object.assign(Game.prototype, {
                 runs:     1,
                 levels:   this.status === "won" && this.isBossFight ? 1 : 0,
             });
+            if (this.status === "lost") {
+                recordDeath();
+            } else if (this.status === "won" && !this.isBossFight) {
+                const hordeId = this.currentLevelIndex * 3 + this.currentHorde;
+                completeHorde(hordeId, this.turn, this.encounterKills);
+            } else if (this.status === "won" && this.isBossFight) {
+                const nextLevelIndex = this.currentLevelIndex + 1;
+                advanceRunLevel(nextLevelIndex < levelConfigs.length ? nextLevelIndex + 1 : levelConfigs.length);
+            }
             this.encounterKills    = 0;
             this.encounterUpgrades = 0;
         }

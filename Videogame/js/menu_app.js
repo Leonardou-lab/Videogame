@@ -212,37 +212,14 @@ const menuCards = [
     },
 ];
 
-const mockGlobalRanking = [
-    {
-        rank: 1,
-        player: "RoyalGuard42",
-        farthestHorde: "Level 3 - Boss",
-        highestLevel: "Brave King's Castle",
-        wins: 12,
-        losses: 31,
-        favoriteCard: "Knight",
-    },
-    {
-        rank: 2,
-        player: "WallMaker",
-        farthestHorde: "Level 3 - Horde 2",
-        highestLevel: "Brave King's Castle",
-        wins: 8,
-        losses: 27,
-        favoriteCard: "Wall",
-    },
-    {
-        rank: 3,
-        player: "APKeeper",
-        farthestHorde: "Level 2 - Boss",
-        highestLevel: "Ogre Dungeon",
-        wins: 6,
-        losses: 19,
-        favoriteCard: "Peace Treaty",
-    },
-];
 
 const app = document.getElementById("app");
+
+let chartRunPerf = null;
+let chartCardUpg = null;
+let chartDeathDist = null;
+let chartHordeComp = null;
+let chartUpgPop = null;
 
 function renderMenu(activeModal) {
     app.innerHTML = "";
@@ -585,64 +562,565 @@ function createTutorialModal() {
 }
 
 function createOverviewModal() {
-    const content = document.createElement("div");
-    content.className = "stats-hub";
+    const wrapper = document.createElement("div");
 
-    if (!appState.currentUser.player_id) {
-        content.innerHTML = `
-            <section class="detail-list">
-                ${statRow("♙", "Player", "Login to see your personal stats")}
-                ${statRow("▶", "Runs played", "12")}
-                ${statRow("✓", "Wins", "3")}
-                ${statRow("☠", "Losses", "9")}
-                ${statRow("◆", "Farthest horde", "Level 2 - Horde 3")}
-                ${statRow("★", "Highest level", "Ogre Dungeon")}
-            </section>
-            ${globalRankingHtml()}
-        `;
-        return createModal("Stats / Overview", content);
-    }
+    const tabBar = document.createElement("div");
+    tabBar.className = "stats-tab-bar";
 
-    content.innerHTML = statRow("…", "Loading", "fetching stats…");
-    fetch(`${API_BASE}/api/stats/${appState.currentUser.player_id}`)
-        .then(r => r.ok ? r.json() : Promise.reject())
-        .then(s => {
-            content.innerHTML =
-                `<section class="detail-list">` +
-                statRow("▶", "Runs played",      s.total_runs) +
-                statRow("☠", "Enemies killed",   s.total_enemies_killed) +
-                statRow("★", "Upgrades bought",  s.total_upgrades) +
-                statRow("◆", "Gold earned",      s.total_gold_earned) +
-                statRow("✓", "Levels completed", s.levels_completed) +
-                `</section>` +
-                globalRankingHtml();
-        })
-        .catch(() => { content.innerHTML = statRow("⚠", "Error", "could not load stats") + globalRankingHtml() });
+    const myStatsBtn = document.createElement("button");
+    myStatsBtn.className = "tab-button active";
+    myStatsBtn.textContent = "MY STATS";
 
-    return createModal("Stats / Overview", content);
+    const adminBtn = document.createElement("button");
+    adminBtn.className = "tab-button";
+    adminBtn.textContent = "ADMIN";
+
+    tabBar.append(myStatsBtn, adminBtn);
+
+    const myStatsPanel = document.createElement("div");
+    myStatsPanel.className = "tab-panel";
+
+    const adminPanel = document.createElement("div");
+    adminPanel.className = "tab-panel hidden";
+
+    myStatsBtn.addEventListener("click", () => {
+        myStatsBtn.classList.add("active");
+        adminBtn.classList.remove("active");
+        myStatsPanel.classList.remove("hidden");
+        adminPanel.classList.add("hidden");
+    });
+
+    adminBtn.addEventListener("click", () => {
+        adminBtn.classList.add("active");
+        myStatsBtn.classList.remove("active");
+        adminPanel.classList.remove("hidden");
+        myStatsPanel.classList.add("hidden");
+        if (!adminPanel.dataset.loaded) {
+            adminPanel.dataset.loaded = "1";
+            loadAdminPanel(adminPanel);
+        }
+    });
+
+    loadMyStatsPanel(myStatsPanel);
+
+    wrapper.append(tabBar, myStatsPanel, adminPanel);
+    return createModal("Statistics", wrapper);
 }
 
-function globalRankingHtml() {
-    return `
-        <section class="global-ranking">
-            <h3>Global Ranking</h3>
-            ${mockGlobalRanking.map(player => `
-                <details class="ranking-entry" ${player.rank === 1 ? "open" : ""}>
-                    <summary>
-                        <span>#${player.rank}</span>
-                        <strong>${player.player}</strong>
-                        <em>${player.farthestHorde}</em>
-                    </summary>
-                    <div class="ranking-details">
-                        ${detailRow("Highest level", player.highestLevel)}
-                        ${detailRow("Wins", player.wins)}
-                        ${detailRow("Losses", player.losses)}
-                        ${detailRow("Favorite card", player.favoriteCard)}
-                    </div>
-                </details>
-            `).join("")}
-        </section>
+function loadMyStatsPanel(container) {
+    if (!appState.currentUser.player_id) {
+        container.innerHTML = `
+            <div class="stats-box" style="text-align:center; padding:28px;">
+                <p style="color:#e6c16a; font-size:16px; font-weight:900; text-transform:uppercase; margin:0 0 10px;">♙ Guest King</p>
+                <p style="color:#b89b67; font-size:13px; margin:0;">Log in to see your personal stats, upgrade history, and run records.</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `<p style="color:#b89b67; font-size:13px;">Loading stats…</p>`;
+
+    fetch(`${API_BASE}/api/player/${appState.currentUser.player_id}/dashboard`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => renderMyStats(container, data))
+        .catch(() => {
+            container.innerHTML = `<p style="color:#d4a0a0;">Could not load stats. Is the server running?</p>`;
+        });
+}
+
+function renderMyStats(container, { overview, best_run, upgrades, run_history }) {
+    const overviewBoxes = `
+        <div class="stats-overview-boxes">
+            <div class="overview-box">
+                <strong>${overview?.total_runs ?? "—"}</strong>
+                <span>Runs</span>
+            </div>
+            <div class="overview-box">
+                <strong>${overview?.total_enemies_killed ?? "—"}</strong>
+                <span>Kills</span>
+            </div>
+            <div class="overview-box">
+                <strong>${overview?.total_gold_earned ?? "—"}</strong>
+                <span>Gold</span>
+            </div>
+            <div class="overview-box">
+                <strong>${overview?.levels_completed ?? "—"}</strong>
+                <span>Levels</span>
+            </div>
+        </div>
     `;
+
+    const runChartHtml = run_history?.length
+        ? `<div class="chart-container">
+            <h3 class="chart-title">Run Performance</h3>
+            <div class="chart-canvas-wrap"><canvas id="chartRunPerformance"></canvas></div>
+        </div>`
+        : `<div class="chart-container">
+            <h3 class="chart-title">Run Performance</h3>
+            <p class="chart-empty-msg">No run data yet.</p>
+        </div>`;
+
+    const upgradesChartHtml = upgrades?.length
+        ? `<div class="chart-container">
+            <h3 class="chart-title">Card Upgrades</h3>
+            <div class="chart-canvas-wrap"><canvas id="chartCardUpgrades"></canvas></div>
+            <div class="upgrade-badges">
+                ${upgrades.map(u => `<span class="upgrade-badge">${u.card_name} <em>T${u.upgrade_level}</em></span>`).join("")}
+            </div>
+        </div>`
+        : `<div class="chart-container">
+            <h3 class="chart-title">Card Upgrades</h3>
+            <p class="chart-empty-msg">No upgrades yet.</p>
+        </div>`;
+
+    const topGrid = `
+        <div class="stats-top-grid">
+            <div class="stats-box">
+                <p class="stats-section-title">Overview</p>
+                <div class="detail-list">
+                    ${detailRow("Runs played",      overview?.total_runs           ?? "—")}
+                    ${detailRow("Enemies killed",   overview?.total_enemies_killed ?? "—")}
+                    ${detailRow("Gold earned",      overview?.total_gold_earned    ?? "—")}
+                    ${detailRow("Upgrades bought",  overview?.total_upgrades       ?? "—")}
+                    ${detailRow("Levels completed", overview?.levels_completed     ?? "—")}
+                </div>
+            </div>
+            <div class="stats-box">
+                <p class="stats-section-title">Best Run</p>
+                <div class="detail-list">
+                    ${detailRow("Deepest level", best_run?.deepest_level_reached      ?? "—")}
+                    ${detailRow("Most gold",     best_run?.highest_gold_in_single_run ?? "—")}
+                    ${detailRow("Total kills",   best_run?.total_kills_across_runs    ?? "—")}
+                    ${detailRow("Total turns",   best_run?.total_turns_survived       ?? "—")}
+                </div>
+            </div>
+        </div>
+    `;
+
+    const upgradesHtml = upgrades?.length
+        ? `<div class="stats-section">
+            <p class="stats-section-title">Card Upgrades</p>
+            <table class="tutorial-table">
+                <thead>
+                    <tr><th>Card</th><th>Type</th><th>Tier</th><th>HP+</th><th>DMG+</th><th>AP</th><th>Gold</th></tr>
+                </thead>
+                <tbody>
+                    ${upgrades.map(u => `
+                        <tr>
+                            <td>${u.card_name}</td>
+                            <td>${u.card_type}</td>
+                            <td><span class="tier-pill">Tier ${u.upgrade_level}</span></td>
+                            <td>${u.hp_bonus     > 0 ? `+${u.hp_bonus}`     : "—"}</td>
+                            <td>${u.damage_bonus > 0 ? `+${u.damage_bonus}` : "—"}</td>
+                            <td>${u.ap_cost_bonus < 0 ? u.ap_cost_bonus     : "—"}</td>
+                            <td>${u.gold_spent} ◆</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>`
+        : `<div class="stats-section">
+            <p class="stats-section-title">Card Upgrades</p>
+            <p style="color:#b89b67; font-size:13px;">No upgrades purchased yet.</p>
+        </div>`;
+
+    const historyHtml = run_history?.length
+        ? `<div class="stats-section">
+            <p class="stats-section-title">Last 10 Runs</p>
+            <table class="tutorial-table">
+                <thead>
+                    <tr><th>Result</th><th>Level</th><th>Horde</th><th>Gold</th><th>Duration</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    ${run_history.map(r => `
+                        <tr>
+                            <td><span class="result-badge ${r.result}">${r.result}</span></td>
+                            <td>${r.level_name ?? "—"}</td>
+                            <td>${r.current_horde ?? "—"}</td>
+                            <td>${r.total_gold_earned} ◆</td>
+                            <td>${r.duration_minutes != null ? `${r.duration_minutes} min` : "—"}</td>
+                            <td>${new Date(r.started_at).toLocaleDateString()}</td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
+        </div>`
+        : `<div class="stats-section">
+            <p class="stats-section-title">Last 10 Runs</p>
+            <p style="color:#b89b67; font-size:13px;">No runs recorded yet.</p>
+        </div>`;
+
+    container.innerHTML = overviewBoxes + runChartHtml + upgradesChartHtml + topGrid + upgradesHtml + historyHtml;
+
+    if (typeof Chart === "undefined") return;
+
+    if (run_history?.length) {
+        if (chartRunPerf) { chartRunPerf.destroy(); chartRunPerf = null; }
+        const cvs = document.getElementById("chartRunPerformance");
+        if (cvs) {
+            const labels = run_history.map((r, i) => {
+                const d = new Date(r.started_at);
+                return isNaN(d.getTime()) ? `Run #${i + 1}` : `${d.getMonth() + 1}/${d.getDate()}`;
+            });
+            chartRunPerf = new Chart(cvs, {
+                type: "bar",
+                data: {
+                    labels,
+                    datasets: [
+                        {
+                            label: "Enemies Killed",
+                            data: run_history.map(r => r.enemies_killed ?? 0),
+                            backgroundColor: "rgba(39,174,96,0.65)",
+                            borderColor: run_history.map(r => r.result === "defeat" ? "rgba(200,60,40,1)" : "rgba(39,174,96,1)"),
+                            borderWidth: 2,
+                        },
+                        {
+                            label: "Gold Earned",
+                            data: run_history.map(r => r.total_gold_earned ?? 0),
+                            backgroundColor: "rgba(230,193,106,0.65)",
+                            borderColor: run_history.map(r => r.result === "defeat" ? "rgba(200,60,40,1)" : "rgba(200,170,80,1)"),
+                            borderWidth: 2,
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: "#c8b06b" } },
+                    },
+                    scales: {
+                        x: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                        y: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                    },
+                },
+            });
+        }
+    }
+
+    if (upgrades?.length) {
+        if (chartCardUpg) { chartCardUpg.destroy(); chartCardUpg = null; }
+        const cvs = document.getElementById("chartCardUpgrades");
+        if (cvs) {
+            chartCardUpg = new Chart(cvs, {
+                type: "radar",
+                data: {
+                    labels: upgrades.map(u => u.card_name),
+                    datasets: [{
+                        label: "Upgrade Level",
+                        data: upgrades.map(u => u.upgrade_level),
+                        backgroundColor: "rgba(155,89,182,0.3)",
+                        borderColor: "rgba(155,89,182,0.9)",
+                        pointBackgroundColor: "rgba(155,89,182,1)",
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: "#c8b06b" } },
+                    },
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 3,
+                            ticks: { color: "#aaa", stepSize: 1, backdropColor: "transparent" },
+                            grid: { color: "rgba(255,255,255,0.1)" },
+                            pointLabels: { color: "#c8b06b" },
+                        },
+                    },
+                },
+            });
+        }
+    }
+}
+
+function loadAdminPanel(container) {
+    container.innerHTML = `<p style="color:#b89b67; font-size:13px;">Loading…</p>`;
+
+    Promise.all([
+        fetch(`${API_BASE}/api/admin/leaderboard`).then(r => r.ok ? r.json() : []),
+        fetch(`${API_BASE}/api/admin/death-distribution`).then(r => r.ok ? r.json() : []),
+        fetch(`${API_BASE}/api/admin/horde-difficulty`).then(r => r.ok ? r.json() : []),
+        fetch(`${API_BASE}/api/admin/most-upgraded-cards`).then(r => r.ok ? r.json() : []),
+    ])
+        .then(([leaderboard, deaths, hordes, cards]) => renderAdminPanel(container, leaderboard, deaths, hordes, cards))
+        .catch(() => {
+            container.innerHTML = `<p style="color:#d4a0a0;">Could not load admin data. Is the server running?</p>`;
+        });
+}
+
+function renderAdminPanel(container, leaderboard, deaths, hordes, cards) {
+    const leaderboardHtml = `
+        <div class="stats-section">
+            <p class="stats-section-title">Global Leaderboard</p>
+            <section class="global-ranking">
+                ${leaderboard.length
+                    ? leaderboard.map(p => `
+                        <details class="ranking-entry" ${p.leaderboard_rank === 1 ? "open" : ""}>
+                            <summary>
+                                <span>#${p.leaderboard_rank}</span>
+                                <strong>${p.username}</strong>
+                                <em>${p.levels_completed} levels</em>
+                            </summary>
+                            <div class="ranking-details">
+                                ${detailRow("Runs played",    p.total_runs)}
+                                ${detailRow("Enemies killed", p.total_enemies_killed)}
+                                ${detailRow("Gold earned",    p.total_gold_earned)}
+                                ${detailRow("Upgrades",       p.total_upgrades)}
+                            </div>
+                        </details>
+                    `).join("")
+                    : `<p style="color:#b89b67; font-size:13px;">No players registered yet.</p>`
+                }
+            </section>
+        </div>
+    `;
+
+    const deathChartHtml = `
+        <div class="chart-container">
+            <h3 class="chart-title">Where Players Die Most</h3>
+            ${deaths.length
+                ? `<div class="chart-canvas-wrap"><canvas id="chartDeathDist"></canvas></div>`
+                : `<p class="chart-empty-msg">No death data yet.</p>`
+            }
+        </div>
+    `;
+
+    const hordeChartHtml = `
+        <div class="chart-container">
+            <h3 class="chart-title">Horde Completion Rates</h3>
+            ${hordes.length
+                ? `<div class="chart-canvas-wrap"><canvas id="chartHordeCompletion"></canvas></div>`
+                : `<p class="chart-empty-msg">No horde data yet.</p>`
+            }
+        </div>
+    `;
+
+    const validCards = cards.filter(c => c.total_upgrade_purchases > 0);
+    const upgradePopHtml = `
+        <div class="chart-container">
+            <h3 class="chart-title">Card Upgrade Popularity</h3>
+            ${validCards.length
+                ? `<div class="chart-canvas-wrap chart-canvas-wrap--doughnut"><canvas id="chartUpgradePopularity"></canvas></div>`
+                : `<p class="chart-empty-msg">No upgrades data yet.</p>`
+            }
+        </div>
+    `;
+
+    const deathHtml = `
+        <div class="stats-box">
+            <p class="stats-section-title">Death Distribution</p>
+            <table class="tutorial-table">
+                <thead><tr><th>Level</th><th>Horde</th><th>Deaths</th></tr></thead>
+                <tbody>
+                    ${deaths.length
+                        ? deaths.map(d => `
+                            <tr>
+                                <td>${d.level_name}</td>
+                                <td>Horde ${d.current_horde}</td>
+                                <td>${d.total_deaths}</td>
+                            </tr>
+                        `).join("")
+                        : `<tr><td colspan="3" style="color:#b89b67;">No data yet</td></tr>`
+                    }
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    const hordeHtml = `
+        <div class="stats-box">
+            <p class="stats-section-title">Horde Difficulty</p>
+            <table class="tutorial-table">
+                <thead><tr><th>Level</th><th>Horde</th><th>Completion %</th><th>Avg Turns</th></tr></thead>
+                <tbody>
+                    ${hordes.length
+                        ? hordes.map(h => `
+                            <tr>
+                                <td>${h.level_name}</td>
+                                <td>Horde ${h.horde_number}</td>
+                                <td>${h.completion_rate_percent}%</td>
+                                <td>${h.avg_turns_survived ?? "—"}</td>
+                            </tr>
+                        `).join("")
+                        : `<tr><td colspan="4" style="color:#b89b67;">No data yet</td></tr>`
+                    }
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    const topCardsHtml = `
+        <div class="stats-section">
+            <p class="stats-section-title">Most Upgraded Cards</p>
+            <table class="tutorial-table">
+                <thead><tr><th>Card</th><th>Type</th><th>Upgrades</th><th>Avg Tier</th><th>Max Tier</th><th>Gold</th></tr></thead>
+                <tbody>
+                    ${cards.filter(c => c.total_upgrade_purchases > 0).length
+                        ? cards.filter(c => c.total_upgrade_purchases > 0).map(c => `
+                            <tr>
+                                <td>${c.card_name}</td>
+                                <td>${c.card_type}</td>
+                                <td>${c.total_upgrade_purchases}</td>
+                                <td>${c.avg_upgrade_level}</td>
+                                <td><span class="tier-pill">Tier ${c.max_upgrade_level}</span></td>
+                                <td>${c.total_gold_spent} ◆</td>
+                            </tr>
+                        `).join("")
+                        : `<tr><td colspan="6" style="color:#b89b67;">No upgrades yet</td></tr>`
+                    }
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    container.innerHTML = leaderboardHtml
+        + deathChartHtml
+        + hordeChartHtml
+        + upgradePopHtml
+        + `<div class="admin-grid">${deathHtml}${hordeHtml}</div>`
+        + topCardsHtml;
+
+    if (typeof Chart === "undefined") return;
+
+    if (deaths.length) {
+        if (chartDeathDist) { chartDeathDist.destroy(); chartDeathDist = null; }
+        const cvs = document.getElementById("chartDeathDist");
+        if (cvs) {
+            const levelNames = [...new Set(deaths.map(d => d.level_name))];
+            const levelPalette = [
+                "rgba(108,128,160,0.8)",
+                "rgba(52,115,68,0.8)",
+                "rgba(185,80,50,0.8)",
+            ];
+            chartDeathDist = new Chart(cvs, {
+                type: "bar",
+                data: {
+                    labels: deaths.map(d => `L${levelNames.indexOf(d.level_name) + 1}-H${d.current_horde}`),
+                    datasets: [{
+                        label: "Total Deaths",
+                        data: deaths.map(d => d.total_deaths),
+                        backgroundColor: deaths.map(d => levelPalette[Math.min(levelNames.indexOf(d.level_name), 2)]),
+                        borderColor: "rgba(255,255,255,0.15)",
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: "#c8b06b" } },
+                    },
+                    scales: {
+                        x: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                        y: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                    },
+                },
+            });
+        }
+    }
+
+    if (hordes.length) {
+        if (chartHordeComp) { chartHordeComp.destroy(); chartHordeComp = null; }
+        const cvs = document.getElementById("chartHordeCompletion");
+        if (cvs) {
+            chartHordeComp = new Chart(cvs, {
+                type: "bar",
+                data: {
+                    labels: hordes.map(h => `${h.level_name} H${h.horde_number}`),
+                    datasets: [{
+                        label: "Completion %",
+                        data: hordes.map(h => parseFloat(h.completion_rate_percent) || 0),
+                        backgroundColor: hordes.map(h => {
+                            const pct = Math.min(1, Math.max(0, parseFloat(h.completion_rate_percent || 0) / 100));
+                            const r = Math.round(192 * (1 - pct) + 39 * pct);
+                            const g = Math.round(57 * (1 - pct) + 174 * pct);
+                            const b = Math.round(43 * (1 - pct) + 96 * pct);
+                            return `rgba(${r},${g},${b},0.8)`;
+                        }),
+                        borderColor: "rgba(255,255,255,0.15)",
+                        borderWidth: 1,
+                    }],
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: "#c8b06b" } },
+                    },
+                    scales: {
+                        x: {
+                            min: 0,
+                            max: 100,
+                            ticks: { color: "#aaa", callback: v => `${v}%` },
+                            grid: { color: "rgba(255,255,255,0.07)" },
+                        },
+                        y: { ticks: { color: "#aaa" }, grid: { color: "rgba(255,255,255,0.07)" } },
+                    },
+                },
+            });
+        }
+    }
+
+    if (validCards.length) {
+        if (chartUpgPop) { chartUpgPop.destroy(); chartUpgPop = null; }
+        const cvs = document.getElementById("chartUpgradePopularity");
+        if (cvs) {
+            const MEDIEVAL_PALETTE = [
+                "rgba(108,128,160,0.85)",
+                "rgba(52,115,68,0.85)",
+                "rgba(155,89,182,0.85)",
+                "rgba(230,193,106,0.85)",
+                "rgba(192,57,43,0.85)",
+                "rgba(41,128,185,0.85)",
+                "rgba(140,100,60,0.85)",
+                "rgba(180,120,60,0.85)",
+            ];
+            const total = validCards.reduce((s, c) => s + (c.total_upgrade_purchases || 0), 0);
+            const centerTextPlugin = {
+                id: "centerText",
+                afterDraw(chart) {
+                    const { ctx: c, chartArea: { top, left, width, height } } = chart;
+                    const cx = left + width / 2;
+                    const cy = top + height / 2;
+                    c.save();
+                    c.font = "bold 22px \"Courier New\", monospace";
+                    c.fillStyle = "#e6c16a";
+                    c.textAlign = "center";
+                    c.textBaseline = "middle";
+                    c.fillText(String(total), cx, cy - 9);
+                    c.font = "11px \"Courier New\", monospace";
+                    c.fillStyle = "#b89b67";
+                    c.fillText("UPGRADES", cx, cy + 10);
+                    c.restore();
+                },
+            };
+            chartUpgPop = new Chart(cvs, {
+                type: "doughnut",
+                data: {
+                    labels: validCards.map(c => c.card_name),
+                    datasets: [{
+                        data: validCards.map(c => c.total_upgrade_purchases),
+                        backgroundColor: validCards.map((_, i) => MEDIEVAL_PALETTE[i % MEDIEVAL_PALETTE.length]),
+                        borderColor: "rgba(18,16,14,0.8)",
+                        borderWidth: 2,
+                    }],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "60%",
+                    plugins: {
+                        legend: { labels: { color: "#c8b06b" } },
+                    },
+                },
+                plugins: [centerTextPlugin],
+            });
+        }
+    }
 }
 
 function createSettingsModal() {
