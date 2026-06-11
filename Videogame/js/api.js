@@ -1,11 +1,17 @@
 "use strict";
 
+// This file handles all the communication between the game and the server.
+// Every time we need to save or load something (cards, enemies, runs, upgrades, stats)
+// we call the functions here and they take care of sending the request.
+
 const API_BASE = 'http://localhost:3000';
 
 let enemyPool = [];
 let currentRunId = null;
 let pendingUpgradeRegistry = {};
 
+// Loads all the cards and enemies needed to start a level.
+// Also grabs the player's upgrades if they are logged in.
 async function loadGameData(levelId = 1) {
     try {
         const saved = localStorage.getItem("cowardKingUser");
@@ -55,6 +61,7 @@ async function loadGameData(levelId = 1) {
     }
 }
 
+// Saves a card upgrade to the database for the current player.
 async function saveUpgrade({ card_id, level = 1, ap_cost_bonus = 0, hp_bonus = 0, damage_bonus = 0, gold_spent = 0 }) {
     try {
         const saved = localStorage.getItem("cowardKingUser");
@@ -71,6 +78,7 @@ async function saveUpgrade({ card_id, level = 1, ap_cost_bonus = 0, hp_bonus = 0
     }
 }
 
+// Tells the server that the player started a new run and saves the run id.
 async function startRun() {
     try {
         const saved = localStorage.getItem("cowardKingUser");
@@ -90,6 +98,7 @@ async function startRun() {
     }
 }
 
+// Marks a horde as completed and sends how many turns and kills the player got.
 async function completeHorde(horde_id, turns, kills) {
     try {
         if (!currentRunId) return;
@@ -103,6 +112,7 @@ async function completeHorde(horde_id, turns, kills) {
     }
 }
 
+// Tells the server the player died and clears the current run.
 async function recordDeath() {
     try {
         if (!currentRunId) return;
@@ -113,6 +123,7 @@ async function recordDeath() {
     }
 }
 
+// Updates the run with the new level the player just moved into.
 async function advanceRunLevel(level_id) {
     try {
         if (!currentRunId) return;
@@ -126,6 +137,7 @@ async function advanceRunLevel(level_id) {
     }
 }
 
+// Sends the player's stats to the server at the end of a run.
 async function saveStats({ kills = 0, gold = 0, upgrades = 0, runs = 0, levels = 0 }) {
     try {
         const saved = localStorage.getItem("cowardKingUser");

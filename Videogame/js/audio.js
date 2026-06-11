@@ -1,5 +1,10 @@
 "use strict";
 
+// This file controls all the audio in the game.
+// It handles background music for each level, sound effects for cards and buttons,
+// and lets the player adjust volume through the settings menu.
+// Everything goes through the cowardKingAudio object at the bottom.
+
 const AUDIO_SETTINGS_STORAGE_KEY = "cowardKingSettings";
 
 const LEVEL_MUSIC_TRACKS = {
@@ -46,6 +51,7 @@ const CARD_SFX_TRACKS = {
     Decoy: "Assets/audio/sfx/cards/decoy.mp3",
 };
 
+// Reads the saved volume settings from local storage, or uses defaults if there are none.
 function readAudioSettings() {
     const fallback = {
         masterVolume: 80,
@@ -62,10 +68,12 @@ function readAudioSettings() {
     }
 }
 
+// Makes sure a volume number stays between 0 and 100.
 function clampVolume(value) {
     return Math.max(0, Math.min(100, Number(value) || 0));
 }
 
+// Creates an Audio object for a music track and sets it to loop automatically.
 function createTrackAudio(trackInfo) {
     const audio = new Audio(trackInfo.src);
     audio.loop = true;
@@ -88,6 +96,7 @@ const cowardKingAudio = {
     unlocked: false,
     unlockHandler: null,
 
+    // Sets everything up when the game loads.
     init() {
         this.preloadTracks();
         this.preloadSfx();
@@ -96,6 +105,7 @@ const cowardKingAudio = {
         this.bindButtonSounds();
     },
 
+    // Loads all the music tracks into memory so they are ready to play.
     preloadTracks() {
         for (const track of MENU_MUSIC_TRACKS) {
             if (!this.trackCache[track.src]) {
@@ -104,6 +114,7 @@ const cowardKingAudio = {
         }
     },
 
+    // Loads all sound effects into memory so there is no delay when they play.
     preloadSfx() {
         const allSfx = [
             ...Object.values(SFX_TRACKS),
@@ -121,6 +132,7 @@ const cowardKingAudio = {
         }
     },
 
+    // Plays a click sound whenever the player clicks any button on the page.
     bindButtonSounds() {
         if (this.buttonSoundsBound) return;
         this.buttonSoundsBound = true;
@@ -131,6 +143,8 @@ const cowardKingAudio = {
         });
     },
 
+    // Waits for the first player interaction before trying to play audio,
+    // since browsers block autoplay until the user does something.
     unlockOnFirstInput() {
         if (this.unlockHandler) return;
 
@@ -153,6 +167,7 @@ const cowardKingAudio = {
         window.addEventListener("keydown", unlock, true);
     },
 
+    // Switches the music to the track that matches the current level.
     setLevel(levelConfig) {
         if (!levelConfig) return;
         const levelNumber = levelConfig.levelNumber || 1;
@@ -162,6 +177,7 @@ const cowardKingAudio = {
         this.switchTrack(LEVEL_MUSIC_TRACKS[levelNumber]);
     },
 
+    // Picks a random track to play on the menu if nothing is playing yet.
     setRandomMenuTrack() {
         if (this.currentTrack) return;
         const randomIndex = Math.floor(Math.random() * MENU_MUSIC_TRACKS.length);
@@ -173,6 +189,7 @@ const cowardKingAudio = {
         });
     },
 
+    // Stops the current track and starts playing a new one from the beginning.
     switchTrack(trackInfo) {
         if (!trackInfo) return;
 
@@ -190,6 +207,7 @@ const cowardKingAudio = {
         this.playCurrentTrack();
     },
 
+    // Plays the current track if the browser is already unlocked.
     playCurrentTrack() {
         if (!this.unlocked || !this.currentTrack) return Promise.resolve(false);
         return this.currentTrack.play().then(() => true).catch(() => {
@@ -198,6 +216,7 @@ const cowardKingAudio = {
         });
     },
 
+    // Saves new volume settings and updates everything that is currently playing.
     updateSettings(nextSettings) {
         this.settings = {
             ...this.settings,
@@ -207,12 +226,14 @@ const cowardKingAudio = {
         this.applyVolume();
     },
 
+    // Calculates the final volume for sound effects using master and sfx sliders.
     getSfxVolume() {
         const master = clampVolume(this.settings.masterVolume) / 100;
         const sfx    = clampVolume(this.settings.sfxVolume) / 100;
         return master * sfx;
     },
 
+    // Plays a one shot sound effect by its key name.
     playSfx(key) {
         const src = SFX_TRACKS[key];
         if (!src || !this.unlocked) return;
@@ -224,6 +245,7 @@ const cowardKingAudio = {
         sound.play().catch(() => {});
     },
 
+    // Plays the sound effect for a specific card when it is used.
     playCardSfx(cardName) {
         const src = CARD_SFX_TRACKS[cardName];
         if (!src || !this.unlocked) return;
@@ -235,6 +257,7 @@ const cowardKingAudio = {
         sound.play().catch(() => {});
     },
 
+    // Starts playing a sound effect on a loop until stopLoopSfx is called.
     startLoopSfx(key) {
         const src = SFX_TRACKS[key];
         if (!src || !this.unlocked) return;
@@ -249,6 +272,7 @@ const cowardKingAudio = {
         loop.play().catch(() => {});
     },
 
+    // Stops a looping sound effect and resets it to the beginning.
     stopLoopSfx(key) {
         const loop = this.loopSfx[key];
         if (!loop) return;
@@ -256,6 +280,7 @@ const cowardKingAudio = {
         loop.currentTime = 0;
     },
 
+    // Updates the volume on everything that is currently playing to match the settings.
     applyVolume() {
         for (const loop of Object.values(this.loopSfx)) {
             loop.volume = this.getSfxVolume();

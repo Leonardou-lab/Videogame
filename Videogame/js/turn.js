@@ -1,34 +1,41 @@
 "use strict";
 
+// This file manages the turn flow of the game.
+// It handles the player phase, the enemy phase, card playing, king movement,
+// desperation, upgrades, and what happens after a win or loss.
+
 Object.assign(Game.prototype, {
 
-    // returns the config object for the level the player is currently on
+    // Returns the config object for the level the player is currently on.
     getCurrentLevelConfig() {
         return levelConfigs[this.currentLevelIndex] || levelConfigs[0];
     },
 
-    // returns the config for the current horde within the current level
+    // Returns the config for the current horde within the current level.
     getCurrentHordeConfig() {
         const level = this.getCurrentLevelConfig();
         return level.hordes.find(horde => horde.hordeNumber === this.currentHorde) || level.hordes[0];
     },
 
-    // returns how many turns the player needs to survive (boss fights skip the limit)
+    // Returns how many turns the player needs to survive. Boss fights have no turn limit.
     getCurrentTurnLimit() {
         return this.isBossFight ? 99 : this.getCurrentHordeConfig().maxTurns;
     },
 
+    // Returns how many cards the player gets. The first horde gives fewer cards as an introduction.
     getCurrentHandSize() {
         const isIntroHorde = this.currentLevelIndex === 0 && !this.isBossFight && this.currentHorde === 1;
         return isIntroHorde ? introHandSize : maxHandSize;
     },
 
+    // Returns true if the player is allowed to pick a card to keep after this encounter.
     canChooseKeepCard() {
         if (this.status !== "won" || !this.hand || this.hand.length === 0) return false;
         if (!this.isBossFight) return true;
         return this.currentLevelIndex + 1 < levelConfigs.length;
     },
 
+    // Marks a card to be carried over into the next hand.
     chooseCardToKeep(card) {
         if (!this.canChooseKeepCard()) return;
         this.keptCardName = card.name;
@@ -36,11 +43,12 @@ Object.assign(Game.prototype, {
         this.renderUI();
     },
 
-    // adds AP up to the max, called each turn the king didn't move
+    // Adds AP up to the max. Called when the king did not move this turn.
     gainAP(amount) {
         this.ap = Math.min(maxActionPoints, this.ap + amount);
     },
 
+    // Applies the background image and music for the current level.
     applyLevelBackground() {
         const level = this.getCurrentLevelConfig();
         if (!level.backgroundImage) return;
@@ -50,6 +58,8 @@ Object.assign(Game.prototype, {
         }
     },
 
+    // Increases desperation if the king did not move, or resets it if he did.
+    // Plays a warning sound near the limit and ends the run if it maxes out.
     updateDesperation(kingMovedLastTurn) {
         if (kingMovedLastTurn) {
             this.desperation = 0;
@@ -74,7 +84,7 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // moves the game forward after a win, either to the next horde, the boss fight, or the next level
+    // Figures out what comes next after a win: the next horde, the boss fight, or the next level.
     advanceProgressionAfterVictory() {
         const level = this.getCurrentLevelConfig();
 
@@ -104,7 +114,7 @@ Object.assign(Game.prototype, {
         this.nextEncounterMessage = `The King escaped the final horde. Boss fight unlocked: ${level.boss.name}.`;
     },
 
-    // resets back to the start of the full game after losing
+    // Resets progress back to Level 1 Horde 1 after a defeat. Upgrades are kept intentionally.
     resetProgressionAfterDefeat() {
         const level = this.getCurrentLevelConfig();
         this.currentLevelIndex = 0;
@@ -116,11 +126,12 @@ Object.assign(Game.prototype, {
         this.nextEncounterMessage = `Defeat in ${level.name}. The run restarts from Level 1 - Horde 1.`;
     },
 
+    // Opens the final victory screen when the player clears the last level.
     showFinalVictoryScreen() {
         document.getElementById("winOverlay").classList.add("open");
     },
 
-    // sets up the next encounter after a win or loss, resetting all game state
+    // Resets the board and starts the next encounter after a win or loss.
     restart() {
         if (window.cowardKingAudio) {
             window.cowardKingAudio.stopLoopSfx("desperationCritical");
@@ -182,7 +193,7 @@ Object.assign(Game.prototype, {
         this.renderUI();
     },
 
-    // picks random cards from the pool and applies any upgrades the player has bought
+    // Picks random cards from the pool for the new hand and applies any upgrades the player has bought.
     drawCards(amount) {
         const cards = [];
         const pool  = [...cardPool];
@@ -201,7 +212,7 @@ Object.assign(Game.prototype, {
         return cards.slice(0, amount);
     },
 
-    // checks if the player has upgraded this card and applies the matching stat bonuses
+    // Checks if the player has an upgrade for this card and boosts its stats accordingly.
     applyUpgradeToCard(card) {
         if (card.type !== "ally") return { ...card, upgradeLevel: 0 };
         const level = this.upgradeRegistry[card.name] || 0;
@@ -216,6 +227,7 @@ Object.assign(Game.prototype, {
         };
     },
 
+    // Returns the max number of copies of a card the player can have on the board based on upgrade level.
     getPlacementLimitForCard(card) {
         const level = card.upgradeLevel || 0;
         if (level >= 3) return 3;
@@ -223,19 +235,21 @@ Object.assign(Game.prototype, {
         return Infinity;
     },
 
+    // Counts how many copies of a card are currently active on the board.
     countPlacedCardsByName(cardName) {
         const allies = this.allies.filter(ally => ally.cardName === cardName && ally.hp > 0).length;
         const effects = this.effects.filter(effect => effect.name === cardName && effect.duration > 0).length;
         return allies + effects;
     },
 
+    // Returns true if the player already has the maximum number of this card on the board.
     hasReachedPlacementLimit(card) {
         const limit = this.getPlacementLimitForCard(card);
         if (!Number.isFinite(limit)) return false;
         return this.countPlacedCardsByName(card.name) >= limit;
     },
 
-    // places the selected card on the board if the player has enough AP and the tile is free
+    // Places the selected card on the board if the player has enough AP and the tile is free.
     playCard(row, col) {
         const card = this.selectedCard;
         if (!card) return;
@@ -282,7 +296,7 @@ Object.assign(Game.prototype, {
         this.renderUI();
     },
 
-    // ends the player phase and triggers all enemy actions
+    // Ends the player phase and hands control to the enemy phase.
     endPlayerTurn() {
         if (this.status !== "playing" || this.phase !== "player") return;
         this.selectedCard = undefined;
@@ -291,7 +305,8 @@ Object.assign(Game.prototype, {
         this.resolveTurn();
     },
 
-    // handles everything at end of turn: zone effects, combat, win/loss checks, spawning enemies, and AP gain
+    // Runs everything that happens at the end of a turn: zone effects, combat, cleanup,
+    // desperation update, win or loss checks, enemy spawns, and AP gain.
     resolveTurn() {
         const wasPlaying        = this.status === "playing";
         const kingMovedLastTurn = this.kingMovedThisTurn;
