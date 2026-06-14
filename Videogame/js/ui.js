@@ -1,8 +1,12 @@
 "use strict";
 
-// UI-related logic: event listeners, rendering the HUD and hand of cards, and logging messages
+// This file handles everything the player sees and interacts with outside the board.
+// It sets up button and keyboard listeners, renders the HUD and the card hand,
+// manages the upgrade overlay, the pause menu, and the log at the bottom.
+
 Object.assign(Game.prototype, {
 
+    // Returns the file path for a card image, using the upgraded version if the card has a level.
     getCardImagePath(card, lvl) {
         const explicitNames = {
             "Royal Decree": "Royal Decree",
@@ -18,6 +22,7 @@ Object.assign(Game.prototype, {
         return `Assets/cards/${fileName}.png`;
     },
 
+    // Wires up all the buttons and keyboard shortcuts the player uses during the game.
     createEventListeners() {
         document.getElementById("moveKingButton").addEventListener("click", () => {
             if (this.status !== "playing" || this.phase !== "player") return;
@@ -73,7 +78,6 @@ Object.assign(Game.prototype, {
             window.location.href = "indexMenu.html";
         });
 
-
         window.addEventListener("keydown", event => {
             if (event.key === "Escape") {
                 const pauseOpen = document.getElementById("pauseOverlay").classList.contains("open");
@@ -92,6 +96,7 @@ Object.assign(Game.prototype, {
         });
     },
 
+    // Handles a click on the canvas. Moves the king, places a card, or selects the king depending on what was clicked.
     handleCanvasClick(event) {
         if (this.status !== "playing" || this.phase !== "player") return;
 
@@ -121,6 +126,7 @@ Object.assign(Game.prototype, {
         }
     },
 
+    // Redraws the HUD, the card hand, and the log every time something changes.
     renderUI() {
         const level = this.getCurrentLevelConfig();
         const encounter = this.isBossFight ? "Boss" : `Horde ${this.currentHorde}`;
@@ -220,6 +226,7 @@ Object.assign(Game.prototype, {
         this.renderDesperationPanel();
     },
 
+    // Updates the desperation panel on the side with the current value and face image.
     renderDesperationPanel() {
         let panel = document.getElementById("desperationPanel");
         if (!panel) {
@@ -244,22 +251,26 @@ Object.assign(Game.prototype, {
         `;
     },
 
+    // Adds a message to the top of the log and keeps only the last 8 lines.
     addLog(text) {
         if (!this.logLines) this.logLines = [];
         this.logLines.unshift(text);
         this.logLines = this.logLines.slice(0, 8);
     },
 
+    // Opens the pause menu and clears any leftover save confirmation text.
     openPauseOverlay() {
         document.getElementById("saveConfirmMsg").textContent = "";
         document.getElementById("pauseOverlay").classList.add("open");
     },
 
+    // Closes the pause menu.
     closePauseOverlay() {
         document.getElementById("pauseOverlay").classList.remove("open");
         document.getElementById("saveConfirmMsg").textContent = "";
     },
 
+    // Saves the current game state to local storage so the player can come back later.
     saveGameToStorage() {
         const state = {
             savedAt: new Date().toISOString(),
@@ -284,15 +295,18 @@ Object.assign(Game.prototype, {
         }
     },
 
+    // Opens the upgrade overlay and renders its contents.
     openUpgradeOverlay() {
         this.renderUpgradeOverlay();
         document.getElementById("upgradeOverlay").classList.add("open");
     },
 
+    // Closes the upgrade overlay.
     closeUpgradeOverlay() {
         document.getElementById("upgradeOverlay").classList.remove("open");
     },
 
+    // Builds the upgrade list showing each card, its current stats, and the cost to upgrade it.
     renderUpgradeOverlay() {
         const LEVEL_LABELS = ["Base", "Lvl 1", "Lvl 2", "Lvl 3"];
 
@@ -350,6 +364,7 @@ Object.assign(Game.prototype, {
         });
     },
 
+    // Spends gold to upgrade a card and immediately applies the new stats to any copy in the current hand.
     purchaseUpgrade(cardName) {
         const level = this.upgradeRegistry[cardName] || 0;
         if (level >= 3) return;

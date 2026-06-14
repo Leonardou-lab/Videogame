@@ -1,20 +1,28 @@
 "use strict";
 
+// This file handles everything related to the game board.
+// It checks if tiles are valid, spawns enemies and obstacles,
+// draws the board and highlights, and decides if the player has lost.
+
 Object.assign(Game.prototype, {
 
+    // Returns true if the tile is inside the safe zone around the king.
     isInSafeZone(row, col) {
         return Math.abs(row - this.king.row) <= 1 && Math.abs(col - this.king.col) <= 1;
     },
 
+    // Returns true if the tile is within the board boundaries.
     isInsideBoard(row, col) {
         return row >= 0 && row < boardSize && col >= 0 && col < boardSize;
     },
 
+    // Returns whatever unit or obstacle is sitting on a tile, or undefined if it is empty.
     getBlockingObject(row, col) {
         return [this.king, ...this.obstacles, ...this.allies, ...this.enemies]
             .find(obj => this.objectOccupiesTile(obj, row, col));
     },
 
+    // Checks if an object covers a specific tile, accounting for units that take up more than one tile.
     objectOccupiesTile(object, row, col) {
         const span = object.tileSpan || 1;
         return row >= object.row &&
@@ -23,6 +31,7 @@ Object.assign(Game.prototype, {
             col < object.col + span;
     },
 
+    // Returns true if a unit can be placed at the given position without going out of bounds or overlapping anything.
     canUnitOccupyTiles(unit, row, col) {
         const span = unit.tileSpan || 1;
         if (row < 0 || col < 0 || row + span > boardSize || col + span > boardSize) return false;
@@ -37,7 +46,7 @@ Object.assign(Game.prototype, {
         return true;
     },
 
-   // Checks if a unit is currently standing in the safe zone
+    // Returns true if any part of the unit is standing inside the safe zone.
     unitOccupiesSafeZone(unit) {
         const span = unit.tileSpan || 1;
         for (let row = unit.row; row < unit.row + span; row++) {
@@ -48,11 +57,12 @@ Object.assign(Game.prototype, {
         return false;
     },
 
+    // Returns the active effect on a tile if there is one.
     getEffect(row, col) {
         return this.effects.find(e => e.row === row && e.col === col);
     },
 
-    // Distance between centers of two objects 
+    // Spawns a few enemies at the edges of the board based on the current horde settings.
     spawnEnemies() {
         if (this.isBossFight) return;
 
@@ -70,7 +80,7 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // Enemy behavior: attack adjacent ally or move toward king
+    // Finds a random empty tile on the edge of the board to spawn an enemy on.
     getRandomSpawnTile(edges) {
         const availableEdges = edges && edges.length > 0 ? edges : ["top"];
 
@@ -101,7 +111,7 @@ Object.assign(Game.prototype, {
         return undefined;
     },
 
-    // Spawns the boss at the center of the board
+    // Spawns the boss at the top center of the board.
     spawnBoss() {
         const bossStats = this.getCurrentLevelConfig().boss;
         const spawnCol = Math.floor((boardSize - (bossStats.tileSpan || 2)) / 2);
@@ -109,7 +119,7 @@ Object.assign(Game.prototype, {
         this.addLog(`${bossStats.name} enters the throne room.`);
     },
 
-    // Summons a minion for the boss
+    // Spawns a regular enemy as a minion summoned by the boss.
     summonBossMinion() {
         const level = this.getCurrentLevelConfig();
         const spawnTile = this.getRandomSpawnTile(["top", "left", "right"]);
@@ -118,7 +128,7 @@ Object.assign(Game.prototype, {
         this.addLog(`${level.boss.name} summons a ${level.bossSummon.name}.`);
     },
 
-    // Generates obstacles on the board
+    // Places random obstacles on the board avoiding the safe zone and spawn edges.
     generateObstacles() {
         this.obstacles = [];
         const config = this.isBossFight
@@ -138,12 +148,12 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // Checks if a tile is on the edge of the board where enemies can spawn
+    // Returns true if the tile is on the outer edge of the board.
     isSpawnEdgeTile(row, col) {
         return row === 0 || row === boardSize - 1 || col === 0 || col === boardSize - 1;
     },
 
-    // Cleans up defeated objects from the board
+    // Removes dead enemies, dead allies, and expired effects from the board.
     cleanupObjects() {
         const defeated = this.enemies.filter(e => e.hp <= 0).length;
         if (defeated > 0) {
@@ -155,14 +165,14 @@ Object.assign(Game.prototype, {
         this.effects = this.effects.filter(e => e.duration > 0);
     },
 
-    // Updates the duration of active effects
+    // Counts down the duration of all active zone effects by one turn.
     tickEffects() {
         for (const effect of this.effects) {
             if (effect.effectType === "zone") effect.duration--;
         }
     },
 
-    // Checks if the player has lost the game
+    // Checks if enemies have overrun the safe zone and ends the game if they have.
     checkDefeat() {
         if (this.status !== "playing") return;
         const pressure = this.enemies
@@ -177,7 +187,7 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // Draws the game board
+    // Draws the board tiles, the safe zone highlight, and any active zone effects.
     drawBoard(ctx) {
         const boardWidth  = boardSize * tileSize;
         const boardHeight = boardSize * tileSize;
@@ -240,7 +250,7 @@ Object.assign(Game.prototype, {
         }
     },
 
-    // Draws highlight overlays on the board
+    // Shows blue tiles when the king can move and green tiles when a card is selected.
     drawHighlights(ctx) {
         if (this.moveMode) {
             for (let row = this.king.row - 1; row <= this.king.row + 1; row++) {

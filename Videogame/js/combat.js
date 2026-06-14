@@ -1,21 +1,27 @@
 "use strict";
 
-// Combat logic: ally and enemy attacks traps
+// This file handles all the combat that happens each turn.
+// Allies attack enemies, enemies attack allies or move toward the king,
+// traps trigger when an enemy steps on them, and damage is calculated here.
+
 Object.assign(Game.prototype, {
 
+    // Makes every ally on the board attack the closest enemy in range.
     alliesAttack() {
         for (const ally of this.allies) {
             if (ally.hp <= 0) continue;
             if (ally.damage <= 0) continue;
-const target = this.findNearestEnemy(ally, ally.range);
+            const target = this.findNearestEnemy(ally, ally.range);
             if (target) {
                 target.takeDamage(ally.damage);
                 if (["archer", "mage", "knight", "pikeman", "guardian"].includes(ally.type)) triggerUnitAnim(ally);
-                this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`); 
+                this.addLog(`${ally.cardName} hits a skeleton for ${ally.damage}.`);
             }
         }
     },
-// Boss-specific logic for summoning minions
+
+    // Moves each enemy toward the king or attacks a nearby ally if one is adjacent.
+    // Bosses also summon minions on certain turns and enemies can be stunned or slowed.
     enemiesAttackAndMove() {
         for (const enemy of [...this.enemies]) {
             if (enemy.hp <= 0) continue;
@@ -50,7 +56,7 @@ const target = this.findNearestEnemy(ally, ally.range);
         }
     },
 
-    // Boss-specific logic for summoning minions
+    // Checks if an enemy stepped on an Exile trap and stuns them if so.
     triggerTrap(enemy) {
         const effect = this.getEffect(enemy.row, enemy.col);
         if (effect && effect.name === "Exile") {
@@ -60,7 +66,7 @@ const target = this.findNearestEnemy(ally, ally.range);
         }
     },
 
-    // Finds the nearest enemy within a given range
+    // Returns the closest enemy to a unit within a given attack range.
     findNearestEnemy(origin, range) {
         let nearest         = undefined;
         let nearestDistance = Infinity;
@@ -75,12 +81,12 @@ const target = this.findNearestEnemy(ally, ally.range);
         return nearest;
     },
 
-    // Finds an adjacent ally to the given enemy
+    // Returns an ally that is right next to the given enemy, or undefined if there is none.
     findAdjacentAlly(enemy) {
         return this.allies.find(ally => ally.hp > 0 && this.areObjectsAdjacent(enemy, ally));
     },
 
-    // Calculates the distance between two objects on the board
+    // Calculates the tile distance between two units, accounting for units that span multiple tiles.
     getObjectDistance(first, second) {
         const firstSpan = first.tileSpan || 1;
         const secondSpan = second.tileSpan || 1;
@@ -98,10 +104,12 @@ const target = this.findNearestEnemy(ally, ally.range);
         return Math.max(rowDistance, colDistance);
     },
 
+    // Returns true if two units are touching or diagonal to each other.
     areObjectsAdjacent(first, second) {
         return this.getObjectDistance(first, second) <= 1;
     },
 
+    // Returns true if a Squire is close enough to protect the given ally from full damage.
     isProtectedBySquire(ally) {
         return this.allies.some(a => a.cardName === "Squire" && a.hp > 0 && this.getObjectDistance(ally, a) <= 1);
     },

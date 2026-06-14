@@ -1,5 +1,9 @@
 "use strict";
 
+// This file contains all the drawing functions used to paint things on the canvas.
+// Units, obstacles, effects, highlights, and the end screen banner are all drawn here.
+
+// Returns a short text label for a unit type, used as a fallback when no sprite is available.
 function labelForType(type) {
     const labels = {
         king:     "K",
@@ -18,6 +22,7 @@ function labelForType(type) {
     return labels[type] || "?";
 }
 
+// Draws a unit on the board. If the unit is slowed or cursed it draws a color tint over the sprite.
 function drawToken(ctx, unit) {
     if (drawSprite(ctx, unit)) {
         if (unit.slowedThisTurn || unit.cursedThisTurn) {
@@ -40,6 +45,7 @@ function drawToken(ctx, unit) {
     }
 }
 
+// Draws a card effect token on the board, like an Exile trap or a Peace Treaty zone.
 function drawEffectToken(ctx, effect) {
     const x      = effect.position.x;
     const y      = effect.position.y;
@@ -56,6 +62,7 @@ function drawEffectToken(ctx, effect) {
     ctx.restore();
 }
 
+// Draws a rubble obstacle token with a stone texture look.
 function drawObstacleToken(ctx, obstacle) {
     const x = obstacle.position.x;
     const y = obstacle.position.y;
@@ -81,16 +88,19 @@ function drawObstacleToken(ctx, obstacle) {
     ctx.restore();
 }
 
+// Fills the canvas background with a dark overlay each frame before drawing anything else.
 function drawBackground(ctx) {
     ctx.fillStyle = "rgba(13, 11, 10, 0.72)";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 }
 
+// Draws a colored overlay on a single tile, used for move and placement highlights.
 function drawTileOverlay(ctx, row, col, color) {
     ctx.fillStyle = color;
     ctx.fillRect(boardX + col * tileSize, boardY + row * tileSize, tileSize, tileSize);
 }
 
+// Draws text centered on a given point with a specified font and color.
 function drawCenteredText(ctx, text, x, y, font, color) {
     ctx.font          = font;
     ctx.fillStyle     = color;
@@ -101,6 +111,7 @@ function drawCenteredText(ctx, text, x, y, font, color) {
     ctx.textBaseline  = "alphabetic";
 }
 
+// Draws the victory or game over banner in the center of the screen.
 function drawEndBanner(ctx, text, won) {
     const boxW = 520;
     const boxH = 132;

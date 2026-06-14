@@ -80,7 +80,7 @@ app.get('/api/enemies/:levelId', async (req, res) => {
 
 //  PLAYER
 
-// POST /api/player — registra jugador (Stats se crea automáticamente por trigger)
+// POST /api/player — registers player (Stats created automatically by trigger)
 app.post('/api/player', async (req, res) => {
     const { username, password, is_admin } = req.body
     if (!username || !password) return res.status(400).json({ error: 'username and password required' })
@@ -97,7 +97,7 @@ app.post('/api/player', async (req, res) => {
     }
 })
 
-// GET /api/player/:username — login / buscar jugador por nombre
+// GET /api/player/:username — login / find player by username
 app.get('/api/player/:username', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -116,7 +116,7 @@ app.get('/api/player/:username', async (req, res) => {
     }
 })
 
-// GET /api/player/:id/upgrades — cartas mejoradas del jugador (v_player_upgrades)
+// GET /api/player/:id/upgrades — player's upgraded cards (v_player_upgrades)
 app.get('/api/player/:id/upgrades', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -129,7 +129,7 @@ app.get('/api/player/:id/upgrades', async (req, res) => {
     }
 })
 
-// GET /api/player/:id/dashboard — 4 result sets: overview, best_run, upgrades, últimos 10 runs
+// GET /api/player/:id/dashboard — 4 result sets: overview, best_run, upgrades, last 10 runs
 app.get('/api/player/:id/dashboard', async (req, res) => {
     try {
         const [rows] = await pool.query(
@@ -149,7 +149,7 @@ app.get('/api/player/:id/dashboard', async (req, res) => {
 
 //  RUN 
 
-// POST /api/run/start — inicia nuevo run (sp_start_run, level_id=1 por default)
+// POST /api/run/start — starts a new run (sp_start_run, level_id=1 by default)
 app.post('/api/run/start', async (req, res) => {
     const { player_id } = req.body
     if (!player_id) return res.status(400).json({ error: 'player_id required' })
@@ -162,7 +162,7 @@ app.post('/api/run/start', async (req, res) => {
     }
 })
 
-// POST /api/run/:id/complete-horde — completa una horde (kills y gold los suman los triggers)
+// POST /api/run/:id/complete-horde — completes a horde (kills and gold tallied by triggers)
 app.post('/api/run/:id/complete-horde', async (req, res) => {
     const { horde_id, turns, kills } = req.body
     if (!horde_id) return res.status(400).json({ error: 'horde_id required' })
@@ -171,8 +171,7 @@ app.post('/api/run/:id/complete-horde', async (req, res) => {
             'CALL sp_complete_horde(?, ?, ?, ?)',
             [req.params.id, horde_id, turns ?? 0, kills ?? 0]
         )
-        // Avanza current_horde al número de la siguiente horde para que recordDeath
-        // sepa exactamente en cuál murió el jugador si muere en la siguiente.
+        // advance current_horde so recordDeath knows exactly which horde the player died on
         await pool.query(
             'UPDATE Run SET current_horde = (SELECT horde_number + 1 FROM Horde WHERE horde_id = ?) WHERE run_id = ?',
             [horde_id, req.params.id]
@@ -183,10 +182,10 @@ app.post('/api/run/:id/complete-horde', async (req, res) => {
     }
 })
 
-// POST /api/run/:id/death — registra derrota (feeds v_death_distribution)
+// POST /api/run/:id/death — records defeat (feeds v_death_distribution)
 app.post('/api/run/:id/death', async (req, res) => {
     try {
-        // Register the failed horde attempt so v_horde_difficulty gets a real denominator
+        // register failed horde so v_horde_difficulty gets a real denominator
         const [runRows] = await pool.query(
             'SELECT current_level_id, current_horde FROM Run WHERE run_id = ?',
             [req.params.id]
@@ -218,7 +217,7 @@ app.post('/api/run/:id/death', async (req, res) => {
     }
 })
 
-// PATCH /api/run/:id/level — avanza nivel sin cerrar el run (el trigger suma levels_completed)
+// PATCH /api/run/:id/level — advances level without closing the run (trigger increments levels_completed)
 app.patch('/api/run/:id/level', async (req, res) => {
     const { level_id } = req.body
     if (!level_id) return res.status(400).json({ error: 'level_id required' })
@@ -235,7 +234,7 @@ app.patch('/api/run/:id/level', async (req, res) => {
 
 //  UPGRADE
 
-// POST /api/upgrade — compra upgrade de carta (tier y bonos calculados por el SP)
+// POST /api/upgrade — buys a card upgrade (tier and bonuses calculated by the SP)
 app.post('/api/upgrade', async (req, res) => {
     const { player_id, card_id, gold_cost, gold_spent } = req.body
     if (!player_id || !card_id) return res.status(400).json({ error: 'player_id and card_id required' })
@@ -254,7 +253,7 @@ app.post('/api/upgrade', async (req, res) => {
 
 //  STATS 
 
-// POST /api/stats — no-op: los triggers actualizan Stats automáticamente
+// POST /api/stats — no-op: triggers update Stats automatically
 app.post('/api/stats', async (req, res) => {
     const { player_id } = req.body
     if (!player_id) return res.status(400).json({ error: 'player_id required' })
@@ -263,7 +262,7 @@ app.post('/api/stats', async (req, res) => {
 
 //  ADMIN
 
-// GET /api/admin/death-distribution — dificultad por level/horde
+// GET /api/admin/death-distribution — difficulty by level/horde
 app.get('/api/admin/death-distribution', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM v_death_distribution')
@@ -273,7 +272,7 @@ app.get('/api/admin/death-distribution', async (req, res) => {
     }
 })
 
-// GET /api/admin/death-rates — partidas jugadas vs muertes por level-horde (grouped bar)
+// GET /api/admin/death-rates — runs played vs deaths by level-horde (grouped bar)
 app.get('/api/admin/death-rates', async (req, res) => {
     try {
         const [rows] = await pool.query(`
@@ -300,7 +299,7 @@ app.get('/api/admin/death-rates', async (req, res) => {
     }
 })
 
-// GET /api/admin/most-upgraded-cards — meta del juego, cartas más populares
+// GET /api/admin/most-upgraded-cards — game meta, most popular cards
 app.get('/api/admin/most-upgraded-cards', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM v_most_upgraded_cards')
@@ -310,7 +309,7 @@ app.get('/api/admin/most-upgraded-cards', async (req, res) => {
     }
 })
 
-// GET /api/admin/horde-difficulty — tasa de completion por horde
+// GET /api/admin/horde-difficulty — completion rate per horde
 app.get('/api/admin/horde-difficulty', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM v_horde_difficulty')
@@ -320,7 +319,7 @@ app.get('/api/admin/horde-difficulty', async (req, res) => {
     }
 })
 
-// GET /api/admin/leaderboard — ranking global de jugadores
+// GET /api/admin/leaderboard — global player ranking
 app.get('/api/admin/leaderboard', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM v_global_leaderboard')
@@ -333,4 +332,4 @@ app.get('/api/admin/leaderboard', async (req, res) => {
 
 
 
-app.listen(3000, () => console.log('API corriendo en http://localhost:3000'))
+app.listen(3000, () => console.log('API running on http://localhost:3000'))

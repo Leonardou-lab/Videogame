@@ -1,6 +1,8 @@
-
-
 "use strict";
+
+// This file runs the main menu of the game.
+// It builds every screen the player sees before starting: the main menu, login, tutorial,
+// statistics, settings, and credits. It also handles login and signup with the server.
 
 const APP_CONFIG = {
     prototypeUrl: "../Videogame/index.html",
@@ -23,6 +25,7 @@ const appState = {
     },
 };
 
+// Reads the saved login from local storage and restores the session if there is one.
 (function restoreSession() {
     try {
         const saved = localStorage.getItem("cowardKingUser");
@@ -35,6 +38,7 @@ const appState = {
     } catch {}
 })();
 
+// Reads the saved volume settings from local storage so they carry over between sessions.
 (function restoreSettings() {
     try {
         const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
@@ -223,6 +227,7 @@ let chartDeathRates = null;
 let chartHordeComp = null;
 let chartUpgPop = null;
 
+// Builds and shows the main menu screen. Optionally opens a modal on top of it.
 function renderMenu(activeModal) {
     app.innerHTML = "";
 
@@ -245,6 +250,7 @@ function renderMenu(activeModal) {
     app.appendChild(screen);
 }
 
+// Creates the decorative castle background behind the menu.
 function createCastleScene() {
     const scene = document.createElement("div");
     scene.className = "castle-scene";
@@ -263,6 +269,7 @@ function createCastleScene() {
     return scene;
 }
 
+// Creates the login button in the corner. Shows the username if already logged in.
 function createLoginButton() {
     const login = document.createElement("div");
     login.className = "menu-login";
@@ -282,12 +289,14 @@ function createLoginButton() {
     return login;
 }
 
+// Creates the game title area in the center of the menu.
 function createBrand() {
     const brand = document.createElement("div");
     brand.className = "brand-stack";
     return brand;
 }
 
+// Creates the main navigation buttons: start, tutorial, stats, credits, and settings.
 function createMenuActions() {
     const actions = document.createElement("nav");
     actions.className = "menu-actions";
@@ -312,6 +321,7 @@ function createMenuActions() {
     return actions;
 }
 
+// Creates a single menu button with a label and a small icon.
 function menuButton(label, icon, primary, onClick) {
     const icons = {
         sword: "†",
@@ -331,6 +341,7 @@ function menuButton(label, icon, primary, onClick) {
 }
 
 
+// Returns an HTML string for a stat row with an icon, a label, and a value.
 function statRow(icon, label, value) {
     return `
         <div class="stat-row">
@@ -341,6 +352,7 @@ function statRow(icon, label, value) {
     `;
 }
 
+// Returns an HTML string for a detail row with a label and a value, used in stat tables.
 function detailRow(label, value) {
     return `
         <div class="detail-row">
@@ -351,6 +363,7 @@ function detailRow(label, value) {
     `;
 }
 
+// Wraps any content inside a modal panel with a title and a back button.
 function createModal(title, content) {
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop";
@@ -377,6 +390,7 @@ function createModal(title, content) {
     return backdrop;
 }
 
+// Builds the tutorial modal with all the game rules, controls, and card descriptions.
 function createTutorialModal() {
     const content = document.createElement("div");
     content.className = "tutorial-view";
@@ -563,6 +577,7 @@ function createTutorialModal() {
     return createModal("Learn The Rules", content);
 }
 
+// Builds the statistics modal with tabs for personal stats and admin data.
 function createOverviewModal() {
     const wrapper = document.createElement("div");
 
@@ -616,6 +631,7 @@ function createOverviewModal() {
     return createModal("Statistics", wrapper);
 }
 
+// Fetches the current player's stats from the server and puts them in the panel.
 function loadMyStatsPanel(container) {
     if (!appState.currentUser.player_id) {
         container.innerHTML = `
@@ -637,6 +653,7 @@ function loadMyStatsPanel(container) {
         });
 }
 
+// Renders the personal stats view with overview boxes, charts, and upgrade history.
 function renderMyStats(container, { overview, best_run, upgrades, run_history }) {
     const overviewBoxes = `
         <div class="stats-overview-boxes">
@@ -823,6 +840,7 @@ function renderMyStats(container, { overview, best_run, upgrades, run_history })
     }
 }
 
+// Fetches all the admin data from the server and passes it to the render function.
 function loadAdminPanel(container) {
     container.innerHTML = `<p style="color:#b89b67; font-size:13px;">Loading…</p>`;
 
@@ -839,6 +857,7 @@ function loadAdminPanel(container) {
         });
 }
 
+// Renders the admin panel with the leaderboard, death charts, horde stats, and upgrade popularity.
 function renderAdminPanel(container, leaderboard, deaths, hordes, cards, deathRates) {
     const leaderboardHtml = `
         <div class="stats-section">
@@ -1118,6 +1137,7 @@ function renderAdminPanel(container, leaderboard, deaths, hordes, cards, deathRa
     }
 }
 
+// Builds the settings modal with volume sliders for master, music, and sound effects.
 function createSettingsModal() {
     const content = document.createElement("div");
     content.className = "settings-grid";
@@ -1129,6 +1149,7 @@ function createSettingsModal() {
     return createModal("Settings", content);
 }
 
+// Creates a labeled volume slider that saves its value whenever the player moves it.
 function sliderRow(label, key) {
     const row = document.createElement("div");
     row.className = "setting-row";
@@ -1159,6 +1180,7 @@ function sliderRow(label, key) {
     return row;
 }
 
+// Builds the credits modal showing the team name and members.
 function createCreditsModal() {
     const content = document.createElement("div");
     content.className = "credits-list";
@@ -1173,6 +1195,7 @@ function createCreditsModal() {
     return createModal("Credits", content);
 }
 
+// Shows a small modal confirming the player is logged in, with a logout button.
 function createLoggedInModal() {
     const content = document.createElement("div");
     content.className = "detail-list";
@@ -1199,6 +1222,7 @@ function createLoggedInModal() {
     return createModal(`Logged in`, content);
 }
 
+// Builds the login and signup form. Handles both actions and saves the session on success.
 function createLoginModal() {
     const form = document.createElement("form");
     form.className = "login-form";

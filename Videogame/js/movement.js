@@ -1,7 +1,13 @@
 "use strict";
-// King and enemy movement, zone push
+
+// This file handles all movement on the board.
+// The king moves when the player clicks a tile, enemies move toward the king each turn,
+// and zone effects like Peace Treaty or Royal Curse are applied here too.
+
 Object.assign(Game.prototype, {
 
+    // Moves the king one tile in the given direction if the destination is free.
+    // The Royal Guard follows along automatically, and desperation resets on a successful move.
     tryMoveKing(rowDelta, colDelta) {
         if (!this.moveMode) return;
         if (Math.abs(rowDelta) > 1 || Math.abs(colDelta) > 1 || (rowDelta === 0 && colDelta === 0)) return;
@@ -36,8 +42,9 @@ Object.assign(Game.prototype, {
         this.addLog("The king runs with dignity.");
         this.endPlayerTurn();
     },
-// Enemy movement toward the king, with simple pathfinding that tries to move diagonally when possible
-// Enemies will never move into the safe zone around the king, but they can move around it
+
+    // Moves an enemy one step closer to the king, or toward a Decoy if one is on the board.
+    // Tries diagonal first, then straight. Never steps on the king's tile.
     moveEnemyTowardKing(enemy) {
         if (enemy.isBoss && enemy.moveEveryTurns > 0 && this.turn % enemy.moveEveryTurns !== 0) return;
         const decoy  = this.allies.find(a => a.cardName === "Decoy" && a.hp > 0);
@@ -62,7 +69,8 @@ Object.assign(Game.prototype, {
             }
         }
     },
-// Checks if moving a unit to a given tile would partially or fully cover the king, which is not allowed
+
+    // Returns true if placing a unit at the given tile would overlap the king's position.
     unitWouldCoverKing(unit, row, col) {
         const span = unit.tileSpan || 1;
         return this.king.row >= row &&
@@ -70,7 +78,8 @@ Object.assign(Game.prototype, {
             this.king.col >= col &&
             this.king.col < col + span;
     },
-// Pushes an enemy one tile away from the king if it's within a zone effect that has a push component 
+
+    // Pushes an enemy one tile away from the king, used when a zone effect knocks them back.
     pushEnemyAway(enemy) {
         const rowStep = Math.sign(enemy.row - this.king.row);
         const colStep = Math.sign(enemy.col - this.king.col);
@@ -81,7 +90,8 @@ Object.assign(Game.prototype, {
             enemy.setTile(row, col);
         }
     },
-// Checks if a tile is within the safe zone around the king
+
+    // Checks every enemy against active zone effects and marks them as slowed or cursed for this turn.
     applyZoneEffects() {
         for (const enemy of this.enemies) {
             enemy.slowedThisTurn = false;

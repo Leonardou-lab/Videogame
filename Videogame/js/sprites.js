@@ -1,6 +1,10 @@
 "use strict";
 
-// maps each entity type to its sprite sheet and how many frames the animation has
+// This file handles all the sprite loading and animation for units on the board.
+// Every entity has a sprite sheet defined here, and the drawing functions
+// figure out which frame to show based on how much time has passed.
+
+// Maps each unit type to its sprite sheet image and how many rows and columns of frames it has.
 const SPRITE_DEFS = {
     king:          { src: "Assets/sprites/King.png",          cols: 3, rows: 2 },
     skeleton:      { src: "Assets/sprites/Skeleton.png",      cols: 3, rows: 1 },
@@ -19,11 +23,12 @@ const SPRITE_DEFS = {
     braveking:     { src: "Assets/sprites/Brave King.png",    cols: 1, rows: 1 },
     tower:         { src: "Assets/sprites/Tower.png",         cols: 1, rows: 1 },
     decoy:         { src: "Assets/sprites/Decoy.png",         cols: 1, rows: 1 },
-    trench:        { src: "Assets/sprites/Trench.png",        cols: 1, rows: 1 }, 
+    trench:        { src: "Assets/sprites/Trench.png",        cols: 1, rows: 1 },
 };
 
 const spriteImages = {};
 
+// Loads all the sprite images into memory so they are ready when the game starts.
 function loadSprites() {
     for (const [key, def] of Object.entries(SPRITE_DEFS)) {
         const img = new Image();
@@ -32,35 +37,35 @@ function loadSprites() {
     }
 }
 
-// WeakMap so units get garbage collected normally when they leave the board
+// Stores the animation state for each unit. Uses a WeakMap so units are cleaned up automatically when removed.
 const unitAnims = new WeakMap();
-const ANIM_MS = 200; // ms per frame
+const ANIM_MS = 200;
 
-// starts a one-shot animation for a unit, optionally freezing on the last frame
+// Starts a one shot animation for a unit. If keepLastFrame is true it freezes on the last frame instead of resetting.
 function triggerUnitAnim(unit, keepLastFrame = false) {
     unitAnims.set(unit, { startMs: performance.now(), keepLastFrame });
 }
 
-// figures out which animation frame to show right now based on how much time has passed
+// Returns which animation frame a unit should show right now based on how much time has passed.
 function getUnitFrame(unit, totalFrames) {
     const state = unitAnims.get(unit);
-    if (!state) return 0; // no animation running, stay on frame 0
+    if (!state) return 0;
 
     const frameIndex = Math.floor((performance.now() - state.startMs) / ANIM_MS);
     if (frameIndex >= totalFrames) {
         if (state.keepLastFrame) return totalFrames - 1;
-        unitAnims.delete(unit); // done, back to idle
+        unitAnims.delete(unit);
         return 0;
     }
     return frameIndex;
 }
 
-// converts a unit type string into a valid SPRITE_DEFS key
+// Converts a unit type string into a key that matches SPRITE_DEFS by removing spaces and lowercasing.
 function spriteKey(type) {
     return type ? type.replace(/\s+/g, "").toLowerCase() : "";
 }
 
-// returns which column frame to show for the wall based on current HP
+// Returns which column frame to use for a wall based on how much HP it has left.
 function wallFrame(unit) {
     const pct = unit.maxHp > 0 ? unit.hp / unit.maxHp : 0;
     if (pct > 0.5)  return 0;
@@ -68,7 +73,7 @@ function wallFrame(unit) {
     return 2;
 }
 
-// draws the correct animation frame for a unit
+// Draws the current animation frame of a unit at its position on the board.
 function drawSprite(ctx, unit) {
     const key = spriteKey(unit.type);
     const def = SPRITE_DEFS[key];
@@ -98,7 +103,7 @@ function drawSprite(ctx, unit) {
     return true;
 }
 
-// draws a small HP bar under the unit sprite, color shifts from green to red as HP drops
+// Draws a small HP bar below a unit. The color goes from green to orange to red as HP drops.
 function drawHpBar(ctx, unit) {
     if (unit.type === "king" || unit.maxHp == null) return;
 
