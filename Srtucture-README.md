@@ -184,3 +184,103 @@ Videogame/
         └── videos/
             └── tutorial.mp4
 ```
+
+## Installation Process
+
+### Prerequisites
+
+Install the following software before running the project:
+
+- [Node.js](https://nodejs.org/) and npm.
+- [MySQL Community Server](https://dev.mysql.com/downloads/mysql/).
+- [MySQL Workbench](https://dev.mysql.com/downloads/workbench/) or another MySQL client.
+- A modern web browser such as Google Chrome, Microsoft Edge, or Firefox.
+- Python 3 or the Visual Studio Code Live Server extension to serve the frontend locally.
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Leonardou-lab/Videogame.git
+cd Videogame
+```
+
+### 2. Create the MySQL database
+
+1. Start MySQL Server and open MySQL Workbench.
+2. Open `Videogame/Database/coward_king.sql`.
+3. Execute the complete SQL script.
+
+The script creates the `coward_king` database, its tables, initial game data, views, triggers, and stored procedures.
+
+> Warning: the script begins with `DROP DATABASE IF EXISTS coward_king`. Running it again deletes and recreates any existing database with that name.
+
+### 3. Configure the database connection
+
+Open `Videogame/Database/server.js` and update the MySQL connection values for the local computer:
+
+```javascript
+const pool = mysql.createPool({
+    host: "127.0.0.1",
+    user: "root",
+    password: "YOUR_MYSQL_PASSWORD",
+    database: "coward_king",
+}).promise();
+```
+
+Use the MySQL username and password configured during the MySQL installation. These credentials are only for the local database and are different from the accounts created inside the game.
+
+### 4. Install and start the backend API
+
+Open a terminal from the repository root and run:
+
+```bash
+cd Videogame/Database
+npm install
+npm start
+```
+
+Keep this terminal open. A successful startup displays:
+
+```text
+API corriendo en http://localhost:3000
+```
+
+### 5. Start the frontend
+
+Open a second terminal at the repository root and run:
+
+```bash
+python3 -m http.server 5500
+```
+
+Then open the following address in the browser:
+
+```text
+http://localhost:5500/Videogame/indexMenu.html
+```
+
+Alternatively, use the Visual Studio Code Live Server extension to open `Videogame/indexMenu.html`.
+
+### 6. Create a game account
+
+1. Select **Login** in the main menu.
+2. Enter a new username and password.
+3. Select **Sign Up** to create the account.
+4. Use the same credentials to log in later.
+
+Do not use the MySQL root credentials as the game username and password.
+
+### 7. Verify the installation
+
+- The menu should load with music after the first browser interaction.
+- **Start Game** should open the game board.
+- The Cards endpoint should return JSON at `http://localhost:3000/api/cards`.
+- Login, statistics, upgrades, and run data require both MySQL Server and the backend API to remain active.
+
+### Troubleshooting
+
+- **Could not reach server:** confirm that `npm start` is still running in `Videogame/Database`.
+- **Access denied for user:** verify the MySQL username and password in `server.js`.
+- **Unknown database `coward_king`:** execute `coward_king.sql` in MySQL Workbench.
+- **Player not found:** create the game account with **Sign Up** before attempting to log in.
+- **Music does not start immediately:** click anywhere on the page; browsers block automatic audio until the first user interaction.
