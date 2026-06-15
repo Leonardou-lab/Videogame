@@ -7,8 +7,8 @@ The Coward King is a medieval pixel-art tactical survival game played on an 8x8 
 ```text
 Videogame/
 ├── README.md                         # Repository guide and installation steps
-├── TheCowardKing-GDD.md              # Original design document
-├── TheCowardKing-GDD-Updated.md      # GDD aligned with the current implementation
+├── TheCowardKing-GDD-FINAL.md        # Final unified GDD with repository guide and images
+├── TheCowardKing-GDD-FINAL.docx      # Editable Word version of the final unified GDD
 ├── .gitignore
 ├── .github/
 │   └── ISSUE_TEMPLATE/               # GitHub issue templates for team tracking
@@ -72,6 +72,12 @@ The files inside `activities/` document earlier coursework, experiments, and pro
 - `Start Game` opens `Videogame/index.html`.
 - The frontend expects the API at `http://localhost:3000`.
 - The game can use an 8-card fallback pool when the API is unavailable, but login, SQL statistics, persistent upgrades, and the full 15-card pool require the backend and MySQL.
+
+## Final Documentation
+
+- `TheCowardKing-GDD-FINAL.md` is the final Markdown source. It includes the complete GDD, card gallery, visual references, planned-versus-final comparisons, development schedule, repository organization, and installation process.
+- `TheCowardKing-GDD-FINAL.docx` contains the same final content and images in an editable Word document.
+- Earlier GDD files remain in the repository as development history and evidence of the project's evolution.
 
 ## Installation Process
 
