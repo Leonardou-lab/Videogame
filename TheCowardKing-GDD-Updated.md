@@ -2,6 +2,8 @@
 
 ## Game Design Document — Updated Version
 
+![The Coward King title logo](Videogame/Assets/images/title-logo.png)
+
 **Tactical Roguelite Board Game**
 
 | Game Title | The Coward King |
@@ -112,7 +114,7 @@ The game has three levels, each with several hordes and a final boss, for a tota
 | **On death** | Unspent gold and current run progress are lost. Purchased upgrades are kept. |
 | :---- | :---- |
 | **On completing a level** | Automatic progression to the next level (no automatic saving implemented). |
-| **Manual save** | The player can save at any time from the pause menu. |
+| **Manual save** | The pause menu stores a partial local snapshot and sends available statistics. Full Resume Game restoration is not implemented yet. |
 
 ### The Board (8×8)
 
@@ -173,7 +175,7 @@ The King starts on the center tile (row 4, column 4), and his 3×3 safe zone is 
 - At the start of each horde: receive random cards from the pool (3 in the introductory first horde of Level 1; 4 in the rest).
 - After winning a horde: choose 1 card from the previous hand to keep, then receive new random cards until the hand reaches 4.
 - Maximum hand size: 4 cards.
-- Played cards do not return to the hand until the next horde.
+- Cards are reusable during the current encounter. Playing a card spends AP and deselects it, but does not remove it from the hand.
 
 `[CHANGE]` **Placement limits by upgrade:** Ally-type cards with high upgrade levels have a limit on how many copies can be on the board simultaneously. At upgrade level 3, only 3 copies can be in play. At level 2, the maximum is 5 copies. No upgrade means no limit.
 
@@ -185,8 +187,8 @@ The King starts on the center tile (row 4, column 4), and his 3×3 safe zone is 
 
 | Card | Type | Cost (AP) | Stats | Effect |
 | :---- | :---- | :---- | :---- | :---- |
-| **Knight** | Allied Unit | 3 | 80 HP / 30 DMG | Melee. Attacks the nearest adjacent enemy. |
-| **Archer** | Allied Unit | 2 | 50 HP / 20 DMG | Stationary. Attacks the nearest enemy within range 3. |
+| **Knight** | Allied Unit | 2 | 80 HP / 30 DMG | Melee. Attacks the nearest adjacent enemy. |
+| **Archer** | Allied Unit | 3 | 50 HP / 20 DMG | Stationary. Attacks the nearest enemy within range 3. |
 | **Mage** | Allied Unit | 4 | 40 HP / 25 DMG | Attacks the nearest enemy within range 2. Fragile but powerful. |
 | **Pikeman** | Allied Unit | 2 | 60 HP / 15 DMG | Attacks the nearest enemy within range 1. |
 | **Wall** | Defense Unit | 3 | 150 HP / 0 DMG | Blocks the tile. Enemies must destroy it or go around it. Has 3 visual frames based on remaining HP. |
@@ -196,10 +198,23 @@ The King starts on the center tile (row 4, column 4), and his 3×3 safe zone is 
 | **Royal Guard** | Defense Unit | 2 | 90 HP / 0 DMG | Automatically follows the King every time he moves. |
 | **Trench** | Defense Unit | 1 | 40 HP / 0 DMG | Cheap barricade that blocks a tile. |
 | **Exile** | Trap | 2 | — | Trap: the enemy that steps on this tile is paralyzed for 2 turns. |
-| **`[CHANGE]` Bomb** | Zone | 4 | 40 DMG | Detonates when placed. Deals 40 damage to all enemies in a 3×3 area. Replaces “Royal Decree.” |
-| **Peace Treaty** | Zone | 2 | — | 3×3 zone. Freezes enemies inside the zone every turn for 4 turns. |
-| **Royal Curse** | Zone | 3 | — | 3×3 zone. Enemies inside deal 50% less damage for 5 turns. |
+| **`[CHANGE]` Bomb** | Zone | 4 | 100 DMG | Detonates when placed. Deals 100 damage to all enemies in a 3×3 area. Replaces “Royal Decree.” |
+| **Peace Treaty** | Zone | 3 | — | 3×3 zone. Freezes enemies inside the zone every turn for 4 turns. |
+| **Royal Curse** | Zone | 4 | — | 3×3 zone. Enemies inside deal 50% less damage for 5 turns. |
 | **Decoy** | Special Unit | 1 | 30 HP / 0 DMG | Enemies prioritize attacking the Decoy instead of the King. Cannot be upgraded. |
+
+### Card Artwork Gallery
+
+| | | | |
+| :---: | :---: | :---: | :---: |
+| ![Knight](Videogame/Assets/cards/Knight.png) | ![Archer](Videogame/Assets/cards/Archer.png) | ![Mage](Videogame/Assets/cards/Mage.png) | ![Pikeman](Videogame/Assets/cards/Pikeman.png) |
+| **Knight** | **Archer** | **Mage** | **Pikeman** |
+| ![Wall](Videogame/Assets/cards/Wall.png) | ![Squire](Videogame/Assets/cards/Squire.png) | ![Tower](Videogame/Assets/cards/Tower.png) | ![Guardian](Videogame/Assets/cards/Guardian.png) |
+| **Wall** | **Squire** | **Tower** | **Guardian** |
+| ![Royal Guard](<Videogame/Assets/cards/Royal Guard.png>) | ![Trench](Videogame/Assets/cards/Trench.png) | ![Exile](Videogame/Assets/cards/Exile.png) | ![Bomb](Videogame/Assets/cards/Bomb.png) |
+| **Royal Guard** | **Trench** | **Exile** | **Bomb** |
+| ![Peace Treaty](<Videogame/Assets/cards/Peace Treaty.png>) | ![Royal Curse](<Videogame/Assets/cards/Royal Curse.png>) | ![Decoy](Videogame/Assets/cards/Decoy.png) | |
+| **Peace Treaty** | **Royal Curse** | **Decoy** | |
 
 > **Implementation note about “Royal Decree”:** This card from the original GDD, which pushed enemies 1 tile per turn from a 3×3 zone, was discarded during development. Its push role was partially absorbed by the need to manage King movement through the Desperation system and by the Bomb card.
 
@@ -211,10 +226,10 @@ Only ally-type cards, excluding Decoy, can be upgraded. Upgrades are cumulative 
 
 | Upgrade Level | Gold Cost | Bonus | Example: Knight |
 | :---- | :---- | :---- | :---- |
-| **Base (Level 0)** | — | — | 80 HP / 30 DMG / 3 AP |
-| **Level 1** | 20 gold | +15 HP / +10 DMG | 95 HP / 40 DMG / 3 AP |
-| **Level 2** | 40 gold | +25 HP / +20 DMG / −1 AP | 105 HP / 50 DMG / 2 AP |
-| **Level 3** | 50 gold | +40 HP / +35 DMG / −1 AP | 120 HP / 65 DMG / 2 AP |
+| **Base (Level 0)** | — | — | 80 HP / 30 DMG / 2 AP |
+| **Level 1** | 20 gold | +15 HP / +10 DMG | 95 HP / 40 DMG / 2 AP |
+| **Level 2** | 40 gold | +25 HP / +20 DMG / −1 AP | 105 HP / 50 DMG / 1 AP |
+| **Level 3** | 50 gold | +40 HP / +35 DMG / −1 AP | 120 HP / 65 DMG / 1 AP |
 
 Upgrades must be progressive. The player cannot jump directly from Level 1 to Level 3.
 
@@ -248,7 +263,7 @@ Upgrades must be progressive. The player cannot jump directly from Level 1 to Le
 - At the start of combat, the boss occupies a 2×2 area at the top of the board.
 - **Summoning:** The boss summons an additional enemy every 2 turns.
 - **Movement:** The boss advances 1 tile toward the King every 3 turns.
-- The cycle continues until the boss is defeated or reaches the King.
+- The cycle continues until the boss is defeated or its 2×2 body creates enough pressure inside the safe zone to trigger defeat. Direct contact alone is not a separate loss condition.
 - Bosses count as 2 pressure inside the safe zone.
 - Boss encounters have no turn limit: the player must defeat the boss to win.
 - Boss encounters do not generate obstacles in order to provide enough space for the 2×2 boss.
@@ -360,6 +375,10 @@ Each level has its own background image:
 - **Level 2 Ogre Dungeon:** `Assets/Level2.png`
 - **Level 3 Brave King’s Castle:** `Assets/Level3.png`
 
+| Level 1 — Catacombs | Level 2 — Ogre Dungeon | Level 3 — Brave King's Castle |
+| :---: | :---: | :---: |
+| ![Level 1 Catacombs](Videogame/Assets/Level1.png) | ![Level 2 Ogre Dungeon](Videogame/Assets/Level2.png) | ![Level 3 Brave King's Castle](Videogame/Assets/Level3.png) |
+
 ---
 
 ## 2.6 References
@@ -384,7 +403,7 @@ First screen when opening the game. It contains:
 
 1. **Login/User Button**
    - Allows the player to create an account or log in with username and password.
-   - Stores the player’s progress, statistics, and upgrades.
+   - Stores the player identity, statistics, run records, and purchased upgrades through the API. Full board-state restoration is not implemented.
    - Guest mode available (without server persistence).
    - Option to register as Administrator (with access to the admin statistics panel).
 
@@ -497,7 +516,7 @@ New mechanic not described in the original GDD:
 - “Ally” cards create an allied unit on the chosen tile.
 - “Trap” cards (Exile) create a trap effect on the chosen tile.
 - “Zone” cards (Peace Treaty, Royal Curse) create a zone effect.
-- `[NEW]` “Zone” cards named “Bomb” detonate immediately when placed, dealing AOE damage without leaving a permanent effect.
+- `[NEW]` The “Bomb” zone card detonates immediately when placed, dealing 100 AOE damage without leaving a permanent effect when cards are loaded from SQL. The offline fallback still uses an older 40-damage value.
 - Cards cannot be placed on occupied tiles or tiles with active effects.
 
 ### King Movement
@@ -529,8 +548,9 @@ New mechanic not described in the original GDD:
 
 ### Save System
 
-- **Manual save:** The player can save from the pause menu. It saves the current position, gold, AP, level, horde, hand, and upgrades in localStorage.
-- **No automatic level save** (the original GDD described auto-saving when completing levels, but it was not implemented).
+- **Pause-menu snapshot:** The “Save Stats” button writes a partial snapshot to `localStorage`, including level, horde, AP, gold, hand names, King position, Desperation, and upgrades.
+- **Current limitation:** No loader reconstructs the complete board, allies, enemies, effects, obstacles, or active turn from that snapshot. Therefore, full Resume Game behavior is not implemented.
+- **Database persistence:** Logged-in users can persist statistics, run progress events, and upgrades through the API, but this is not a complete gameplay checkpoint.
 
 ### Ally Movement (Revised)
 
@@ -838,6 +858,8 @@ Methods:
 
 - `Assets/Level1.png`, `Level2.png`, `Level3.png`
 
+![Main menu background](Videogame/Assets/images/menu-background.png)
+
 ---
 
 # 7. Sounds / Music
@@ -908,7 +930,7 @@ Music changes automatically when entering a new level. The main menu plays a ran
 
 ### Guest Mode
 
-The game works completely without an active server. If data loading from the server fails, default values from the local `cardPool` are used (8 backup cards), and upgrades are saved only in session memory.
+The core game remains playable without an active server. If card loading fails, the local `cardPool` supplies 8 fallback cards. Authentication, database statistics, database-backed upgrades, and full 15-card SQL data require the backend and MySQL. Local volume settings and the partial pause snapshot use `localStorage`; fallback upgrades otherwise remain in runtime memory.
 
 ### Global Statistics (Admin Panel)
 
@@ -957,7 +979,7 @@ Available only to users with `is_admin = true`:
 - HUD with real-time information.
 - Animated Desperation Panel with reactive images.
 - Upgrade overlay with stat preview.
-- Pause menu with manual save.
+- Pause menu with partial local snapshot and statistics save; full restore remains pending.
 - Final victory screen.
 
 ### 7. Roguelite System
