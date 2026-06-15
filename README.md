@@ -7,8 +7,6 @@ The Coward King is a medieval pixel-art tactical survival game played on an 8x8 
 ```text
 Videogame/
 ├── README.md                         # Repository guide and installation steps
-├── TheCowardKing-GDD.md              # Original design document
-├── TheCowardKing-GDD-Updated.md      # GDD aligned with the current implementation
 ├── TheCowardKing-GDD-FINAL.md        # Final unified GDD with repository guide and images
 ├── TheCowardKing-GDD-FINAL.docx      # Editable Word version of the final unified GDD
 ├── .gitignore
