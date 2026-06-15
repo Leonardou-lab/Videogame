@@ -1,6 +1,8 @@
 # THE COWARD KING
 
-## Game Design Document — Versión Actualizada
+## Game Design Document — Updated Version
+
+![The Coward King title logo](Videogame/Assets/images/title-logo.png)
 
 **Tactical Roguelite Board Game**
 
@@ -8,336 +10,349 @@
 | :---- | :---- |
 | **Genre** | Roguelite Tactical Turn-Based Board Game |
 | **Platform** | PC (Desktop / Web Browser) |
-| **Target Audience** | Strategy & roguelite fans, 12+ |
+| **Target Audience** | Strategy & roguelite fans, ages 12+ |
 | **Team Size/Name** | 3 developers — Silent Crown |
-| **Document Status** | Versión final actualizada conforme al programa implementado |
+| **Document Status** | Final version updated according to the implemented program |
 | **Authors** | José Abel Domínguez Rish A01781852 · Leonardo André Flores Mendoza A01787221 · Nicolás Casillas Larrañaga A01787292 |
 
 ---
 
-> **Nota sobre este documento:** Este GDD refleja el estado real del juego implementado. Las diferencias con respecto al GDD original se marcan con `[CAMBIO]`. Las secciones que permanecieron iguales se conservan íntegras.
+> **Note about this document:** This GDD reflects the actual state of the implemented game. Differences from the original GDD are marked with `[CHANGE]`. Sections that remained the same are preserved in full.
 
 ---
 
-# 1. Índice
+# 1. Index
 
-1. Índice
+1. Index
 2. Game Design
-   - 2.0 Historia
-   - 2.1 Resumen
+   - 2.0 Story
+   - 2.1 Overview
    - 2.2 Gameplay
    - 2.3 Mindset
-   - 2.4 Elementos Roguelite y TCG
-   - 2.5 Estilo Visual
-   - 2.6 Referencias
+   - 2.4 Roguelite and TCG Elements
+   - 2.5 Visual Style
+   - 2.6 References
 3. Technical
-   - 3.1 Pantallas
-   - 3.2 Controles
-   - 3.3 Mecánicas
+   - 3.1 Screens
+   - 3.2 Controls
+   - 3.3 Mechanics
 4. Level Design
-   - 4.1 Temas
-   - 4.2 Flujo de Juego
+   - 4.1 Themes
+   - 4.2 Game Flow
 5. Development
-   - 5.1 Clases Abstractas
-   - 5.2 Clases Derivadas
+   - 5.1 Abstract Classes
+   - 5.2 Derived Classes
 6. Graphics
 7. Sounds / Music
-8. Backend y Base de Datos
-9. Programa de Desarrollo
+8. Backend and Database
+9. Development Schedule
 
 ---
 
 # 2. Game Design
 
-## 2.0 Historia
+## 2.0 Story
 
-El Reino de Velundra ha conocido a muchos reyes. Reyes valientes. Reyes feroces. Reyes que cargaron de frente a la batalla, espada en alto, y murieron antes de que sus coronas tuvieran tiempo de perder el brillo.
+The Kingdom of Velundra has known many kings. Brave kings. Fierce kings. Kings who charged headfirst into battle, sword raised high, and died before their crowns even had time to lose their shine.
 
-Luego llegó el Rey Aldric el Prudente, y todo cambió.
+Then came King Aldric the Prudent, and everything changed.
 
-Aldric no nació guerrero. Nació estratega. Mientras otros reyes entrenaban sus cuerpos, Aldric entrenó su mente, su lengua y su red de súbditos leales. Cuando la Horda de Esqueletos surgió de las Catacumbas bajo el reino, cada asesor esperaba que marchara. En cambio, Aldric se retiró al centro de su sala de guerra, invocó sus cartas y comenzó a pensar.
+Aldric was not born a warrior. He was born a strategist. While other kings trained their bodies, Aldric trained his mind, his tongue, and his network of loyal subjects. When the Skeleton Horde rose from the Catacombs beneath the kingdom, every advisor expected him to march. Instead, Aldric retreated to the center of his war room, summoned his cards, and began to think.
 
-Sus enemigos lo llamaron cobardía. Su pueblo lo llamó genio.
+His enemies called it cowardice. His people called it genius.
 
-Ahora Aldric debe hacer lo que mejor sabe: sobrevivir. No luchando, no huyendo. Sino siendo la persona más inteligente del tablero.
+Now Aldric must do what he does best: survive. Not by fighting, not by fleeing, but by being the smartest person on the board.
 
-El rey cobarde no huye porque tiene miedo. Huye porque ya está tres movimientos adelante.
+The coward king does not run because he is afraid. He runs because he is already three moves ahead.
 
 ---
 
-## 2.1 Resumen
+## 2.1 Overview
 
-### Descripción Básica del Juego
+### Basic Game Description
 
-The Coward King es un juego roguelite altamente táctico, jugado sobre un tablero de 8×8 (similar en tamaño a un tablero de ajedrez). El juego gira en torno a un rey que es a la vez el más poderoso y el más vulnerable del tablero: no puede defenderse directamente, sino que usa una mano de cartas para desplegar aliados y trampas políticas que lo protejan.
+The Coward King is a highly tactical roguelite game played on an 8×8 board, similar in size to a chessboard. The game revolves around a king who is both the most powerful and the most vulnerable piece on the board: he cannot defend himself directly, so he uses a hand of cards to deploy allies and political traps that protect him.
 
-El objetivo del juego es que el Rey sobreviva la cantidad de turnos indicados por horda sin que la **presión** en su zona segura 3×3 alcance o supere 2. Un enemigo normal cuenta como 1 de presión; un jefe cuenta como 2.
+The objective of the game is for the King to survive the required number of turns in each horde without allowing the **pressure** inside his 3×3 safe zone to reach or exceed 2. A normal enemy counts as 1 pressure; a boss counts as 2.
 
-El juego tiene tres niveles, cada uno con varias hordas y un jefe final, para un total de 12 encuentros. Como en todo buen roguelite, si el Rey cae la partida regresa al Nivel 1 Horda 1, pero conserva las mejoras permanentes compradas con el oro ganado.
+The game has three levels, each with several hordes and a final boss, for a total of 12 encounters. As in any good roguelite, if the King falls, the run returns to Level 1 Horde 1, but permanent upgrades purchased with earned gold are kept.
 
-`[CAMBIO]` **Condición de derrota revisada:** En el GDD original se indicaba que el Rey perdía si un enemigo lo "tocaba". En la implementación final, la derrota ocurre cuando la presión acumulada de enemigos dentro de la zona segura 3×3 llega a 2 o más, sin importar si el Rey fue tocado directamente. Los jefes cuentan como 2 de presión por sí solos.
+`[CHANGE]` **Revised defeat condition:** The original GDD stated that the King would lose if an enemy “touched” him. In the final implementation, defeat occurs when the accumulated enemy pressure inside the 3×3 safe zone reaches 2 or more, regardless of whether the King was directly touched. Bosses count as 2 pressure by themselves.
 
 ### Design Model: Roguelite
 
-- **Mejoras permanentes:** Las mejoras de cartas (+daño, +HP, −coste AP) compradas con oro sobreviven a la muerte. Cada intento es más fuerte que el anterior.
-- **`[CAMBIO]` Sistema de checkpoint:** La muerte regresa al jugador siempre al Nivel 1 Horda 1, no al inicio del nivel donde murió como se planeó originalmente.
-- **Mano aleatoria:** Se reparten cartas al azar de un pool al inicio de cada horda, generando variación entre intentos.
-- **Sesiones cortas:** Cada horda tiene un límite de turnos variable (más adelante detallado). El juego completo toma 1–3 horas.
-- **Bucle "una partida más":** La combinación de manos aleatorias, mejoras permanentes y el medidor de Desesperación crea el bucle compulsivo del género.
+- **Permanent upgrades:** Card upgrades (+damage, +HP, −AP cost) purchased with gold survive death. Each attempt is stronger than the previous one.
+- **`[CHANGE]` Checkpoint system:** Death always returns the player to Level 1 Horde 1, not to the beginning of the current level as originally planned.
+- **Random hand:** Random cards are dealt from a pool at the start of each horde, generating variation between attempts.
+- **Short sessions:** Each horde has a variable turn limit, detailed later. A full game takes 1–3 hours.
+- **“One more run” loop:** The combination of random hands, permanent upgrades, and the Desperation meter creates the genre’s compulsive loop.
 
 ---
 
 ## 2.2 Gameplay
 
-### Objetivo
+### Objective
 
-**Victoria (por horda):** Sobrevivir los turnos requeridos sin que la presión en la zona segura del Rey alcance 2 o más.
+**Victory by horde:** Survive the required turns without the pressure in the King’s safe zone reaching 2 or more.
 
-**Derrota:** La presión en la zona segura alcanza 2 o más, O la Desesperación del Rey alcanza 4.
+**Defeat:** The pressure in the safe zone reaches 2 or more, OR the King’s Desperation reaches 4.
 
-**Victoria total:** Completar los 3 niveles (3 hordas + 1 jefe cada uno) = 12 encuentros superados.
+**Total victory:** Complete all 3 levels (3 hordes + 1 boss each) = 12 encounters cleared.
 
-### Estructura de Niveles
+### Level Structure
 
-| Nivel | Encuentros | Turno límite por horda |
+| Level | Encounters | Turn limit per horde |
 | :---- | :---- | :---- |
-| **Nivel 1** | Horda 1 / Horda 2 / Horda 3 / Jefe: Skeleton King | 10 / 15 / 20 / sin límite |
-| **Nivel 2** | Horda 1 / Horda 2 / Horda 3 / Jefe: Ogre Boss | 20 / 26 / 32 / sin límite |
-| **Nivel 3** | Horda 1 / Horda 2 / Horda 3 / Jefe: Brave King | 20 / 28 / 34 / sin límite |
+| **Level 1** | Horde 1 / Horde 2 / Horde 3 / Boss: Skeleton King | 10 / 15 / 20 / no limit |
+| **Level 2** | Horde 1 / Horde 2 / Horde 3 / Boss: Ogre Boss | 20 / 26 / 32 / no limit |
+| **Level 3** | Horde 1 / Horde 2 / Horde 3 / Boss: Brave King | 20 / 28 / 34 / no limit |
 
-`[CAMBIO]` **Límite de turnos:** El GDD original establecía 30 turnos fijos para todas las hordas. La implementación final usa límites variables y escalonados según la horda y el nivel (mostrados arriba). Los encuentros con jefes no tienen límite de turnos; deben ganarse derrotando al jefe.
+`[CHANGE]` **Turn limit:** The original GDD established a fixed 30-turn limit for all hordes. The final implementation uses variable and progressive limits based on the horde and level, shown above. Boss encounters do not have a turn limit; they must be won by defeating the boss.
 
-`[CAMBIO]` **Checkpoint al morir:** El GDD original especificaba que la muerte en Nivel 2 regresaba al jugador al inicio del Nivel 2. En la implementación final, toda derrota regresa al Nivel 1 Horda 1.
+`[CHANGE]` **Checkpoint on death:** The original GDD specified that death in Level 2 would return the player to the beginning of Level 2. In the final implementation, every defeat returns the player to Level 1 Horde 1.
 
-| **Al morir** | Se pierden el oro no gastado y el progreso del intento actual. Las mejoras compradas se conservan. |
+| **On death** | Unspent gold and current run progress are lost. Purchased upgrades are kept. |
 | :---- | :---- |
-| **Al completar nivel** | Progresión automática al siguiente nivel (sin guardado automático implementado). |
-| **Guardado manual** | El jugador puede guardar en cualquier momento desde el menú de pausa. |
+| **On completing a level** | Automatic progression to the next level (no automatic saving implemented). |
+| **Manual save** | The pause menu stores a partial local snapshot and sends available statistics. Full Resume Game restoration is not implemented yet. |
 
-### El Tablero (8×8)
+### The Board (8×8)
 
-El tablero se organiza en una cuadrícula de 8 filas × 8 columnas (64 casillas en total). Las casillas pueden contener:
+The board is organized as an 8-row × 8-column grid, for a total of 64 tiles. Tiles can contain:
 
-- El Rey (exactamente 1 en todo momento)
-- Una unidad aliada (Knight, Archer, Mage, etc.)
-- Una unidad enemiga
-- Un efecto de carta (trampa o zona)
-- Un obstáculo inamovible (escombros)
-- Espacio vacío
+- The King (exactly 1 at all times)
+- One allied unit (Knight, Archer, Mage, etc.)
+- One enemy unit
+- A card effect (trap or zone)
+- An immovable obstacle (debris)
+- Empty space
 
-El Rey comienza en la casilla central (fila 4, columna 4), y su zona segura 3×3 es dinámica y se mueve con él.
+The King starts on the center tile (row 4, column 4), and his 3×3 safe zone is dynamic and moves with him.
 
-`[CAMBIO]` **Obstáculos inamovibles:** Las hordas más avanzadas generan obstáculos aleatorios en el tablero (escombros, mobiliario roto). Estos bloquean el movimiento y la colocación de cartas. Los encuentros con jefes no generan obstáculos. La cantidad de obstáculos por horda es la siguiente:
+`[CHANGE]` **Immovable obstacles:** More advanced hordes generate random obstacles on the board (debris, broken furniture). These block movement and card placement. Boss encounters do not generate obstacles. The number of obstacles per horde is as follows:
 
-| Nivel | Horda 1 | Horda 2 | Horda 3 |
+| Level | Horde 1 | Horde 2 | Horde 3 |
 | :---- | :---- | :---- | :---- |
 | **1** | 0 | 2 | 4 |
 | **2** | 2 | 4 | 6 |
 | **3** | 2 | 3 | 4 |
 
-`[CAMBIO]` **Bordes de aparición de enemigos:** Los enemigos aparecen en bordes del tablero que se expanden con la dificultad:
+`[CHANGE]` **Enemy spawn edges:** Enemies appear on board edges that expand as difficulty increases:
 
-| Nivel | Horda 1 | Horda 2 | Horda 3 |
+| Level | Horde 1 | Horde 2 | Horde 3 |
 | :---- | :---- | :---- | :---- |
-| **1** | Solo top | Top, izq, der | Top, izq, der, abajo |
-| **2** | Top, izq | Top, izq, der | Top, izq, der, abajo |
-| **3** | Top, izq, der | Top, izq, der, abajo | Top, izq, der, abajo |
+| **1** | Top only | Top, left, right | Top, left, right, bottom |
+| **2** | Top, left | Top, left, right | Top, left, right, bottom |
+| **3** | Top, left, right | Top, left, right, bottom | Top, left, right, bottom |
 
-### Sistema de Turnos
+### Turn System
 
-| Fase 1 — Jugador | Elige UNA acción principal: jugar carta(s) (gastando AP) O mover al Rey. Abrir mejoras NO consume el turno. |
+| Phase 1 — Player | Chooses ONE main action: play card(s) by spending AP OR move the King. Opening upgrades does NOT consume the turn. |
 | :---- | :---- |
-| **Fase 2 — Enemigos** | Los enemigos se mueven hacia el Rey. Las unidades aliadas atacan automáticamente si hay un enemigo en rango. |
-| **Límite de turnos** | Variable por horda (ver tabla de niveles). Sobrevivir los turnos = victoria automática de esa horda. |
-| **`[CAMBIO]` Orden de combate** | En la Horda 1 del Nivel 1, los aliados atacan antes que los enemigos. A partir de la Horda 2 y en todos los encuentros con jefes, los enemigos actúan primero, haciendo las posiciones más peligrosas. |
+| **Phase 2 — Enemies** | Enemies move toward the King. Allied units automatically attack if an enemy is in range. |
+| **Turn limit** | Variable by horde (see level table). Surviving the required turns = automatic victory for that horde. |
+| **`[CHANGE]` Combat order** | In Horde 1 of Level 1, allies attack before enemies. Starting in Horde 2, and in all boss encounters, enemies act first, making positions more dangerous. |
 
-### Acciones del Jugador (elegir UNA por turno)
+### Player Actions (choose ONE per turn)
 
-- **Jugar Carta(s):** Gastar AP para invocar unidades o colocar efectos. Se pueden jugar múltiples cartas en un turno si hay AP suficiente. No se puede colocar en casillas ocupadas u obstruidas.
-- **Mover al Rey:** El Rey se mueve como el rey del ajedrez — 1 casilla en cualquiera de las 8 direcciones. No puede moverse a casillas ocupadas por aliados, enemigos u obstáculos. La zona segura se mueve con él. Mover al Rey **reinicia la Desesperación** a 0.
-- **Mejorar Cartas (sin coste de turno):** Accesible desde el menú de mejoras durante el turno del jugador. Cuesta oro (20-50 por mejora). Las mejoras son permanentes entre muertes.
+- **Play Card(s):** Spend AP to summon units or place effects. Multiple cards can be played in one turn if there is enough AP. Cards cannot be placed on occupied or obstructed tiles.
+- **Move the King:** The King moves like the king in chess — 1 tile in any of the 8 directions. He cannot move onto tiles occupied by allies, enemies, or obstacles. The safe zone moves with him. Moving the King **resets Desperation** to 0.
+- **Upgrade Cards (does not cost a turn):** Accessible from the upgrade menu during the player’s turn. Costs gold (20–50 per upgrade). Upgrades are permanent between deaths.
 
-### Sistema de Recursos
+### Resource System
 
-| AP inicial | 5 por horda |
+| Starting AP | 5 per horde |
 | :---- | :---- |
-| **`[CAMBIO]` Recuperación de AP** | Si el Rey NO se mueve durante el turno, se gana +1 AP al final del turno. Si el Rey se mueve, no se gana AP. |
-| **`[CAMBIO]` AP máximo** | Limitado a 5 en todo momento (no ilimitado como se indicó originalmente). |
-| **Coste de cartas** | 1 a 4 AP según el poder de la carta. |
-| **Oro por horda** | 10 oro al ganar una horda normal. |
-| **`[CAMBIO]` Oro por jefe** | 25 oro al derrotar a un jefe (no se mencionaba en el GDD original). |
-| **Oro al morir** | El oro no gastado se pierde. Las mejoras compradas se conservan. |
+| **`[CHANGE]` AP recovery** | If the King does NOT move during the turn, +1 AP is gained at the end of the turn. If the King moves, no AP is gained. |
+| **`[CHANGE]` Maximum AP** | Limited to 5 at all times (not unlimited as originally stated). |
+| **Card cost** | 1 to 4 AP depending on the card’s power. |
+| **Gold per horde** | 10 gold for winning a normal horde. |
+| **`[CHANGE]` Gold per boss** | 25 gold for defeating a boss (not mentioned in the original GDD). |
+| **Gold on death** | Unspent gold is lost. Purchased upgrades are kept. |
 
-### Sistema de Cartas — Mecánica de Mano
+### Card System — Hand Mechanic
 
-- Al inicio de cada horda: recibir cartas aleatorias del pool (3 en la primera horda introductoria del Nivel 1; 4 en el resto).
-- Al ganar una horda: elegir 1 carta de la mano anterior para conservar, luego recibir cartas nuevas aleatorias hasta completar 4.
-- Tamaño máximo de mano: 4 cartas.
-- Las cartas jugadas no regresan a la mano hasta la siguiente horda.
+- At the start of each horde: receive random cards from the pool (3 in the introductory first horde of Level 1; 4 in the rest).
+- After winning a horde: choose 1 card from the previous hand to keep, then receive new random cards until the hand reaches 4.
+- Maximum hand size: 4 cards.
+- Cards are reusable during the current encounter. Playing a card spends AP and deselects it, but does not remove it from the hand.
 
-`[CAMBIO]` **Límites de colocación por mejora:** Las cartas de tipo aliado con altos niveles de mejora tienen un límite de cuántas copias pueden estar en el tablero simultáneamente. A nivel de mejora 3, solo se pueden tener 3 copias en juego. A nivel 2, máximo 5 copias. Sin mejora, sin límite.
+`[CHANGE]` **Placement limits by upgrade:** Ally-type cards with high upgrade levels have a limit on how many copies can be on the board simultaneously. At upgrade level 3, only 3 copies can be in play. At level 2, the maximum is 5 copies. No upgrade means no limit.
 
 ---
 
-### Pool Completo de Cartas (15 Cartas)
+### Complete Card Pool (15 Cards)
 
-`[CAMBIO]` **El pool original contemplaba "Royal Decree" (empuje 3×3). En la implementación final, esta carta fue reemplazada por "Bomb" (daño masivo en área 3×3).** El resto de las cartas se conservó con ajustes menores de coste.
+`[CHANGE]` **The original pool included “Royal Decree” (3×3 push). In the final implementation, this card was replaced by “Bomb” (massive 3×3 area damage).** The rest of the cards were preserved with minor cost adjustments.
 
-| Carta | Tipo | Coste (AP) | Stats | Efecto |
+| Card | Type | Cost (AP) | Stats | Effect |
 | :---- | :---- | :---- | :---- | :---- |
-| **Knight** | Unidad Aliada | 3 | 80 HP / 30 DMG | Melé. Ataca al enemigo adyacente más cercano. |
-| **Archer** | Unidad Aliada | 2 | 50 HP / 20 DMG | Estacionario. Ataca al enemigo más cercano en rango 3. |
-| **Mage** | Unidad Aliada | 4 | 40 HP / 25 DMG | Ataca al enemigo más cercano en rango 2. Frágil pero poderoso. |
-| **Pikeman** | Unidad Aliada | 2 | 60 HP / 15 DMG | Ataca al enemigo más cercano en rango 1. |
-| **Wall** | Unidad de Defensa | 3 | 150 HP / 0 DMG | Bloquea la casilla. Los enemigos deben destruirla o rodearla. Tiene 3 frames visuales según HP restante. |
-| **Squire** | Unidad de Defensa | 2 | 70 HP / 10 DMG | Reduce un 50% el daño a aliados adyacentes. |
-| **Tower** | Unidad de Defensa | 4 | 100 HP / 35 DMG | Estacionario. Ataca en rango 4. |
-| **Guardian** | Unidad de Defensa | 3 | 120 HP / 25 DMG | Unidad tanque. Absorbe mucho daño. |
-| **Royal Guard** | Unidad de Defensa | 2 | 90 HP / 0 DMG | Sigue al Rey automáticamente cada vez que se mueve. |
-| **Trench** | Unidad de Defensa | 1 | 40 HP / 0 DMG | Barricada barata que bloquea casilla. |
-| **Exile** | Trampa | 2 | — | Trampa: el enemigo que pise esta casilla queda paralizado 2 turnos. |
-| **`[CAMBIO]` Bomb** | Zona | 4 | 40 DMG | Se detona al colocarse. 40 de daño a todos los enemigos en 3×3. Reemplaza a "Royal Decree". |
-| **Peace Treaty** | Zona | 2 | — | Zona 3×3. Congela a los enemigos dentro de la zona cada turno durante 4 turnos. |
-| **Royal Curse** | Zona | 3 | — | Zona 3×3. Los enemigos dentro reciben 50% menos daño durante 5 turnos. |
-| **Decoy** | Unidad Especial | 1 | 30 HP / 0 DMG | Los enemigos priorizan atacar al Decoy en lugar de al Rey. No se puede mejorar. |
+| **Knight** | Allied Unit | 2 | 80 HP / 30 DMG | Melee. Attacks the nearest adjacent enemy. |
+| **Archer** | Allied Unit | 3 | 50 HP / 20 DMG | Stationary. Attacks the nearest enemy within range 3. |
+| **Mage** | Allied Unit | 4 | 40 HP / 25 DMG | Attacks the nearest enemy within range 2. Fragile but powerful. |
+| **Pikeman** | Allied Unit | 2 | 60 HP / 15 DMG | Attacks the nearest enemy within range 1. |
+| **Wall** | Defense Unit | 3 | 150 HP / 0 DMG | Blocks the tile. Enemies must destroy it or go around it. Has 3 visual frames based on remaining HP. |
+| **Squire** | Defense Unit | 2 | 70 HP / 10 DMG | Reduces damage to adjacent allies by 50%. |
+| **Tower** | Defense Unit | 4 | 100 HP / 35 DMG | Stationary. Attacks at range 4. |
+| **Guardian** | Defense Unit | 3 | 120 HP / 25 DMG | Tank unit. Absorbs a lot of damage. |
+| **Royal Guard** | Defense Unit | 2 | 90 HP / 0 DMG | Automatically follows the King every time he moves. |
+| **Trench** | Defense Unit | 1 | 40 HP / 0 DMG | Cheap barricade that blocks a tile. |
+| **Exile** | Trap | 2 | — | Trap: the enemy that steps on this tile is paralyzed for 2 turns. |
+| **`[CHANGE]` Bomb** | Zone | 4 | 100 DMG | Detonates when placed. Deals 100 damage to all enemies in a 3×3 area. Replaces “Royal Decree.” |
+| **Peace Treaty** | Zone | 3 | — | 3×3 zone. Freezes enemies inside the zone every turn for 4 turns. |
+| **Royal Curse** | Zone | 4 | — | 3×3 zone. Enemies inside deal 50% less damage for 5 turns. |
+| **Decoy** | Special Unit | 1 | 30 HP / 0 DMG | Enemies prioritize attacking the Decoy instead of the King. Cannot be upgraded. |
 
-> **Nota de implementación sobre "Royal Decree":** Esta carta del GDD original (empujaba a los enemigos 1 casilla por turno desde una zona 3×3) fue descartada durante el desarrollo. Su rol de empuje fue parcialmente absorbido por la necesidad de gestionar el movimiento del Rey (Desesperación) y la Bomb.
+### Card Artwork Gallery
+
+| | | | |
+| :---: | :---: | :---: | :---: |
+| ![Knight](Videogame/Assets/cards/Knight.png) | ![Archer](Videogame/Assets/cards/Archer.png) | ![Mage](Videogame/Assets/cards/Mage.png) | ![Pikeman](Videogame/Assets/cards/Pikeman.png) |
+| **Knight** | **Archer** | **Mage** | **Pikeman** |
+| ![Wall](Videogame/Assets/cards/Wall.png) | ![Squire](Videogame/Assets/cards/Squire.png) | ![Tower](Videogame/Assets/cards/Tower.png) | ![Guardian](Videogame/Assets/cards/Guardian.png) |
+| **Wall** | **Squire** | **Tower** | **Guardian** |
+| ![Royal Guard](<Videogame/Assets/cards/Royal Guard.png>) | ![Trench](Videogame/Assets/cards/Trench.png) | ![Exile](Videogame/Assets/cards/Exile.png) | ![Bomb](Videogame/Assets/cards/Bomb.png) |
+| **Royal Guard** | **Trench** | **Exile** | **Bomb** |
+| ![Peace Treaty](<Videogame/Assets/cards/Peace Treaty.png>) | ![Royal Curse](<Videogame/Assets/cards/Royal Curse.png>) | ![Decoy](Videogame/Assets/cards/Decoy.png) | |
+| **Peace Treaty** | **Royal Curse** | **Decoy** | |
+
+> **Implementation note about “Royal Decree”:** This card from the original GDD, which pushed enemies 1 tile per turn from a 3×3 zone, was discarded during development. Its push role was partially absorbed by the need to manage King movement through the Desperation system and by the Bomb card.
 
 ---
 
-### Mejoras de Cartas con Oro
+### Card Upgrades with Gold
 
-Solo las cartas de tipo aliado (excluyendo Decoy) son mejorables. Las mejoras son acumulativas desde el nivel base.
+Only ally-type cards, excluding Decoy, can be upgraded. Upgrades are cumulative from the base level.
 
-| Nivel de Mejora | Coste en Oro | Bonificación | Ejemplo: Knight |
+| Upgrade Level | Gold Cost | Bonus | Example: Knight |
 | :---- | :---- | :---- | :---- |
-| **Base (Nivel 0)** | — | — | 80 HP / 30 DMG / 3 AP |
-| **Nivel 1** | 20 oro | +15 HP / +10 DMG | 95 HP / 40 DMG / 3 AP |
-| **Nivel 2** | 40 oro | +25 HP / +20 DMG / −1 AP | 105 HP / 50 DMG / 2 AP |
-| **Nivel 3** | 50 oro | +40 HP / +35 DMG / −1 AP | 120 HP / 65 DMG / 2 AP |
+| **Base (Level 0)** | — | — | 80 HP / 30 DMG / 2 AP |
+| **Level 1** | 20 gold | +15 HP / +10 DMG | 95 HP / 40 DMG / 2 AP |
+| **Level 2** | 40 gold | +25 HP / +20 DMG / −1 AP | 105 HP / 50 DMG / 1 AP |
+| **Level 3** | 50 gold | +40 HP / +35 DMG / −1 AP | 120 HP / 65 DMG / 1 AP |
 
-Las mejoras deben ser progresivas (no se puede saltar de Nivel 1 a Nivel 3 directamente).
+Upgrades must be progressive. The player cannot jump directly from Level 1 to Level 3.
 
 ---
 
-### Stats de Enemigos por Nivel
+### Enemy Stats by Level
 
-`[CAMBIO]` **HP del Skeleton King ajustado:** El GDD original indicaba 200 HP para el Skeleton King. En la implementación final, el Skeleton King tiene **500 HP** para hacer el encuentro más desafiante y acorde al resto de los jefes.
+`[CHANGE]` **Skeleton King HP adjusted:** The original GDD listed 200 HP for the Skeleton King. In the final implementation, the Skeleton King has **500 HP** to make the encounter more challenging and consistent with the rest of the bosses.
 
-| Nivel | Enemigo | HP | Daño | Velocidad | Notas |
+| Level | Enemy | HP | Damage | Speed | Notes |
 | :---- | :---- | :---- | :---- | :---- | :---- |
-| **Nivel 1** | Skeleton | 50 | 15 | 1 casilla/turno | Básico. Fácil de interceptar. |
-| **Nivel 2** | Ogre | 80 | 25 | 1 casilla/turno | Más resistente. Requiere unidades más fuertes. |
-| **Nivel 3** | Elite Warrior | 100 | 35 | 2 casillas/turno | Rápido. Evade defensas lentas. |
-| **`[CAMBIO]` Jefe 1** | Skeleton King | **500** | 30 | Especial | Invoca cada 2 turnos. Avanza cada 3 turnos. Ocupa 2×2. |
-| **Jefe 2** | Ogre Boss | 350 | 40 | Especial | Igual que Jefe 1 pero con estadísticas más altas. |
-| **Jefe 3** | Brave King | 500 | 50 | Especial | Desafío final. Invocados son Elite Warriors. |
+| **Level 1** | Skeleton | 50 | 15 | 1 tile/turn | Basic. Easy to intercept. |
+| **Level 2** | Ogre | 80 | 25 | 1 tile/turn | More resistant. Requires stronger units. |
+| **Level 3** | Elite Warrior | 100 | 35 | 2 tiles/turn | Fast. Evades slow defenses. |
+| **`[CHANGE]` Boss 1** | Skeleton King | **500** | 30 | Special | Summons every 2 turns. Advances every 3 turns. Occupies 2×2. |
+| **Boss 2** | Ogre Boss | 350 | 40 | Special | Same as Boss 1 but with higher stats. |
+| **Boss 3** | Brave King | 500 | 50 | Special | Final challenge. Summons Elite Warriors. |
 
-`[CAMBIO]` **Invocados por los jefes:**
+`[CHANGE]` **Boss summons:**
 
-| Jefe | Invocado | HP Invocado | DMG Invocado |
+| Boss | Summoned Unit | Summoned HP | Summoned DMG |
 | :---- | :---- | :---- | :---- |
 | Skeleton King | Skeleton Vanguard | 80 | 22 |
 | Ogre Boss | Ogre Brute | 100 | 30 |
 | Brave King | Royal Elite | 120 | 40 |
 
-### Mecánica de Jefes
+### Boss Mechanics
 
-`[CAMBIO]` **La mecánica de jefes fue modificada respecto al GDD original.** El GDD indicaba que el jefe "no se mueve mientras su invocado está vivo, y avanza 1 casilla cuando muere". En la implementación final, los jefes siguen un patrón basado en turnos (no en la muerte de sus invocados):
+`[CHANGE]` **The boss mechanic was modified from the original GDD.** The GDD stated that the boss “does not move while its summon is alive, and advances 1 tile when it dies.” In the final implementation, bosses follow a turn-based pattern, not one based on the death of their summons:
 
-- Al inicio del combate, el jefe ocupa 2×2 casillas en la parte superior del tablero.
-- **Invocación:** El jefe invoca un enemigo adicional cada 2 turnos.
-- **Movimiento:** El jefe avanza 1 casilla hacia el Rey cada 3 turnos.
-- El ciclo continúa hasta que el jefe sea derrotado o alcance al Rey.
-- Los jefes cuentan como 2 de presión en la zona segura.
-- Los encuentros con jefes no tienen límite de turnos: el jugador debe derrotar al jefe para ganar.
-- Los encuentros con jefes no generan obstáculos para dar espacio al 2×2 del jefe.
+- At the start of combat, the boss occupies a 2×2 area at the top of the board.
+- **Summoning:** The boss summons an additional enemy every 2 turns.
+- **Movement:** The boss advances 1 tile toward the King every 3 turns.
+- The cycle continues until the boss is defeated or its 2×2 body creates enough pressure inside the safe zone to trigger defeat. Direct contact alone is not a separate loss condition.
+- Bosses count as 2 pressure inside the safe zone.
+- Boss encounters have no turn limit: the player must defeat the boss to win.
+- Boss encounters do not generate obstacles in order to provide enough space for the 2×2 boss.
 
 ---
 
 ## 2.3 Mindset
 
-*(Esta sección permanece igual que en el GDD original.)*
+*(This section remains the same as in the original GDD.)*
 
-### 1. Tensión Táctica Constante
+### 1. Constant Tactical Tension
 
-Cada turno presentará desafíos complejos y obligará al jugador a tomar decisiones difíciles: ¿guardar AP para jugadas más poderosas o desplegar una unidad ahora? ¿Mantener la posición del Rey o arriesgar un movimiento?
+Every turn will present complex challenges and force the player to make difficult decisions: should they save AP for more powerful plays or deploy a unit now? Should they maintain the King’s position or risk moving?
 
-### 2. Satisfacción del Plan Perfecto
+### 2. Satisfaction of the Perfect Plan
 
-Cuando el jugador coloca una pared estratégica, usa el Peace Treaty para congelar a tres enemigos en una sola jugada, o combina cartas de manera inteligente, crea una experiencia extraordinaria al ver su estrategia desarrollarse en el tablero.
+When the player places a strategic wall, uses Peace Treaty to freeze three enemies in a single play, or combines cards intelligently, they create an extraordinary experience by watching their strategy unfold on the board.
 
-### 3. Cobardía Estratégica (No Humillante)
+### 3. Strategic Cowardice (Not Humiliating)
 
-El Rey huye y nunca ataca, pero esto no es debilidad: es astucia. El jugador actúa como el cerebro detrás de la operación, implementando estrategias para mantener vivo al Rey. La animación del Rey con expresiones cómicas refuerza este tono sin volverlo vergonzoso.
+The King runs away and never attacks, but this is not weakness: it is cunning. The player acts as the brain behind the operation, implementing strategies to keep the King alive. The King’s animation with comedic expressions reinforces this tone without making it embarrassing.
 
-### 4. Aprender a través de la Repetición
+### 4. Learning Through Repetition
 
-Cada muerte enseña algo. "Debería haber usado Exile antes." "La próxima vez pondré el Tower primero." El sistema de mejoras permanentes crea una sensación de progreso en lugar de frustración.
+Every death teaches something. “I should have used Exile earlier.” “Next time I’ll place the Tower first.” The permanent upgrade system creates a sense of progress instead of frustration.
 
-### 5. Una Partida Más (Adicción Saludable)
+### 5. One More Run (Healthy Addiction)
 
-Las manos aleatorias y el sistema de Desesperación (que fuerza al Rey a moverse) garantizan que cada intento sea diferente, promoviendo la rejugabilidad.
-
----
-
-## 2.4 Elementos Roguelite y TCG
-
-*(Esta sección se actualiza para reflejar la implementación final.)*
-
-### Elementos Roguelite
-
-| Característica Roguelite | Implementación en The Coward King |
-| :---- | :---- |
-| **Progresión permanente** | Mejoras de cartas (+daño, +HP, −coste) compradas con oro sobreviven a la muerte. |
-| **`[CAMBIO]` Sistema de checkpoint** | La muerte reinicia desde el Nivel 1 Horda 1. |
-| **Corridas aleatorizadas** | Cartas aleatorias en cada horda desde un pool de 15. Distintas builds en cada intento. |
-| **Sesiones cortas** | Cada horda tiene un límite de turnos variable. El juego completo dura 1-3 horas. |
-| **Fallo significativo** | La derrota siempre enseña algo. El juego muestra qué causó la derrota. |
-| **`[NUEVO]` Sistema de Desesperación** | El Rey debe moverse periódicamente. No moverse aumenta la Desesperación; al llegar a 4, el intento se pierde. Esto fuerza una toma de decisiones activa y previene que el jugador se quede quieto indefinidamente. |
-
-### Elementos TCG
-
-| Característica TCG | Implementación en The Coward King |
-| :---- | :---- |
-| **Gestión de mano** | El jugador tiene 3-4 cartas por horda y decide cuándo jugar cada una. |
-| **Pool y aleatoriedad** | 15 cartas en el pool. Se reparten aleatoriamente, creando estrategias variables. |
-| **Sistema de coste de recursos** | AP (1-4 por carta) refleja el sistema de maná/energía de los TCG. |
-| **Elección de retención** | Entre hordas, el jugador conserva 1 carta de su mano anterior. |
-| **Mejora de cartas** | Mejoras permanentes (+daño, +HP, −coste) reflejan el sistema de mejora de TCGs y CCGs. |
-| **Potencial de sinergia** | Combinar cartas (Exile + Mage, Wall + Tower, Peace Treaty + Guardian) crea combos poderosos. |
+Random hands and the Desperation system, which forces the King to move, ensure that every attempt feels different and promotes replayability.
 
 ---
 
-## 2.5 Estilo Visual
+## 2.4 Roguelite and TCG Elements
 
-*(Esta sección refleja lo implementado; se actualizan detalles menores.)*
+*(This section is updated to reflect the final implementation.)*
 
-### Dirección Artística
+### Roguelite Elements
 
-The Coward King usa una estética de pixel art. El tablero tiene un estilo oscuro con casillas alternadas azul-grisáceas (#3f4652 / #252c35) y un borde dorado. La zona segura se resalta con un tono dorado semitransparente.
-
-| Estilo artístico | Pixel art, sprites de tamaño variable por tipo de unidad |
+| Roguelite Feature | Implementation in The Coward King |
 | :---- | :---- |
-| **Estilo del tablero** | Cuadrícula 8×8 con tonos azul-grisáceos alternados. Zona segura resaltada en dorado suave. |
-| **Paleta de colores** | Paleta medieval apagada: grises de piedra, verdes oscuros, amarillos pergamino, rojos profundos para enemigos. |
-| **`[NUEVO]` Panel de Desesperación** | Panel lateral con imagen del Rey que cambia según el nivel de Desesperación (0-4). Oscila entre calma y pánico total. Pulsa visualmente cuando la Desesperación es crítica. |
-| **Animaciones** | Sprites con animaciones de 1-6 frames por unidad (idle + ataque). La pared tiene 3 frames según HP restante. |
-| **UI de cartas** | Botones de carta con imagen de arte, stats (HP/DMG), coste AP, descripción y tag de nivel de mejora. |
-| **Tono** | Cómico pero legible. El humor viene de las expresiones del Rey y los textos de las cartas, no del caos visual. |
+| **Permanent progression** | Card upgrades (+damage, +HP, −cost) purchased with gold survive death. |
+| **`[CHANGE]` Checkpoint system** | Death restarts from Level 1 Horde 1. |
+| **Randomized runs** | Random cards in each horde from a pool of 15. Different builds in every attempt. |
+| **Short sessions** | Each horde has a variable turn limit. The full game lasts 1–3 hours. |
+| **Meaningful failure** | Defeat always teaches something. The game shows what caused the defeat. |
+| **`[NEW]` Desperation System** | The King must move periodically. Not moving increases Desperation; reaching 4 loses the attempt. This forces active decision-making and prevents the player from staying still indefinitely. |
 
-### Sprites Implementados
+### TCG Elements
 
-Los siguientes sprites están implementados y cargados en el juego:
+| TCG Feature | Implementation in The Coward King |
+| :---- | :---- |
+| **Hand management** | The player has 3–4 cards per horde and decides when to play each one. |
+| **Pool and randomness** | 15 cards in the pool. They are dealt randomly, creating variable strategies. |
+| **Resource cost system** | AP (1–4 per card) reflects the mana/energy system of TCGs. |
+| **Retention choice** | Between hordes, the player keeps 1 card from the previous hand. |
+| **Card upgrading** | Permanent upgrades (+damage, +HP, −cost) reflect upgrade systems in TCGs and CCGs. |
+| **Synergy potential** | Combining cards (Exile + Mage, Wall + Tower, Peace Treaty + Guardian) creates powerful combos. |
 
-| Sprite | Animación |
+---
+
+## 2.5 Visual Style
+
+*(This section reflects what was implemented; minor details are updated.)*
+
+### Art Direction
+
+The Coward King uses a pixel art aesthetic. The board has a dark style with alternating blue-gray tiles (#3f4652 / #252c35) and a golden border. The safe zone is highlighted with a semi-transparent golden tone.
+
+| Art style | Pixel art, sprites of variable size by unit type |
+| :---- | :---- |
+| **Board style** | 8×8 grid with alternating blue-gray tones. Safe zone softly highlighted in gold. |
+| **Color palette** | Muted medieval palette: stone grays, dark greens, parchment yellows, deep reds for enemies. |
+| **`[NEW]` Desperation Panel** | Side panel with an image of the King that changes according to the Desperation level (0–4). It shifts from calm to total panic and pulses visually when Desperation is critical. |
+| **Animations** | Sprites with 1–6 animation frames per unit (idle + attack). The wall has 3 frames based on remaining HP. |
+| **Card UI** | Card buttons with artwork, stats (HP/DMG), AP cost, description, and upgrade level tag. |
+| **Tone** | Comedic but readable. Humor comes from the King’s expressions and the card text, not from visual chaos. |
+
+### Implemented Sprites
+
+The following sprites are implemented and loaded in the game:
+
+| Sprite | Animation |
 | :---- | :---- |
 | King | 3 cols × 2 rows (6 frames) |
 | Skeleton | 3 cols × 1 row |
-| Skeleton King (jefe) | 1 frame |
+| Skeleton King (boss) | 1 frame |
 | Knight | 2 cols × 2 rows |
 | Archer | 3 cols × 2 rows |
-| Wall | 3 cols × 1 row (daño visual) |
+| Wall | 3 cols × 1 row (visual damage) |
 | Mage | 3 cols × 2 rows |
 | Guardian | 3 cols × 2 rows |
 | Ogre | 2 cols × 2 rows |
@@ -346,646 +361,653 @@ Los siguientes sprites están implementados y cargados en el juego:
 | Squire | 2 cols × 2 rows |
 | Pikeman | 3 cols × 1 row |
 | Royal Guard | 1 frame |
-| Brave King (jefe) | 1 frame |
+| Brave King (boss) | 1 frame |
 | Tower | 1 frame |
 | Decoy | 1 frame |
 | Trench | 1 frame |
 
-Todas las unidades tienen barra de HP dibujada debajo (excepto el Rey). El color de la barra cambia de verde → naranja → rojo según HP restante.
+All units have an HP bar drawn underneath them, except for the King. The bar color changes from green → orange → red depending on remaining HP.
 
-### Backgrounds por Nivel
+### Backgrounds by Level
 
-Cada nivel tiene su imagen de fondo propia:
-- **Nivel 1 Catacumbas:** `Assets/Level1.png`
-- **Nivel 2 Ogre Dungeon:** `Assets/Level2.png`
-- **Nivel 3 Brave King's Castle:** `Assets/Level3.png`
+Each level has its own background image:
+- **Level 1 Catacombs:** `Assets/Level1.png`
+- **Level 2 Ogre Dungeon:** `Assets/Level2.png`
+- **Level 3 Brave King’s Castle:** `Assets/Level3.png`
+
+| Level 1 — Catacombs | Level 2 — Ogre Dungeon | Level 3 — Brave King's Castle |
+| :---: | :---: | :---: |
+| ![Level 1 Catacombs](Videogame/Assets/Level1.png) | ![Level 2 Ogre Dungeon](Videogame/Assets/Level2.png) | ![Level 3 Brave King's Castle](Videogame/Assets/Level3.png) |
 
 ---
 
-## 2.6 Referencias
+## 2.6 References
 
-*(Sin cambios respecto al GDD original.)*
+*(Unchanged from the original GDD.)*
 
-- **Into the Breach:** Inspiración para la claridad del tablero y el enfoque en posicionamiento estratégico.
-- **Slay the Spire:** Inspiración para la UI de cartas y la progresión roguelite.
-- **Dungeon of the Endless:** Inspiración para la defensa por oleadas con recursos limitados.
+- **Into the Breach:** Inspiration for board clarity and the focus on strategic positioning.
+- **Slay the Spire:** Inspiration for card UI and roguelite progression.
+- **Dungeon of the Endless:** Inspiration for wave defense with limited resources.
 
 ---
 
 # 3. Technical
 
-## 3.1 Pantallas
+## 3.1 Screens
 
-`[NUEVO]` **El sistema de pantallas fue ampliado respecto al GDD original.** Se implementó un menú principal completo, sistema de autenticación, pantalla de estadísticas con gráficas, y pantalla de victoria final.
+`[NEW]` **The screen system was expanded from the original GDD.** A complete main menu, authentication system, statistics screen with charts, and final victory screen were implemented.
 
-### Menú Principal (indexMenu.html)
+### Main Menu (indexMenu.html)
 
-Primera pantalla al abrir el juego. Contiene:
+First screen when opening the game. It contains:
 
-1. **Botón de Login/Usuario**
-   - Permite crear una cuenta o iniciar sesión con nombre de usuario y contraseña.
-   - Almacena el progreso, estadísticas y mejoras del jugador.
-   - Modo invitado disponible (sin persistencia en servidor).
-   - Opción de registrarse como Administrador (con acceso al panel admin de estadísticas).
+1. **Login/User Button**
+   - Allows the player to create an account or log in with username and password.
+   - Stores the player identity, statistics, run records, and purchased upgrades through the API. Full board-state restoration is not implemented.
+   - Guest mode available (without server persistence).
+   - Option to register as Administrator (with access to the admin statistics panel).
 
 2. **START GAME**
-   - Inicia una nueva partida desde el Nivel 1.
+   - Starts a new game from Level 1.
 
 3. **TUTORIAL**
-   - Modal con explicación de todas las reglas, controles, cartas y video tutorial integrado.
+   - Modal with an explanation of all rules, controls, cards, and an embedded tutorial video.
 
 4. **STATISTICS**
-   - Panel personal con estadísticas del jugador (partidas jugadas, enemigos eliminados, oro ganado, niveles completados, historial de intentos).
-   - Gráfica de rendimiento por intento (Chart.js, tipo barra).
-   - Gráfica de mejoras de cartas (Chart.js, tipo radar).
-   - Tabla de mejoras compradas.
-   - **Panel Admin** (solo para administradores): leaderboard global, distribución de muertes, tasas de completación por horda, popularidad de mejoras de cartas.
+   - Personal panel with player statistics (games played, enemies killed, gold earned, levels completed, attempt history).
+   - Performance chart by attempt (Chart.js, bar chart).
+   - Card upgrade chart (Chart.js, radar chart).
+   - Purchased upgrades table.
+   - **Admin Panel** (administrators only): global leaderboard, death distribution, horde completion rates, card upgrade popularity.
 
 5. **CREDITS**
-   - Nombre del proyecto, género, equipo y miembros.
+   - Project name, genre, team, and members.
 
 6. **SETTINGS**
-   - Sliders de volumen: Máster, Música, Efectos de sonido.
-   - Configuración se guarda en localStorage.
+   - Volume sliders: Master, Music, Sound Effects.
+   - Settings are saved in localStorage.
 
-### Pantalla de Juego (index.html)
+### Game Screen (index.html)
 
-Pantalla principal de gameplay. Dividida en:
+Main gameplay screen. Divided into:
 
-- **Zona del Tablero:** Canvas 620×620px centrado. Muestra el tablero 8×8, el Rey, aliados, enemigos, efectos, obstáculos, zona segura resaltada y highlights de movimiento/colocación.
-- **Panel de Mano (handPanel):** En la parte inferior. Muestra las cartas disponibles con arte, stats y coste AP. En modo "keep-mode", permite elegir qué carta conservar.
-- **HUD:** En la parte superior. Muestra Nivel, Encuentro, Turno/Límite, Fase, AP, Oro, Enemigos en tablero/máximo, y Estado.
-- **`[NUEVO]` Panel de Desesperación:** Panel lateral que muestra el nivel de Desesperación (0-4) con imagen del Rey y medidor visual. Pulsa y se torna rojo cuando es crítico.
-- **Log de Eventos:** Historial de los últimos 8 eventos de la partida.
-- **Botones de acción:** Move King, End Turn, Upgrades, Menú (pausa).
+- **Board Area:** 620×620px centered canvas. Shows the 8×8 board, the King, allies, enemies, effects, obstacles, highlighted safe zone, and movement/placement highlights.
+- **Hand Panel (handPanel):** Located at the bottom. Shows available cards with artwork, stats, and AP cost. In “keep-mode,” it allows the player to choose which card to keep.
+- **HUD:** Located at the top. Shows Level, Encounter, Turn/Limit, Phase, AP, Gold, Enemies on board/maximum, and Status.
+- **`[NEW]` Desperation Panel:** Side panel showing the Desperation level (0–4) with a King image and visual meter. It pulses and turns red when critical.
+- **Event Log:** History of the last 8 game events.
+- **Action Buttons:** Move King, End Turn, Upgrades, Menu (pause).
 
-### Pantalla de Transición (elección de carta)
+### Transition Screen (card choice)
 
-Aparece tras ganar una horda. El panel de mano cambia a "keep-mode" y el jugador hace clic en la carta que desea conservar. Una vez elegida, el botón "Continue" se activa.
+Appears after winning a horde. The hand panel changes to “keep-mode,” and the player clicks the card they wish to keep. Once selected, the “Continue” button is enabled.
 
-### Pantalla de Mejoras (Overlay)
+### Upgrade Screen (Overlay)
 
-Accesible durante el turno del jugador. Muestra todas las cartas mejorables con sus stats actuales, stats del siguiente nivel y coste en oro. Las mejoras se aplican inmediatamente incluyendo a copias de la carta ya en la mano actual.
+Accessible during the player’s turn. Shows all upgradeable cards with their current stats, next-level stats, and gold cost. Upgrades are applied immediately, including to copies of the card already in the current hand.
 
-### Menú de Pausa (Overlay)
+### Pause Menu (Overlay)
 
-Accesible durante el juego con el botón de menú. Opciones:
-- Reanudar
-- Guardar partida (localStorage)
-- Volver al menú principal
+Accessible during gameplay through the menu button. Options:
+- Resume
+- Save game (localStorage)
+- Return to main menu
 
-### Game Over / Pantalla de Resultado
+### Game Over / Result Screen
 
-Se muestra al ganar o perder una horda/jefe. El botón "Continue" (victoria) o "Retry Level" (derrota) aparece en el HUD para continuar.
+Displayed after winning or losing a horde/boss. The “Continue” button (victory) or “Retry Level” button (defeat) appears in the HUD to proceed.
 
-### `[NUEVO]` Pantalla de Victoria Final
+### `[NEW]` Final Victory Screen
 
-Se activa al completar el Nivel 3 incluyendo al Brave King. Muestra un overlay especial de celebración con opción de volver al menú.
+Activated after completing Level 3, including the Brave King. Displays a special celebration overlay with an option to return to the menu.
 
 ---
 
-## 3.2 Controles
+## 3.2 Controls
 
-`[CAMBIO]` **El juego es controlable tanto con el ratón como con el teclado.** El GDD original especificaba solo control con ratón.
+`[CHANGE]` **The game can be controlled with both mouse and keyboard.** The original GDD specified mouse-only control.
 
-| Acción | Input |
+| Action | Input |
 | :---: | :---: |
-| Seleccionar carta de la mano | Clic izquierdo sobre la carta |
-| Colocar unidad o trampa en el tablero | Clic izquierdo en casilla válida |
-| Mover al Rey (clic) | Clic en botón "Move King", luego clic en casilla adyacente válida |
-| Mover al Rey (teclado) | Flechas / WASD para 4 direcciones; Q/E/Z/C para diagonales |
-| Cancelar selección | Escape |
-| Terminar turno | Clic en "End Turn" o barra espaciadora |
-| Abrir menú de mejoras | Clic en "Upgrades" |
-| Abrir menú de pausa | Clic en botón de menú o Escape (si overlay de mejoras está cerrado) |
-| Navegar menús | Clic izquierdo |
+| Select card from hand | Left click on the card |
+| Place unit or trap on the board | Left click on a valid tile |
+| Move King (click) | Click “Move King,” then click a valid adjacent tile |
+| Move King (keyboard) | Arrow keys / WASD for 4 directions; Q/E/Z/C for diagonals |
+| Cancel selection | Escape |
+| End turn | Click “End Turn” or press Spacebar |
+| Open upgrade menu | Click “Upgrades” |
+| Open pause menu | Click the menu button or Escape (if the upgrade overlay is closed) |
+| Navigate menus | Left click |
 
-Las casillas muestran feedback visual al pasar el cursor: azul para movimiento del Rey, verde para colocación de cartas.
+Tiles show visual feedback when hovered: blue for King movement, green for card placement.
 
 ---
 
-## 3.3 Mecánicas
+## 3.3 Mechanics
 
-### Sistema de Fases de Turno
+### Turn Phase System
 
-1. **Fase del Jugador:** El jugador puede jugar cartas, mover al Rey, abrir mejoras, o terminar el turno sin acción. Las cartas se seleccionan haciendo clic en ellas y luego en la casilla destino.
-2. **Fase del Enemigo:** Los efectos de zona se aplican (Peace Treaty, Royal Curse), luego se resuelve el combate (orden según horde number), limpieza de objetos muertos, conteo de efectos activos, verificación de derrota, actualización de Desesperación, verificación de victoria, spawn de nuevos enemigos y recuperación de AP.
+1. **Player Phase:** The player can play cards, move the King, open upgrades, or end the turn without taking an action. Cards are selected by clicking them and then clicking the target tile.
+2. **Enemy Phase:** Zone effects are applied (Peace Treaty, Royal Curse), then combat is resolved (order depends on horde number), dead objects are removed, active effects are counted, defeat is checked, Desperation is updated, victory is checked, new enemies spawn, and AP is recovered.
 
-### `[NUEVO]` Sistema de Desesperación
+### `[NEW]` Desperation System
 
-Mecánica nueva no descrita en el GDD original:
+New mechanic not described in the original GDD:
 
-- Si el Rey NO se mueve durante el turno del jugador, la Desesperación aumenta en 1 (máximo 4).
-- Si el Rey SE mueve, la Desesperación se reinicia a 0.
-- Al alcanzar Desesperación ≥ 3, se activa un sonido de bucle de advertencia.
-- Al alcanzar Desesperación = 4, la partida se pierde con el mensaje "Defeat: the King surrendered to desperation."
-- El panel lateral muestra la cara del Rey cambiando de tranquilo a aterrorizado conforme sube la Desesperación.
-- Propósito: Evitar que el jugador se quede estático indefinidamente y forzar movimiento activo del Rey.
+- If the King does NOT move during the player turn, Desperation increases by 1 (maximum 4).
+- If the King DOES move, Desperation resets to 0.
+- Upon reaching Desperation ≥ 3, a warning loop sound is activated.
+- Upon reaching Desperation = 4, the game is lost with the message “Defeat: the King surrendered to desperation.”
+- The side panel shows the King’s face changing from calm to terrified as Desperation increases.
+- Purpose: Prevent the player from staying static indefinitely and force active King movement.
 
-### Sistema de AP
+### AP System
 
-- El jugador comienza cada horda con 5 AP.
-- `[CAMBIO]` **El AP está limitado a un máximo de 5 en todo momento** (no ilimitado como indicaba el GDD).
-- Si el Rey no se mueve, se recupera +1 AP al final del turno (hasta el límite de 5).
-- Si el Rey se mueve, no se recupera AP ese turno.
-- Las cartas cuestan 1-4 AP.
-- `[CAMBIO]` **El bonus de +5 AP por ganar horda descrito en el GDD original no está implementado.** La recuperación de AP es exclusivamente a razón de +1 por turno sin movimiento del Rey.
+- The player starts each horde with 5 AP.
+- `[CHANGE]` **AP is limited to a maximum of 5 at all times** (not unlimited as stated in the GDD).
+- If the King does not move, +1 AP is recovered at the end of the turn, up to the 5 AP limit.
+- If the King moves, no AP is recovered that turn.
+- Cards cost 1–4 AP.
+- `[CHANGE]` **The +5 AP bonus for winning a horde described in the original GDD is not implemented.** AP recovery occurs exclusively at a rate of +1 per turn without King movement.
 
-### Selección y Colocación de Cartas
+### Card Selection and Placement
 
-- El jugador hace clic en una carta de la mano para seleccionarla (se resaltan casillas válidas en verde).
-- Las cartas de tipo "ally" crean una unidad aliada en la casilla elegida.
-- Las cartas de tipo "trap" (Exile) crean un efecto de trampa en la casilla elegida.
-- Las cartas de tipo "zone" (Peace Treaty, Royal Curse) crean un efecto de zona.
-- `[NUEVO]` Las cartas de tipo "zone" con nombre "Bomb" detonan inmediatamente al colocarse, causando daño AOE sin dejar un efecto permanente.
-- No se pueden colocar cartas en casillas ocupadas o con efectos activos.
+- The player clicks a card in the hand to select it; valid tiles are highlighted in green.
+- “Ally” cards create an allied unit on the chosen tile.
+- “Trap” cards (Exile) create a trap effect on the chosen tile.
+- “Zone” cards (Peace Treaty, Royal Curse) create a zone effect.
+- `[NEW]` The “Bomb” zone card detonates immediately when placed, dealing 100 AOE damage without leaving a permanent effect when cards are loaded from SQL. The offline fallback still uses an older 40-damage value.
+- Cards cannot be placed on occupied tiles or tiles with active effects.
 
-### Movimiento del Rey
+### King Movement
 
-- Al hacer clic en el Rey o en "Move King", se activa el modo de movimiento (casillas válidas en azul).
-- El Rey se mueve 1 casilla en cualquier dirección, incluyendo diagonal.
-- No puede moverse a casillas ocupadas por aliados, enemigos u obstáculos.
-- `[NUEVO]` El Royal Guard sigue automáticamente al Rey en cada movimiento.
-- Mover al Rey consume el turno y reinicia la Desesperación.
+- Clicking the King or “Move King” activates movement mode, highlighting valid tiles in blue.
+- The King moves 1 tile in any direction, including diagonally.
+- He cannot move onto tiles occupied by allies, enemies, or obstacles.
+- `[NEW]` The Royal Guard automatically follows the King with each movement.
+- Moving the King consumes the turn and resets Desperation.
 
-### Aleatorización de Mano
+### Hand Randomization
 
-- Primera horda del Nivel 1: 3 cartas aleatorias del pool de 15.
-- Resto de hordas y jefes: 4 cartas (1 conservada + 3 nuevas aleatorias, o 4 nuevas si no se conserva ninguna).
+- First horde of Level 1: 3 random cards from the 15-card pool.
+- Rest of hordes and bosses: 4 cards (1 kept + 3 new random cards, or 4 new cards if none is kept).
 
-### Sistema de Spawn de Enemigos
+### Enemy Spawn System
 
-- En cada turno de la fase enemiga (en hordas normales), se generan entre 1-2 nuevos enemigos en los bordes disponibles.
-- La cantidad exacta está limitada por `maxEnemiesOnBoard` de la horda actual.
-- Los enemigos no aparecen dentro de la zona segura ni en casillas ocupadas.
-- Los encuentros con jefes no generan nuevos enemigos via spawn; solo el jefe puede invocar a sus minions.
+- During each enemy phase turn in normal hordes, 1–2 new enemies are generated on the available edges.
+- The exact number is limited by `maxEnemiesOnBoard` for the current horde.
+- Enemies do not appear inside the safe zone or on occupied tiles.
+- Boss encounters do not generate new enemies through regular spawning; only the boss can summon its minions.
 
-### Sistema de Mejoras de Cartas
+### Card Upgrade System
 
-- Accesible desde el overlay de mejoras durante el turno del jugador.
-- Muestra todas las cartas mejorables (tipo "ally" excepto Decoy) con stats actuales y del siguiente nivel.
-- Al comprar una mejora, se descuenta el oro, se sube el nivel en el `upgradeRegistry` (persiste entre muertes), y las cartas ya en mano se actualizan inmediatamente.
-- Las mejoras persisten a través de muertes porque el `upgradeRegistry` solo se reinicia al comenzar una partida completamente nueva.
+- Accessible from the upgrade overlay during the player’s turn.
+- Shows all upgradeable cards (type “ally” except Decoy) with current and next-level stats.
+- When buying an upgrade, gold is deducted, the level in the `upgradeRegistry` increases and persists between deaths, and cards already in hand are updated immediately.
+- Upgrades persist through deaths because the `upgradeRegistry` only resets when starting a completely new game.
 
-### Sistema de Guardado
+### Save System
 
-- **Guardado manual:** El jugador puede guardar en el menú de pausa. Se guarda en localStorage la posición actual, oro, AP, nivel, horda, mano y mejoras.
-- **Sin guardado automático por nivel** (el GDD original describía auto-guardado al completar niveles, pero no fue implementado).
+- **Pause-menu snapshot:** The “Save Stats” button writes a partial snapshot to `localStorage`, including level, horde, AP, gold, hand names, King position, Desperation, and upgrades.
+- **Current limitation:** No loader reconstructs the complete board, allies, enemies, effects, obstacles, or active turn from that snapshot. Therefore, full Resume Game behavior is not implemented.
+- **Database persistence:** Logged-in users can persist statistics, run progress events, and upgrades through the API, but this is not a complete gameplay checkpoint.
 
-### Movimiento de Aliados (Revisado)
+### Ally Movement (Revised)
 
-`[CAMBIO]` **El GDD original describía aliados que se movían automáticamente (Knight hacia el enemigo más cercano, Pikeman rápido). En la implementación final, todos los aliados son estacionarios (speed = 0) y solo atacan al enemigo más cercano en su rango de ataque.** El Royal Guard es la excepción: sigue al Rey al moverse.
+`[CHANGE]` **The original GDD described allies that moved automatically, such as the Knight moving toward the nearest enemy and the Pikeman moving quickly. In the final implementation, all allies are stationary (speed = 0) and only attack the nearest enemy within their attack range.** The Royal Guard is the exception: it follows the King when he moves.
 
-### Sistema de Combate Aliado
+### Ally Combat System
 
-- En cada fase enemiga, todos los aliados vivos con damage > 0 atacan automáticamente al enemigo más cercano dentro de su rango.
-- El Squire reduce en 50% el daño recibido por aliados adyacentes.
-- Los ataques del Rey son imposibles (damage = 0, range = 0).
-- Si un enemigo está adyacente a un aliado, el enemigo ataca al aliado en lugar de avanzar.
-- Los enemigos "cursados" (bajo Royal Curse) hacen 50% menos daño.
+- During each enemy phase, all living allies with damage > 0 automatically attack the nearest enemy within their range.
+- The Squire reduces damage received by adjacent allies by 50%.
+- The King cannot attack (damage = 0, range = 0).
+- If an enemy is adjacent to an ally, the enemy attacks the ally instead of advancing.
+- “Cursed” enemies, under Royal Curse, deal 50% less damage.
 
 ---
 
 # 4. Level Design
 
-## 4.1 Temas
+## 4.1 Themes
 
-*(Esta sección se actualiza con información del código final.)*
+*(This section is updated with information from the final code.)*
 
-### Nivel 1: Skeleton King, Catacombs
+### Level 1: Skeleton King, Catacombs
 
-**Ambiente:** Atmósfera sombría. Paredes de piedra fría, antorchas parpadeantes y arcos en ruinas enmarcan el tablero. Paleta de colores: grises de piedra, azules fríos, amarillos apagados de luz de antorchas.
+**Environment:** Gloomy atmosphere. Cold stone walls, flickering torches, and ruined arches frame the board. Color palette: stone grays, cold blues, muted torchlight yellows.
 
-**Interactivos:**
-- Skeletons (50 HP / 15 DMG / 1 casilla/turno). 3 hordas progresivas.
-- Skeleton King (Boss 500 HP / 30 DMG). Ocupa 2×2. Invoca un Skeleton Vanguard cada 2 turnos. Avanza 1 casilla hacia el Rey cada 3 turnos.
-- Skeleton Vanguard (invocado): 80 HP / 22 DMG.
+**Interactives:**
+- Skeletons (50 HP / 15 DMG / 1 tile/turn). 3 progressive hordes.
+- Skeleton King (Boss 500 HP / 30 DMG). Occupies 2×2. Summons a Skeleton Vanguard every 2 turns. Advances 1 tile toward the King every 3 turns.
+- Skeleton Vanguard (summoned): 80 HP / 22 DMG.
 
-**Configuración de hordas:**
+**Horde configuration:**
 
-| Horda | Turnos máx | Enemigos/turno | Max en tablero | Obstáculos |
+| Horde | Max turns | Enemies/turn | Max on board | Obstacles |
 | :---- | :---- | :---- | :---- | :---- |
 | 1 | 10 | 1 | 8 | 0 |
 | 2 | 15 | 1 | 10 | 2 |
 | 3 | 20 | 2 | 12 | 4 |
-| Boss | sin límite | (invocados por jefe) | — | 0 |
+| Boss | no limit | (summoned by boss) | — | 0 |
 
-**Desafíos:** Introducción al bucle principal de juego: gestión de AP, colocación de cartas y defensa de la zona segura. Las estadísticas del enemigo son bajas, dando margen al jugador para experimentar.
+**Challenges:** Introduction to the core gameplay loop: AP management, card placement, and safe zone defense. Enemy stats are low, giving the player room to experiment.
 
 ---
 
-### Nivel 2: Ogre Boss, Ogre Dungeon
+### Level 2: Ogre Boss, Ogre Dungeon
 
-**Ambiente:** Mazmorra oscura y opresiva con toques de bosque retorcido. Sombras más profundas, piedra musgosa y rojos profundos. Paleta: verdes oscuros, marrones oscuros, rojos apagados, sombras turbias.
+**Environment:** Dark and oppressive dungeon with touches of a twisted forest. Deeper shadows, mossy stone, and deep reds. Palette: dark greens, dark browns, muted reds, murky shadows.
 
-**Interactivos:**
-- Ogres (80 HP / 25 DMG / 1 casilla/turno). Requieren unidades más fuertes o combos de cartas.
-- Ogre Boss (350 HP / 40 DMG). Ocupa 2×2. Invoca Ogre Brutes cada 2 turnos. Avanza cada 3 turnos.
-- Ogre Brute (invocado): 100 HP / 30 DMG.
+**Interactives:**
+- Ogres (80 HP / 25 DMG / 1 tile/turn). Require stronger units or card combos.
+- Ogre Boss (350 HP / 40 DMG). Occupies 2×2. Summons Ogre Brutes every 2 turns. Advances every 3 turns.
+- Ogre Brute (summoned): 100 HP / 30 DMG.
 
-**Configuración de hordas:**
+**Horde configuration:**
 
-| Horda | Turnos máx | Enemigos/turno | Max en tablero | Obstáculos |
+| Horde | Max turns | Enemies/turn | Max on board | Obstacles |
 | :---- | :---- | :---- | :---- | :---- |
 | 1 | 20 | 1 | 7 | 2 |
 | 2 | 26 | 1 | 9 | 4 |
 | 3 | 32 | 2 | 10 | 6 |
-| Boss | sin límite | (invocados por jefe) | — | 0 |
+| Boss | no limit | (summoned by boss) | — | 0 |
 
-**Desafíos:** Mayor HP de enemigos exige mejor gestión del AP. Los jugadores deben confiar en sinergias (Wall + Tower, Guardian + Archer). El jefe requiere daño sostenido a través de múltiples ciclos de invocación.
+**Challenges:** Higher enemy HP requires better AP management. Players must rely on synergies (Wall + Tower, Guardian + Archer). The boss requires sustained damage through multiple summoning cycles.
 
 ---
 
-### Nivel 3: Brave King, Brave King's Castle
+### Level 3: Brave King, Brave King’s Castle
 
-**Ambiente:** El nivel final en la sala del trono del reino enemigo. Ornamentos ricos, ventanas altas y luz dorada de velas crean un fondo visualmente impactante. Paleta: rojos profundos, acentos dorados, púrpuras reales y iluminación dramática.
+**Environment:** The final level takes place in the throne room of the enemy kingdom. Rich ornaments, tall windows, and golden candlelight create a striking visual background. Palette: deep reds, golden accents, royal purples, and dramatic lighting.
 
-**Interactivos:**
-- Elite Warriors (100 HP / 35 DMG / 2 casillas/turno). Movimiento doble que evita muchas formaciones defensivas.
-- Brave King (Boss 500 HP / 50 DMG). Ocupa 2×2. Invoca Royal Elites cada 2 turnos. Avanza cada 3 turnos.
-- Royal Elite (invocado): 120 HP / 40 DMG / 2 casillas/turno.
+**Interactives:**
+- Elite Warriors (100 HP / 35 DMG / 2 tiles/turn). Double movement bypasses many defensive formations.
+- Brave King (Boss 500 HP / 50 DMG). Occupies 2×2. Summons Royal Elites every 2 turns. Advances every 3 turns.
+- Royal Elite (summoned): 120 HP / 40 DMG / 2 tiles/turn.
 
-**Configuración de hordas:**
+**Horde configuration:**
 
-| Horda | Turnos máx | Enemigos/turno | Max en tablero | Obstáculos |
+| Horde | Max turns | Enemies/turn | Max on board | Obstacles |
 | :---- | :---- | :---- | :---- | :---- |
 | 1 | 20 | 1 | 8 | 2 |
 | 2 | 28 | 2 | 10 | 3 |
 | 3 | 34 | 2 | 12 | 4 |
-| Boss | sin límite | (invocados por jefe) | — | 0 |
+| Boss | no limit | (summoned by boss) | — | 0 |
 
-**Desafíos:** El movimiento doble de los Elite Warriors rompe las formaciones defensivas de niveles anteriores. Las cartas políticas (Exile, Peace Treaty) se vuelven críticas. Los aliados invocados del jefe son en sí mismos una amenaza severa que requiere eliminar rápidamente.
+**Challenges:** The double movement of Elite Warriors breaks defensive formations from previous levels. Political cards (Exile, Peace Treaty) become critical. The boss’s summoned allies are severe threats themselves and must be eliminated quickly.
 
 ---
 
-## 4.2 Flujo de Juego
+## 4.2 Game Flow
 
 ```
-Menú Principal
+Main Menu
   └── START GAME
          │
          ▼
-Nivel 1 - Horda 1  ──(victoria: elige carta a conservar)──►  Horda 2  ──►  Horda 3  ──►  Boss: Skeleton King
+Level 1 - Horde 1  ──(victory: choose card to keep)──►  Horde 2  ──►  Horde 3  ──►  Boss: Skeleton King
                                                                                                   │
          ┌────────────────────────────────────────────────────────────────────────────────────────┘
          ▼
-Nivel 2 - Horda 1  ──►  Horda 2  ──►  Horda 3  ──►  Boss: Ogre Boss
+Level 2 - Horde 1  ──►  Horde 2  ──►  Horde 3  ──►  Boss: Ogre Boss
          │
          ▼
-Nivel 3 - Horda 1  ──►  Horda 2  ──►  Horda 3  ──►  Boss: Brave King
+Level 3 - Horde 1  ──►  Horde 2  ──►  Horde 3  ──►  Boss: Brave King
                                                             │
                                                             ▼
-                                                    PANTALLA DE VICTORIA FINAL
+                                                    FINAL VICTORY SCREEN
 ```
 
-**Reglas de transición:**
-- Entre cada horda: pantalla de selección de carta a conservar → nueva mano de 4 cartas.
-- La tienda de mejoras está disponible en cualquier momento durante el turno del jugador.
-- Al morir: regreso a Nivel 1 Horda 1. Mejoras conservadas, oro perdido.
-- Sin selección de nivel de inicio; la progresión siempre es secuencial.
+**Transition rules:**
+- Between each horde: card selection screen to keep one card → new hand of 4 cards.
+- The upgrade shop is available at any time during the player’s turn.
+- On death: return to Level 1 Horde 1. Upgrades are kept; gold is lost.
+- No starting level selection; progression is always sequential.
 
 ---
 
 # 5. Development
 
-## 5.1 Clases Abstractas (Componentes)
+## 5.1 Abstract Classes (Components)
 
-*(Esta sección refleja las clases realmente implementadas.)*
+*(This section reflects the classes actually implemented.)*
 
-### GameObject (Clase Base — Base de todos los objetos del juego)
+### GameObject (Base Class — Base of all game objects)
 
-Representada internamente en el motor del juego. Todos los objetos del tablero extienden `BoardObject extends GameObject`.
+Represented internally in the game engine. All board objects extend `BoardObject extends GameObject`.
 
-Atributos:
-- `position` → Posición en píxeles en el canvas.
-- `type` → Identificador de tipo (king, enemy, ally, trap, zone, obstacle).
-- `isActive` → Estado activo/inactivo.
+Attributes:
+- `position` → Position in pixels on the canvas.
+- `type` → Type identifier (king, enemy, ally, trap, zone, obstacle).
+- `isActive` → Active/inactive state.
 
-Métodos:
-- `update()` → Actualiza el estado del objeto.
-- `render()` → Dibuja el objeto en pantalla.
+Methods:
+- `update()` → Updates the object’s state.
+- `render()` → Draws the object on screen.
 
-### BoardObject (Clase derivada de GameObject)
+### BoardObject (Derived class from GameObject)
 
-Añade coordenadas de casilla al tablero.
+Adds board tile coordinates.
 
-Atributos:
-- `row`, `col` → Posición en la cuadrícula 8×8.
+Attributes:
+- `row`, `col` → Position on the 8×8 grid.
 
-Métodos:
-- `setTile(row, col)` → Mueve el objeto a una nueva casilla.
+Methods:
+- `setTile(row, col)` → Moves the object to a new tile.
 
-### Unit (Clase Abstracta — extiende BoardObject)
+### Unit (Abstract Class — extends BoardObject)
 
-Representa cualquier entidad que puede moverse o recibir daño.
+Represents any entity that can move or take damage.
 
-Atributos:
-- `hp`, `maxHp` → Puntos de vida.
-- `damage` → Valor de ataque.
-- `range` → Rango de ataque en casillas.
-- `speed` → Casillas por turno.
-- `stunTurns` → Turnos de parálisis restantes.
-- `slowedThisTurn` → Marcador si fue congelado este turno.
-- `cursedThisTurn` → Marcador si está bajo Royal Curse este turno.
+Attributes:
+- `hp`, `maxHp` → Health points.
+- `damage` → Attack value.
+- `range` → Attack range in tiles.
+- `speed` → Tiles per turn.
+- `stunTurns` → Remaining paralysis turns.
+- `slowedThisTurn` → Marker for whether it was frozen this turn.
+- `cursedThisTurn` → Marker for whether it is under Royal Curse this turn.
 
-Métodos:
-- `takeDamage(amount)` → Reduce HP.
+Methods:
+- `takeDamage(amount)` → Reduces HP.
 
-### Board (Componente)
+### Board (Component)
 
-Gestiona el sistema de cuadrícula 8×8.
+Manages the 8×8 grid system.
 
-Atributos:
-- Listas separadas: `allies[]`, `enemies[]`, `effects[]`, `obstacles[]`.
-- `safeZone` → Área dinámica 3×3 alrededor del Rey.
+Attributes:
+- Separate lists: `allies[]`, `enemies[]`, `effects[]`, `obstacles[]`.
+- `safeZone` → Dynamic 3×3 area around the King.
 
-Métodos:
+Methods:
 - `isInSafeZone(row, col)`, `isInsideBoard(row, col)`, `getBlockingObject(row, col)`.
 - `spawnEnemies()`, `spawnBoss()`, `generateObstacles()`.
-- `checkDefeat()` → Verifica si la presión en la zona segura ≥ 2.
+- `checkDefeat()` → Checks whether pressure inside the safe zone is ≥ 2.
 
-### TurnManager (Componente)
+### TurnManager (Component)
 
-Controla el flujo del juego.
+Controls game flow.
 
-Atributos:
-- `phase` → "player" o "enemy".
-- `turn` → Turno actual.
-- `desperation` → Nivel de desesperación del Rey (0-4).
-- `status` → "playing", "won", o "lost".
+Attributes:
+- `phase` → “player” or “enemy”.
+- `turn` → Current turn.
+- `desperation` → King’s Desperation level (0–4).
+- `status` → “playing,” “won,” or “lost.”
 
-Métodos:
-- `resolveTurn()` → Ejecuta toda la lógica de fin de turno.
-- `endPlayerTurn()` → Pasa a la fase enemiga.
-- `updateDesperation()` → Actualiza el medidor de Desesperación.
+Methods:
+- `resolveTurn()` → Executes all end-of-turn logic.
+- `endPlayerTurn()` → Switches to enemy phase.
+- `updateDesperation()` → Updates the Desperation meter.
 
 ---
 
-## 5.2 Clases Derivadas
+## 5.2 Derived Classes
 
-### King (extiende Unit)
+### King (extends Unit)
 
-Unidad especial controlada por el jugador.
+Special unit controlled by the player.
 - HP = 0, Damage = 0, Range = 0, Speed = 1.
-- No puede atacar.
-- Se mueve 1 casilla en cualquier dirección (movimiento del rey de ajedrez).
-- Su posición determina la zona segura 3×3.
+- Cannot attack.
+- Moves 1 tile in any direction, like the king in chess.
+- His position determines the 3×3 safe zone.
 
-### Enemy (extiende Unit)
+### Enemy (extends Unit)
 
-Enemigo regular que aparece cada turno y trata de alcanzar al Rey.
-- Tiene `safeZoneWeight` (normalmente 1; para jefes 2).
-- Tiene `tileSpan` (normalmente 1; para jefes 2).
+Regular enemy that spawns every turn and tries to reach the King.
+- Has `safeZoneWeight` (normally 1; 2 for bosses).
+- Has `tileSpan` (normally 1; 2 for bosses).
 
-### Boss (extiende Enemy)
+### Boss (extends Enemy)
 
-Jefe del nivel. Ocupa 2×2 casillas.
+Level boss. Occupies 2×2 tiles.
 - `tileSpan = 2`.
-- `summonEveryTurns` (cada N turnos invoca un minion).
-- `moveEveryTurns` (avanza 1 casilla cada M turnos).
+- `summonEveryTurns` (summons a minion every N turns).
+- `moveEveryTurns` (advances 1 tile every M turns).
 
-### Ally (extiende Unit)
+### Ally (extends Unit)
 
-Unidad aliada colocada por el jugador desde una carta.
-- `cardName` → Nombre de la carta de origen.
-- `speed = 0` (todos los aliados son estacionarios excepto Royal Guard que sigue al Rey).
-- Ataca automáticamente al enemigo más cercano en su rango.
+Allied unit placed by the player from a card.
+- `cardName` → Name of the source card.
+- `speed = 0` (all allies are stationary except Royal Guard, which follows the King).
+- Automatically attacks the nearest enemy within range.
 
-### Obstacle (extiende BoardObject)
+### Obstacle (extends BoardObject)
 
-Obstáculo inamovible en el tablero.
-- Bloquea movimiento y colocación de cartas.
-- No puede ser destruido.
-- Generado aleatoriamente al inicio de cada horda (no en boss fights).
+Immovable obstacle on the board.
+- Blocks movement and card placement.
+- Cannot be destroyed.
+- Randomly generated at the start of each horde, not in boss fights.
 
-### BoardEffect (extiende BoardObject)
+### BoardEffect (extends BoardObject)
 
-Efecto temporal colocado por una carta (trampa o zona).
-- `effectType` → "trap" (Exile) o "zone" (Peace Treaty, Royal Curse).
-- `duration` → Turnos restantes activo.
-- `radius` → Radio del efecto (0 para trap, 1 para zone = 3×3).
+Temporary effect placed by a card (trap or zone).
+- `effectType` → “trap” (Exile) or “zone” (Peace Treaty, Royal Curse).
+- `duration` → Remaining active turns.
+- `radius` → Effect radius (0 for trap, 1 for zone = 3×3).
 
-### HandSystem (Componente)
+### HandSystem (Component)
 
-Gestiona las cartas del jugador.
+Manages the player’s cards.
 
-Atributos:
-- `hand[]` → Mano actual (máx. 4 cartas).
-- `keptCardName` → Carta elegida para conservar entre hordas.
-- `upgradeRegistry{}` → Diccionario {nombre_carta: nivel_mejora} persistente entre muertes.
+Attributes:
+- `hand[]` → Current hand (max. 4 cards).
+- `keptCardName` → Card chosen to keep between hordes.
+- `upgradeRegistry{}` → Dictionary {card_name: upgrade_level} that persists between deaths.
 
-Métodos:
-- `drawCards(amount)` → Selecciona cartas aleatorias del pool aplicando mejoras.
-- `playCard(row, col)` → Coloca la carta seleccionada en el tablero.
-- `chooseCardToKeep(card)` → Marca la carta a conservar.
-- `applyUpgradeToCard(card)` → Aplica las mejoras al stat base de la carta.
+Methods:
+- `drawCards(amount)` → Selects random cards from the pool while applying upgrades.
+- `playCard(row, col)` → Places the selected card on the board.
+- `chooseCardToKeep(card)` → Marks the card to keep.
+- `applyUpgradeToCard(card)` → Applies upgrades to the card’s base stats.
 
-### EnemySpawner (Componente)
+### EnemySpawner (Component)
 
-Controla la generación de enemigos.
+Controls enemy generation.
 
-Comportamiento:
-- Genera 1-2 enemigos por turno según configuración de la horda.
-- Colocación aleatoria en bordes disponibles.
-- Respeta el límite máximo de enemigos en tablero.
+Behavior:
+- Generates 1–2 enemies per turn according to the current horde configuration.
+- Random placement on available edges.
+- Respects the maximum enemy limit on the board.
 
-### UpgradeSystem (Componente)
+### UpgradeSystem (Component)
 
-Gestiona la meta-progresión.
+Manages meta-progression.
 
-Atributos:
-- `gold` → Oro actual del jugador.
-- `upgradeRegistry{}` → Persistente entre muertes.
+Attributes:
+- `gold` → Player’s current gold.
+- `upgradeRegistry{}` → Persists between deaths.
 
-Métodos:
-- `purchaseUpgrade(cardName)` → Descuenta oro y sube el nivel en el registro.
-- `renderUpgradeOverlay()` → Construye la UI de mejoras.
+Methods:
+- `purchaseUpgrade(cardName)` → Deducts gold and increases the level in the registry.
+- `renderUpgradeOverlay()` → Builds the upgrade UI.
 
 ---
 
 # 6. Graphics
 
-## 6.1 Atributos de Estilo
+## 6.1 Style Attributes
 
-*(Sin cambios respecto al GDD original.)*
+*(Unchanged from the original GDD.)*
 
-- Pixel art, sprites de tamaño adaptado al tablero.
-- Paleta medieval apagada.
-- Tono cómico y legible.
+- Pixel art, sprites sized to fit the board.
+- Muted medieval palette.
+- Comedic and readable tone.
 
-## 6.2 Gráficos Implementados
+## 6.2 Implemented Graphics
 
-### Personajes y cartas en tablero
+### Characters and cards on the board
 
-- King (sprite animado, 6 frames)
-- Skeleton, Skeleton King (boss 2×2)
-- Ogre, Ogre Boss (boss 2×2)
-- Elite Warrior, Brave King (boss 2×2)
+- King (animated sprite, 6 frames)
+- Skeleton, Skeleton King (2×2 boss)
+- Ogre, Ogre Boss (2×2 boss)
+- Elite Warrior, Brave King (2×2 boss)
 - Knight, Archer, Mage, Pikeman
-- Wall (sprite con daño visual progresivo)
+- Wall (sprite with progressive visual damage)
 - Squire, Tower, Guardian, Royal Guard
 - Decoy, Trench
-- Obstacle (escombros inamovibles)
+- Obstacle (immovable debris)
 
-### Interfaz
+### Interface
 
-- Cartas en mano con arte propio por nivel de mejora (base, lvl1, lvl2, lvl3)
-- Panel de Desesperación con 5 imágenes (Cara0.png a Cara4.png)
-- Overlay de mejoras, pausa y victoria
-- HUD con información de nivel, turno, AP, oro, enemigos
+- Cards in hand with their own artwork by upgrade level (base, lvl1, lvl2, lvl3)
+- Desperation Panel with 5 images (`Cara0.png` to `Cara4.png`)
+- Upgrade, pause, and victory overlays
+- HUD with level, turn, AP, gold, and enemy information
 
 ### Backgrounds
 
-- Assets/Level1.png, Level2.png, Level3.png
+- `Assets/Level1.png`, `Level2.png`, `Level3.png`
+
+![Main menu background](Videogame/Assets/images/menu-background.png)
 
 ---
 
 # 7. Sounds / Music
 
-## 7.1 Atributos de Estilo
+## 7.1 Style Attributes
 
-*(Sin cambios respecto al GDD original.)*
+*(Unchanged from the original GDD.)*
 
-Música de ambiente de temática medieval que cambia por nivel. Efectos de sonido para cada carta jugada y eventos de combate.
+Medieval-themed ambient music that changes by level. Sound effects for each played card and combat event.
 
-## 7.2 Efectos de Sonido Implementados
+## 7.2 Implemented Sound Effects
 
-| Evento | Archivo |
+| Event | File |
 | :---- | :---- |
-| Clic en botón | sfx/button-click.mp3 |
-| Movimiento del Rey | sfx/button-click.mp3 |
-| Victoria | sfx/victory.mp3 |
-| Derrota | sfx/defeat.m4a |
-| Desesperación crítica (bucle) | sfx/desperation-critical.mp3 |
-| Muerte por Desesperación | sfx/desperation-death.mp3 |
+| Button click | sfx/button-click.mp3 |
+| King movement | sfx/button-click.mp3 |
+| Victory | sfx/victory.mp3 |
+| Defeat | sfx/defeat.m4a |
+| Critical Desperation loop | sfx/desperation-critical.mp3 |
+| Death by Desperation | sfx/desperation-death.mp3 |
 
-Efectos de sonido por carta: knight, archer, mage, pikeman, wall, squire, tower, guardian, royal-guard, trench, exile, bomb, peace-treaty, royal-curse, decoy.
+Sound effects by card: knight, archer, mage, pikeman, wall, squire, tower, guardian, royal-guard, trench, exile, bomb, peace-treaty, royal-curse, decoy.
 
-## 7.3 Música Implementada
+## 7.3 Implemented Music
 
-| Nivel | Track |
+| Level | Track |
 | :---- | :---- |
-| Nivel 1 — Catacombs | audio/level1-skeletons.mp3 |
-| Nivel 2 — Ogre Dungeon | audio/level2-ogres.mp3 |
-| Nivel 3 — Royal Castle | audio/level3-royal.mp3 |
+| Level 1 — Catacombs | audio/level1-skeletons.mp3 |
+| Level 2 — Ogre Dungeon | audio/level2-ogres.mp3 |
+| Level 3 — Royal Castle | audio/level3-royal.mp3 |
 
-La música cambia automáticamente al entrar a un nuevo nivel. El menú principal reproduce un track aleatorio de los tres disponibles. El volumen es ajustable por separado (máster, música, SFX) y se guarda en localStorage.
+Music changes automatically when entering a new level. The main menu plays a random track from the three available options. Volume can be adjusted separately for master, music, and SFX, and is saved in localStorage.
 
 ---
 
-# 8. Backend y Base de Datos
+# 8. Backend and Database
 
-`[NUEVO]` **Esta sección no existía en el GDD original.** El juego implementa un backend completo con base de datos relacional para persistencia de jugadores, estadísticas y mejoras.
+`[NEW]` **This section did not exist in the original GDD.** The game implements a complete backend with a relational database for player persistence, statistics, and upgrades.
 
-### Stack Técnico
+### Technical Stack
 
-- **Servidor:** Node.js + Express.js
-- **Base de datos:** MySQL (base de datos `coward_king`)
-- **Puerto:** localhost:3000
-- **Autenticación:** Hash SHA-256 de contraseñas
+- **Server:** Node.js + Express.js
+- **Database:** MySQL (`coward_king` database)
+- **Port:** localhost:3000
+- **Authentication:** SHA-256 password hash
 
-### Endpoints de API Implementados
+### Implemented API Endpoints
 
-| Método | Ruta | Función |
+| Method | Route | Function |
 | :---- | :---- | :---- |
-| GET | /api/cards | Cargar el pool completo de cartas |
-| GET | /api/enemies/:levelId | Cargar enemigos de un nivel |
-| POST | /api/player | Registrar nuevo jugador |
-| GET | /api/player/:username | Login / buscar jugador |
-| GET | /api/player/:id/dashboard | Estadísticas personales |
-| GET | /api/player/:id/upgrades | Mejoras del jugador |
-| POST | /api/upgrade | Guardar mejora de carta |
-| POST | /api/run/start | Iniciar nuevo intento |
-| POST | /api/run/:id/complete-horde | Marcar horda completada |
-| POST | /api/run/:id/death | Registrar muerte |
-| PATCH | /api/run/:id/level | Avanzar de nivel |
-| POST | /api/stats | Guardar estadísticas del encuentro |
-| GET | /api/admin/leaderboard | Tabla global de líderes |
-| GET | /api/admin/death-distribution | Distribución de muertes |
-| GET | /api/admin/horde-difficulty | Dificultad de hordas |
-| GET | /api/admin/most-upgraded-cards | Cartas más mejoradas |
-| GET | /api/admin/death-rates | Tasas de muerte por nivel |
+| GET | /api/cards | Load the complete card pool |
+| GET | /api/enemies/:levelId | Load enemies for a level |
+| POST | /api/player | Register new player |
+| GET | /api/player/:username | Login / search player |
+| GET | /api/player/:id/dashboard | Personal statistics |
+| GET | /api/player/:id/upgrades | Player upgrades |
+| POST | /api/upgrade | Save card upgrade |
+| POST | /api/run/start | Start new attempt |
+| POST | /api/run/:id/complete-horde | Mark horde completed |
+| POST | /api/run/:id/death | Register death |
+| PATCH | /api/run/:id/level | Advance level |
+| POST | /api/stats | Save encounter statistics |
+| GET | /api/admin/leaderboard | Global leaderboard |
+| GET | /api/admin/death-distribution | Death distribution |
+| GET | /api/admin/horde-difficulty | Horde difficulty |
+| GET | /api/admin/most-upgraded-cards | Most upgraded cards |
+| GET | /api/admin/death-rates | Death rates by level |
 
-### Modo Invitado
+### Guest Mode
 
-El juego funciona completamente sin servidor activo. Si la carga de datos del servidor falla, se usan los valores predeterminados del `cardPool` local (8 cartas de respaldo) y las mejoras se guardan solo en memoria de la sesión.
+The core game remains playable without an active server. If card loading fails, the local `cardPool` supplies 8 fallback cards. Authentication, database statistics, database-backed upgrades, and full 15-card SQL data require the backend and MySQL. Local volume settings and the partial pause snapshot use `localStorage`; fallback upgrades otherwise remain in runtime memory.
 
-### Estadísticas Globales (Panel Admin)
+### Global Statistics (Admin Panel)
 
-Disponibles solo para usuarios con `is_admin = true`:
-- Leaderboard global con ranking por niveles completados.
-- Distribución de muertes por nivel y horda.
-- Tasas de completación de hordas (%).
-- Popularidad de mejoras de cartas (gráfica de rosca).
-- Gráficas implementadas con Chart.js.
-
----
-
-# 9. Programa de Desarrollo
-
-## Fases de Desarrollo Completadas
-
-### 1. Sistemas Base
-- Motor de canvas 2D con sistema de casillas.
-- Sistema de coordenadas `tileToPosition` / `positionToTile`.
-- Clase base `GameObject → BoardObject → Unit`.
-- Sistema de colisión por casilla.
-
-### 2. Mecánicas de Gameplay
-- Sistema de fases (Player/Enemy).
-- Sistema de AP con recuperación por turno.
-- Sistema de Desesperación (nueva mecánica).
-- Detección de derrota por presión en zona segura.
-
-### 3. Sistema de Cartas
-- Pool de 15 cartas con efectos únicos.
-- Lógica de "keep mode" entre hordas.
-- Sistema de mejoras con `upgradeRegistry` persistente.
-- Límites de colocación por nivel de mejora.
-
-### 4. Sistema de Enemigos
-- Spawn dinámico por bordes múltiples.
-- Movimiento hacia el Rey con pathfinding simple.
-- Priorización del Decoy como objetivo.
-- Sistema de stun (Exile), slow (Peace Treaty) y curse (Royal Curse).
-
-### 5. Sistema de Jefes
-- Jefes 2×2 con ciclo timer-based de invocación y movimiento.
-- 3 jefes con invocados propios: Skeleton King, Ogre Boss, Brave King.
-
-### 6. Sistemas de UI
-- HUD con información en tiempo real.
-- Panel de Desesperación animado con imágenes reactivas.
-- Overlay de mejoras con preview de stats.
-- Menú de pausa con guardado manual.
-- Pantalla de victoria final.
-
-### 7. Sistema Roguelite
-- Progresión a través de 3 niveles × 4 encuentros.
-- Reset al Nivel 1 Horda 1 en derrota.
-- Mejoras permanentes entre intentos.
-
-### 8. Backend y Base de Datos
-- Servidor Express.js con MySQL.
-- Sistema de autenticación con hash.
-- API de estadísticas (personal y global).
-- Panel de administrador con gráficas Chart.js.
-
-### 9. Visual y Audio
-- Sprites animados por tipo de unidad.
-- 3 backgrounds de nivel.
-- 3 tracks de música por nivel.
-- 15 efectos de sonido por carta.
-- Efectos de sonido para eventos globales (victoria, derrota, Desesperación).
-
-### 10. Menú Principal
-- Menú animado con decoración de castillo CSS.
-- Tutorial completo con video integrado.
-- Estadísticas personales con gráficas.
-- Sistema de login/registro.
-- Panel de administrador.
-- Configuración de volumen persistente.
+Available only to users with `is_admin = true`:
+- Global leaderboard ranked by completed levels.
+- Death distribution by level and horde.
+- Horde completion rates (%).
+- Card upgrade popularity (doughnut chart).
+- Charts implemented with Chart.js.
 
 ---
 
-*Documento preparado por Silent Crown — The Coward King — Versión Final Actualizada*
+# 9. Development Schedule
+
+## Completed Development Phases
+
+### 1. Base Systems
+- 2D canvas engine with tile system.
+- `tileToPosition` / `positionToTile` coordinate system.
+- Base class `GameObject → BoardObject → Unit`.
+- Tile-based collision system.
+
+### 2. Gameplay Mechanics
+- Phase system (Player/Enemy).
+- AP system with turn-based recovery.
+- Desperation system (new mechanic).
+- Defeat detection through pressure in the safe zone.
+
+### 3. Card System
+- Pool of 15 cards with unique effects.
+- “Keep mode” logic between hordes.
+- Upgrade system with persistent `upgradeRegistry`.
+- Placement limits by upgrade level.
+
+### 4. Enemy System
+- Dynamic spawning from multiple edges.
+- Movement toward the King with simple pathfinding.
+- Decoy prioritization as target.
+- Stun (Exile), slow (Peace Treaty), and curse (Royal Curse) system.
+
+### 5. Boss System
+- 2×2 bosses with timer-based summoning and movement cycles.
+- 3 bosses with their own summons: Skeleton King, Ogre Boss, Brave King.
+
+### 6. UI Systems
+- HUD with real-time information.
+- Animated Desperation Panel with reactive images.
+- Upgrade overlay with stat preview.
+- Pause menu with partial local snapshot and statistics save; full restore remains pending.
+- Final victory screen.
+
+### 7. Roguelite System
+- Progression through 3 levels × 4 encounters.
+- Reset to Level 1 Horde 1 on defeat.
+- Permanent upgrades between attempts.
+
+### 8. Backend and Database
+- Express.js server with MySQL.
+- Authentication system with hashing.
+- Statistics API (personal and global).
+- Administrator panel with Chart.js charts.
+
+### 9. Visual and Audio
+- Animated sprites by unit type.
+- 3 level backgrounds.
+- 3 music tracks by level.
+- 15 sound effects by card.
+- Sound effects for global events (victory, defeat, Desperation).
+
+### 10. Main Menu
+- Animated menu with CSS castle decoration.
+- Complete tutorial with embedded video.
+- Personal statistics with charts.
+- Login/registration system.
+- Administrator panel.
+- Persistent volume settings.
+
+---
+
+*Document prepared by Silent Crown — The Coward King — Final Updated Version*
