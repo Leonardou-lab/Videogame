@@ -2,7 +2,11 @@
 
 ## Game Design Document — Updated Version
 
-![The Coward King title logo](Videogame/Assets/images/title-logo.png)
+<p align="center">
+  <img src="Videogame/Assets/images/the-coward-king-gdd-logo.png" alt="The Coward King game logo" width="236">
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="Videogame/Assets/images/tecnologico-de-monterrey-logo.png" alt="Tecnológico de Monterrey logo" width="190">
+</p>
 
 **Tactical Roguelite Board Game**
 
