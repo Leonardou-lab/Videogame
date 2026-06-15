@@ -4,6 +4,7 @@
 
 ```
 Videogame/
+Activities/
 ├── .github/
 │   └── ISSUE_TEMPLATE/
 │       └── custom-issue.md
@@ -50,7 +51,6 @@ Videogame/
 └── Videogame/                            # Main game source
     ├── index.html                        # Game entry point
     ├── indexMenu.html                    # Main menu page
-    ├── website.html                      # Website/leaderboard page
     ├── README_GAMEPLAY_CHANGES.md
     │
     ├── css/
