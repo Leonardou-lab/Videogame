@@ -2,9 +2,7 @@
 
 ## Repository Structure
 
-```
-Videogame/
-Activities/
+``` Videogame/Activities/
 ├── .github/
 │   └── ISSUE_TEMPLATE/
 │       └── custom-issue.md
